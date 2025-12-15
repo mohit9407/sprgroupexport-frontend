@@ -7,7 +7,7 @@ const NotificationBar = ({ showNotification, onClose }) => {
   if (!showNotification) return null
 
   return (
-    <div className="text-[#333] py-[13px] px-4 bg-white">
+    <div className="text-[#333] py-[13px] px-4 bg-white relative z-1">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <div className="flex items-center justify-center flex-1">
           <span className="text-xl">

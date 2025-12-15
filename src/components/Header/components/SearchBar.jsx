@@ -14,7 +14,7 @@ const SearchBar = () => {
         <div className="relative flex-shrink-0 h-full">
           <button
             onClick={() => setShowCategories(!showCategories)}
-            className="h-full bg-[#BA8B4E] text-white text-[14px] font-semibold px-4 flex items-center hover:bg-[#A87D45] transition-colors"
+            className="h-full bg-[#BA8B4E] text-white text-[14px] font-semibold px-4 flex items-center hover:bg-[#A87D45] transition-colors cursor-pointer"
           >
             ALL CATEGORIES
             <FaChevronDown
@@ -70,7 +70,7 @@ const SearchBar = () => {
         </div>
 
         {/* Search Button */}
-        <button className="h-full bg-[#BA8B4E] text-white px-4 flex items-center justify-center hover:bg-[#A87D45] transition-colors">
+        <button className="h-full bg-[#BA8B4E] text-white px-4 flex items-center justify-center hover:bg-[#A87D45] transition-colors cursor-pointer">
           <FaSearch className="text-base" />
         </button>
       </div>

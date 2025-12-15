@@ -5,7 +5,7 @@ const AuthTabs = ({ activeTab, onTabChange }) => {
     <div className="flex">
       <button
         type="button"
-        className={`flex-1 py-4 text-center text-sm font-medium transition-colors duration-200 ${
+        className={`flex-1 py-4 text-center text-sm font-medium transition-colors duration-200 cursor-pointer ${
           activeTab === 'login'
             ? 'text-gray-900 bg-white'
             : 'text-gray-400 bg-gray-100 hover:text-[#b7853f]'
@@ -16,7 +16,7 @@ const AuthTabs = ({ activeTab, onTabChange }) => {
       </button>
       <button
         type="button"
-        className={`flex-1 py-4 text-center text-sm font-medium transition-colors duration-200 ${
+        className={`flex-1 py-4 text-center text-sm font-medium transition-colors duration-200 cursor-pointer ${
           activeTab === 'signup'
             ? 'text-gray-900 bg-white'
             : 'text-gray-400 bg-gray-100 hover:text-[#b7853f]'
