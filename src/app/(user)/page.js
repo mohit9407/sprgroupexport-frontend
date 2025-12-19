@@ -24,6 +24,7 @@ export default function UserDashboard() {
           title: 'Bridal',
           description: 'Jewellery for bride',
           buttonText: 'View All Range',
+          route: '/shop',
         }}
         onButtonClick={handleButtonClick}
         overlayClass="bg-black/30"
@@ -39,6 +40,7 @@ export default function UserDashboard() {
           title: 'TRENDING Now',
           description: 'Classic & Trendy',
           buttonText: 'View All Range',
+          route: '/shop',
         }}
         onButtonClick={handleButtonClick}
         overlayClass="bg-black/30"
@@ -64,6 +66,7 @@ export default function UserDashboard() {
           title: 'BIG SALE',
           description: 'Women Gold ornaments',
           buttonText: 'Shop Now',
+          route: '/shop',
         }}
         onButtonClick={handleButtonClick}
         overlayClass="bg-black/30"

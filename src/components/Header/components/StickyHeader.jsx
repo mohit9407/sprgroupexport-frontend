@@ -10,10 +10,14 @@ import {
   FaShoppingBag,
   FaChevronDown,
 } from 'react-icons/fa'
+import { useCart } from '@/context/CartContext'
+import { useWishlist } from '@/context/WishlistContext'
 import { navItems } from '@/utils/navigation'
 import CatalogDropdown from './CatalogDropdown'
 
 const StickyHeader = () => {
+  const { cartCount } = useCart()
+  const { wishlistCount } = useWishlist()
   const [isVisible, setIsVisible] = useState(false)
   const [lastScrollY, setLastScrollY] = useState(0)
   const [showCatalogDropdown, setShowCatalogDropdown] = useState(false)
@@ -133,7 +137,7 @@ const StickyHeader = () => {
             >
               <FaRegHeart className="text-lg" />
               <span className="absolute -top-1 -right-1 bg-[#BA8B4E] text-white text-[10px] rounded-full h-5 w-5 flex items-center justify-center">
-                0
+                {wishlistCount}
               </span>
             </Link>
 
@@ -144,7 +148,7 @@ const StickyHeader = () => {
             >
               <FaShoppingBag className="text-lg" />
               <span className="absolute -top-1 -right-1 bg-[#BA8B4E] text-white text-[10px] rounded-full h-5 w-5 flex items-center justify-center">
-                0
+                {cartCount}
               </span>
             </Link>
           </div>

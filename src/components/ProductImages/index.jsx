@@ -1,25 +1,40 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import React, { useState, useCallback } from 'react'
 import Image from 'next/image'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 
-const ProductImages = ({ images, productName }) => {
+const ProductImages = ({ images, productName, sideImages = [] }) => {
   const [selectedImage, setSelectedImage] = useState(0)
   const [isHovered, setIsHovered] = useState(false)
   const [zoomStyle, setZoomStyle] = useState({})
   const [isModalOpen, setIsModalOpen] = useState(false)
 
+  // Combine main images with side images if they exist
+  const allImages = React.useMemo(() => {
+    const mainImages = Array.isArray(images)
+      ? [...images]
+      : images
+        ? [images]
+        : []
+    const additionalImages = Array.isArray(sideImages)
+      ? sideImages
+          .map((img) => (typeof img === 'string' ? img : img.url || ''))
+          .filter(Boolean)
+      : []
+    return [...mainImages, ...additionalImages].filter(Boolean)
+  }, [images, sideImages])
+
   // Image navigation callbacks with proper dependency array
   const nextImage = useCallback(() => {
-    if (!images?.length) return
-    setSelectedImage((prev) => (prev === images.length - 1 ? 0 : prev + 1))
-  }, [images]) // Use the full images array as dependency
+    if (!allImages?.length) return
+    setSelectedImage((prev) => (prev === allImages.length - 1 ? 0 : prev + 1))
+  }, [allImages]) // Use the allImages array as dependency
 
   const prevImage = useCallback(() => {
-    if (!images?.length) return
-    setSelectedImage((prev) => (prev === 0 ? images.length - 1 : prev - 1))
-  }, [images]) // Use the full images array as dependency
+    if (!allImages?.length) return
+    setSelectedImage((prev) => (prev === 0 ? allImages.length - 1 : prev - 1))
+  }, [allImages]) // Use the allImages array as dependency
 
   // Handle keyboard navigation with useCallback
   const handleKeyDown = useCallback(
@@ -37,7 +52,7 @@ const ProductImages = ({ images, productName }) => {
     }
   }, []) // No dependencies needed as it only uses setIsModalOpen
 
-  if (!images || images.length === 0) {
+  if (allImages.length === 0) {
     return (
       <div className="w-full h-96 bg-gray-100 flex items-center justify-center">
         <span className="text-gray-500">No images available</span>
@@ -66,7 +81,7 @@ const ProductImages = ({ images, productName }) => {
             </button>
             <div className="relative w-full h-full">
               <Image
-                src={images[selectedImage]}
+                src={allImages[selectedImage]}
                 alt={productName}
                 fill
                 style={{ objectFit: 'contain' }}
@@ -78,7 +93,7 @@ const ProductImages = ({ images, productName }) => {
 
             {/* Thumbnail Navigation */}
             <div className="flex justify-center mt-4 space-x-2">
-              {images.map((img, index) => (
+              {allImages.map((img, index) => (
                 <button
                   key={index}
                   onClick={(e) => {
@@ -95,7 +110,12 @@ const ProductImages = ({ images, productName }) => {
                   <div className="relative w-full h-full p-1">
                     <Image
                       src={img}
-                      alt={`${productName} thumbnail ${index + 1}`}
+                      alt={
+                        typeof img === 'object'
+                          ? img.description ||
+                            `${productName} thumbnail ${index + 1}`
+                          : `${productName} thumbnail ${index + 1}`
+                      }
                       fill
                       style={{ objectFit: 'cover' }}
                       className="w-full h-full"
@@ -128,7 +148,7 @@ const ProductImages = ({ images, productName }) => {
 
             setZoomStyle({
               display: 'block',
-              backgroundImage: `url(${images[selectedImage]})`,
+              backgroundImage: `url(${allImages[selectedImage]})`,
               backgroundPosition: `${x}% ${y}%`,
               backgroundSize: '200%',
               backgroundRepeat: 'no-repeat',
@@ -152,7 +172,7 @@ const ProductImages = ({ images, productName }) => {
             onClick={() => setIsModalOpen(true)}
           >
             <Image
-              src={images[selectedImage]}
+              src={allImages[selectedImage]}
               alt={productName}
               fill
               style={{ objectFit: 'contain' }}
@@ -168,77 +188,107 @@ const ProductImages = ({ images, productName }) => {
             )}
           </div>
 
-          {/* Navigation Arrows */}
-          {isHovered && images.length > 1 && (
-            <>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  prevImage()
-                }}
-                className="absolute left-2 top-1/2 -translate-y-1/2 bg-[#b7853f] text-white p-3 hover:bg-[#a07536] transition-all transform hover:scale-105 z-10 w-10 h-10 flex items-center justify-center cursor-pointer"
-                aria-label="Previous image"
-              >
-                <FaChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  nextImage()
-                }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#b7853f] text-white p-3 hover:bg-[#a07536] transition-all transform hover:scale-105 z-10 w-10 h-10 flex items-center justify-center cursor-pointer"
-                aria-label="Next image"
-              >
-                <FaChevronRight className="w-4 h-4" />
-              </button>
-            </>
+          {/* Thumbnail Navigation Dots */}
+          {allImages.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+              {allImages.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setSelectedImage(index)
+                  }}
+                  className={`w-2.5 h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
+                    selectedImage === index
+                      ? 'bg-[#b7853f] w-8'
+                      : 'bg-white/70 hover:bg-white'
+                  }`}
+                  aria-label={`Go to image ${index + 1}`}
+                />
+              ))}
+            </div>
           )}
-
-          {/* Thumbnail Navigation */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
-            {images.map((_, index) => (
-              <button
-                key={index}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setSelectedImage(index)
-                }}
-                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
-                  selectedImage === index
-                    ? 'bg-[#b7853f] w-8'
-                    : 'bg-white/70 hover:bg-white'
-                }`}
-                aria-label={`Go to image ${index + 1}`}
-              />
-            ))}
-          </div>
         </div>
 
-        <div className="flex justify-center space-x-4 py-4 overflow-x-auto scrollbar-hide">
-          {images.map((img, index) => (
-            <button
-              key={index}
-              onClick={() => setSelectedImage(index)}
-              onMouseEnter={() => setSelectedImage(index)}
-              className={`flex-shrink-0 w-20 h-20 transition-all duration-300 ease-in-out transform hover:scale-105 cursor-pointer ${
-                selectedImage === index
-                  ? 'ring-2 ring-[#b7853f]'
-                  : 'border border-gray-200 hover:border-[#b7853f]'
-              }`}
-              aria-label={`Select image ${index + 1}`}
-            >
-              <div className="relative w-full h-full p-1">
-                <Image
-                  src={img}
-                  alt={`${productName} thumbnail ${index + 1}`}
-                  fill
-                  style={{ objectFit: 'cover' }}
-                  className="w-full h-full"
-                  unoptimized={process.env.NODE_ENV !== 'production'}
-                />
-              </div>
-            </button>
-          ))}
+        {/* Thumbnail Navigation */}
+        <div
+          className="relative py-4 group"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          {/* Previous Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              const prevIndex =
+                selectedImage === 0 ? allImages.length - 1 : selectedImage - 1
+              setSelectedImage(prevIndex)
+            }}
+            className={`absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-[#b7853f] text-white hover:bg-[#a07536] transition-all duration-300 z-10
+						${isHovered ? 'opacity-100 translate-x-2' : 'opacity-0 -translate-x-2'}`}
+            aria-label="Previous thumbnail"
+          >
+            <FaChevronLeft className="w-3 h-3" />
+          </button>
+
+          <div className="flex space-x-3 justify-center">
+            {allImages.map((img, index) => {
+              // Only show a few thumbnails around the selected one
+              const totalThumbnails = Math.min(5, allImages.length)
+              const half = Math.floor(totalThumbnails / 2)
+              let start = Math.max(0, selectedImage - half)
+              start = Math.min(start, allImages.length - totalThumbnails)
+              const end = Math.min(start + totalThumbnails, allImages.length)
+
+              if (index < start || index >= end) return null
+
+              const imgSrc = typeof img === 'object' ? img.url : img
+              return (
+                <button
+                  key={index}
+                  onClick={() => setSelectedImage(index)}
+                  onMouseEnter={() => setSelectedImage(index)}
+                  className={`flex-shrink-0 w-20 h-20 transition-all duration-300 ease-in-out transform hover:scale-105 cursor-pointer ${
+                    selectedImage === index
+                      ? 'ring-2 ring-[#b7853f]'
+                      : 'border border-gray-200 hover:border-[#b7853f]'
+                  }`}
+                  aria-label={`Select image ${index + 1}`}
+                >
+                  <div className="relative w-full h-full p-1">
+                    <Image
+                      src={imgSrc}
+                      alt={
+                        typeof img === 'object'
+                          ? img.description ||
+                            `${productName} thumbnail ${index + 1}`
+                          : `${productName} thumbnail ${index + 1}`
+                      }
+                      fill
+                      style={{ objectFit: 'cover' }}
+                      className="w-full h-full"
+                      unoptimized={process.env.NODE_ENV !== 'production'}
+                    />
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Next Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              const nextIndex =
+                selectedImage === allImages.length - 1 ? 0 : selectedImage + 1
+              setSelectedImage(nextIndex)
+            }}
+            className={`absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-[#b7853f] text-white hover:bg-[#a07536] transition-all duration-300 z-10
+						${isHovered ? 'opacity-100 -translate-x-2' : 'opacity-0 translate-x-2'}`}
+            aria-label="Next thumbnail"
+          >
+            <FaChevronRight className="w-3 h-3" />
+          </button>
         </div>
       </div>
     </div>

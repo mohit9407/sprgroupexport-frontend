@@ -1,62 +1,125 @@
 'use client'
 
-'use client'
-
-import { useParams, useSearchParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
+import { useDispatch, useSelector } from 'react-redux'
 import Link from 'next/link'
-import { FaHeart, FaStar } from 'react-icons/fa'
-import { products } from '@/data/products'
+import { FaHeart, FaStar, FaCheck, FaShoppingCart } from 'react-icons/fa'
+import { toast } from '@/utils/toastConfig'
 import RelatedProducts from '@/components/RelatedProducts'
 import ProductImages from '@/components/ProductImages'
-
-// Function to get product by ID
-const getProductById = (id) => {
-  if (!id) return null
-  return products.find((product) => product.id.toString() === id.toString())
-}
+import {
+  fetchProductDetails,
+  clearProductDetails,
+} from '@/features/products/productDetailsSlice'
+import {
+  fetchCategoryById,
+  clearCategoryDetails,
+} from '@/features/categories/categoryDetailsSlice'
+import { useCart } from '@/context/CartContext'
+import { useWishlist } from '@/context/WishlistContext'
 
 export default function ProductDetails() {
-  const [isClient, setIsClient] = useState(false)
+  const dispatch = useDispatch()
+  const router = useRouter()
   const params = useParams()
-  const searchParams = useSearchParams()
-  const productId = params?.id || searchParams?.get('id')
+  const productId = params?.id
+  const { addToCart, isInCart } = useCart()
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
 
   const [quantity, setQuantity] = useState(1)
-  const [product, setProduct] = useState(null)
-  const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('descriptions')
+  const [isAddingToCart, setIsAddingToCart] = useState(false)
 
-  // Set client-side flag
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
+  // Get product details and category from Redux store
+  const {
+    data: product,
+    status,
+    error,
+  } = useSelector((state) => state.productDetails)
 
-  // Load product data
+  const categoryState = useSelector((state) => state.categoryDetails || {})
+  const categoryDetails = categoryState.data
+
+  // derive wishlist status from context to avoid setting state in effects
+  const isWishlisted = React.useMemo(
+    () => (product ? isInWishlist(product.id) : false),
+    [product, isInWishlist],
+  )
+
+  // Fetch product details when component mounts or productId changes
   useEffect(() => {
-    if (!productId) {
-      setLoading(false)
-      return
+    if (productId) {
+      dispatch(fetchProductDetails(productId)).catch(console.error)
+    }
+    return () => {
+      dispatch(clearProductDetails())
+      dispatch(clearCategoryDetails())
+    }
+  }, [dispatch, productId])
+
+  // Fetch category details when product data is available
+  useEffect(() => {
+    if (product?.category) {
+      dispatch(fetchCategoryById(product.category))
+    }
+  }, [dispatch, product?.category])
+
+  // Wishlist status is derived from context via useMemo. No local effect required.
+
+  const handleAddToCart = () => {
+    if (!product) return
+
+    setIsAddingToCart(true)
+    addToCart(
+      {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        slug: product.slug || `product-${product.id}`,
+      },
+      quantity,
+    )
+
+    toast.success('Added to cart!')
+
+    // Reset button state after animation
+    setTimeout(() => {
+      setIsAddingToCart(false)
+    }, 1000)
+  }
+
+  const handleWishlistToggle = () => {
+    if (!product) return
+
+    if (isWishlisted) {
+      removeFromWishlist(product.id)
+      toast.info('Removed from wishlist')
+    } else {
+      addToWishlist({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        slug: product.slug || `product-${product.id}`,
+      })
+      toast.success('Added to wishlist!')
     }
 
-    const loadProduct = () => {
-      try {
-        const foundProduct = getProductById(productId)
-        if (foundProduct) {
-          setProduct(foundProduct)
-        }
-      } catch (error) {
-        console.error('Error loading product:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
+    // wishlist state comes from context and will update automatically; no local setState needed.
+  }
 
-    loadProduct()
-  }, [productId])
+  const handleBuyNow = () => {
+    handleAddToCart()
+    // Small delay to ensure cart is updated
+    setTimeout(() => {
+      router.push('/cart')
+    }, 500)
+  }
 
-  if (loading || !isClient) {
+  // Handle loading and error states
+  if (status === 'loading' || !product) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -67,31 +130,17 @@ export default function ProductDetails() {
     )
   }
 
-  if (!product) {
+  if (status === 'failed') {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gray-50">
         <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md text-center">
           <div className="text-6xl mb-4">😕</div>
           <h1 className="text-2xl font-bold text-gray-900 mb-3">
-            Product Not Found
+            {error || 'Error Loading Product'}
           </h1>
-          <p className="text-gray-600 mb-6">
-            We couldn&apos;t find the product you&apos;re looking for.
-          </p>
-          <div className="bg-gray-100 p-4 rounded-lg mb-6 text-left">
-            <p className="text-sm text-gray-600">
-              Requested ID: <span className="font-mono">{params?.id}</span>
-            </p>
-            <p className="text-sm text-gray-600 mt-1">
-              Available IDs:{' '}
-              <span className="font-mono">
-                {products.map((p) => p.id).join(', ')}
-              </span>
-            </p>
-          </div>
           <Link
             href="/"
-            className="inline-block w-full bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium cursor-pointer"
+            className="inline-block w-full bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium cursor-pointer mt-6"
           >
             ← Return to Home
           </Link>
@@ -110,7 +159,7 @@ export default function ProductDetails() {
         {/* Centered Product Title */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
-            {product.name.toUpperCase()}
+            {product?.name?.toUpperCase()}
           </h1>
         </div>
 
@@ -118,21 +167,26 @@ export default function ProductDetails() {
           {/* Product Images */}
           <div className="md:w-1/2">
             <ProductImages
-              images={product.images || [product.image]}
-              productName={product.name}
+              images={[product.image]} // Main product image
+              sideImages={product.sideImages || []} // Side images array
+              productName={product.name || 'Product Image'}
             />
           </div>
 
           {/* Product Info */}
           <div className="md:w-1/2 p-8 rounded-lg shadow">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              {product.name.toUpperCase()}
+              {product?.name?.toUpperCase?.() || 'Product Name'}
             </h1>
-            <p className="text-gray-600 mb-4">{product.name}</p>
+            <p className="text-gray-600 mb-4">
+              {product?.name || 'Product Name'}
+            </p>
 
             <div className="mb-4">
               <span className="text-3xl font-bold text-[#b7853f]">
-                ₹{product.price.toLocaleString()}
+                {product?.price
+                  ? `₹${product.price.toLocaleString()}`
+                  : 'Price not available'}
               </span>
             </div>
 
@@ -141,31 +195,29 @@ export default function ProductDetails() {
                 {[...Array(5)].map((_, i) => (
                   <svg
                     key={i}
-                    className={`h-5 w-5 ${i < product.rating ? 'text-yellow-400' : 'text-gray-300'}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                    className={`h-5 w-5 ${product?.reviews?.length > 0 ? (i < Math.round(product.reviews.reduce((acc, curr) => acc + curr.rating, 0) / product.reviews.length) ? 'text-yellow-400' : 'text-gray-300') : 'text-gray-300'}`}
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-                    />
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                   </svg>
                 ))}
               </div>
-              <span className="ml-2 text-sm text-gray-600">0 Reviews</span>
+              <span className="ml-2 text-sm text-gray-600">
+                {product?.reviews?.length || 0}{' '}
+                {product?.reviews?.length === 1 ? 'Review' : 'Reviews'}
+              </span>
             </div>
 
             <div className="space-y-2 text-sm text-gray-600 mb-6">
               <div>
-                <span className="font-medium">Product ID :</span> {product.id}
+                <span className="font-medium">Product ID :</span>{' '}
+                {product?.id || 'N/A'}
               </div>
               <div>
                 <span className="font-medium">Category:</span>{' '}
-                {product.category}
+                {categoryDetails?.name || product?.category || 'Loading...'}
               </div>
               <div>
                 <span className="font-medium">Available:</span>{' '}
@@ -197,13 +249,54 @@ export default function ProductDetails() {
               </div>
             </div>
 
-            <div className="flex space-x-4 mb-8">
-              <button className="bg-[#b7853f] hover:bg-[#9a7237] text-white px-10 py-3 rounded font-medium transition-colors cursor-pointer">
-                ADD TO CART
-              </button>
-              <button className="flex items-center text-gray-700 hover:text-gray-900 cursor-pointer">
-                <FaHeart className="mr-2 text-gray-600" /> ADD TO WISHLIST
-              </button>
+            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 mb-8">
+              <div className="flex-1">
+                <button
+                  onClick={handleAddToCart}
+                  disabled={isAddingToCart}
+                  className={`w-full flex items-center justify-center gap-2 bg-[#b7853f] hover:bg-[#9a7237] text-white px-6 py-3 rounded font-medium transition-all ${isAddingToCart ? 'opacity-75' : ''}`}
+                >
+                  {isAddingToCart ? (
+                    <>
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      ADDING...
+                    </>
+                  ) : (
+                    <>
+                      <FaShoppingCart className="text-white" />
+                      ADD TO CART
+                    </>
+                  )}
+                </button>
+              </div>
+              {/* <button
+                onClick={handleWishlistToggle}
+                className={`flex items-center justify-center px-6 py-3 rounded font-medium transition-colors ${isWishlisted
+                  ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+              >
+                <FaHeart className={`mr-2 ${isWishlisted ? 'text-red-500' : 'text-gray-600'}`} />
+                {isWishlisted ? 'WISHLISTED' : 'WISHLIST'}
+              </button> */}
             </div>
 
             <div className="border-t border-b border-gray-200 py-4">
@@ -226,17 +319,27 @@ export default function ProductDetails() {
                       : 'bg-gray-100 text-gray-600'
                   }`}
                 >
-                  Reviews (0)
+                  Reviews ({product?.reviews?.length || 0})
                 </button>
               </div>
               <div className="text-gray-700 text-sm p-4">
                 {activeTab === 'descriptions' ? (
-                  <p>
-                    18 k White Gold e/f vvs Netural Diamonds Center Diamonds
-                    customised
-                  </p>
+                  <p>{product?.description}</p>
                 ) : (
-                  <p>No reviews yet.</p>
+                  <div className="space-y-6">
+                    {product?.reviews?.length > 0 ? (
+                      product.reviews.map((review, index) => (
+                        <div
+                          key={index}
+                          className="border-b border-gray-200 pb-4"
+                        >
+                          <p className="text-gray-800">{review.comment}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <p>No reviews yet.</p>
+                    )}
+                  </div>
                 )}
               </div>
             </div>

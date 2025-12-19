@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux'
 import { verifyOTP, resetVerifyOTPState, resendOTP } from '../authSlice'
-import toast from 'react-hot-toast'
+import { toast } from '@/utils/toastConfig'
 
 export function useVerifyOTP() {
   const searchParams = useSearchParams()
