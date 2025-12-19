@@ -1,9 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import Slider from 'react-slick'
 import 'slick-carousel/slick/slick.css'
 import 'slick-carousel/slick/slick-theme.css'
 import ProductCard from '@/components/ProductCard'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
+import { fetchProducts } from '@/features/products/productsSlice'
+import { toast } from 'react-hot-toast'
 
 // Custom arrow components for the slider
 const NextArrow = ({ className, style, onClick, isHovered }) => {
@@ -37,6 +40,10 @@ const PrevArrow = ({ className, style, onClick, isHovered }) => {
 }
 
 const RelatedProducts = () => {
+  const dispatch = useDispatch()
+  const { items: products = [], status } = useSelector(
+    (state) => state.products || {},
+  )
   const sliderRef = useRef(null)
   const [isHovered, setIsHovered] = useState(false)
   const autoPlaySpeed = 3000 // 3 seconds
@@ -80,63 +87,43 @@ const RelatedProducts = () => {
       }
     }
   }, [autoPlaySpeed])
-  // Dummy data - you can replace this with actual data from props or API
-  const relatedProducts = [
-    {
-      id: 'dummy1',
-      name: 'Diamond Solitaire Ring',
-      price: 250000,
-      originalPrice: 300000,
-      isNew: true,
-      brand: 'Pramukh Raj',
-      images: ['/bg1.jpg'],
-    },
-    {
-      id: 'dummy2',
-      name: 'Gold Plated Earrings',
-      price: 120000,
-      originalPrice: 150000,
-      isNew: false,
-      brand: 'Pramukh Raj',
-      images: ['/bg2.jpg'],
-    },
-    {
-      id: 'dummy3',
-      name: 'Platinum Necklace',
-      price: 450000,
-      originalPrice: 500000,
-      isNew: true,
-      brand: 'Pramukh Raj',
-      images: ['/bg3.jpg'],
-    },
-    {
-      id: 'dummy4',
-      name: 'Silver Bracelet',
-      price: 80000,
-      originalPrice: 100000,
-      isNew: false,
-      brand: 'Pramukh Raj',
-      images: ['/bg1.jpg'],
-    },
-    {
-      id: 'dummy5',
-      name: 'Gold Pendant',
-      price: 180000,
-      originalPrice: 200000,
-      isNew: true,
-      brand: 'Pramukh Raj',
-      images: ['/bg2.jpg'],
-    },
-    {
-      id: 'dummy6',
-      name: 'Diamond Earrings',
-      price: 320000,
-      originalPrice: 350000,
-      isNew: false,
-      brand: 'Pramukh Raj',
-      images: ['/bg3.jpg'],
-    },
-  ]
+  // Fetch products on component mount
+  useEffect(() => {
+    if (status === 'idle') {
+      dispatch(fetchProducts())
+        .unwrap()
+        .catch((error) => {
+          console.error('Error fetching products:', error)
+          toast.error('Failed to load related products')
+        })
+    }
+  }, [dispatch, status])
+
+  // Map API response to match ProductCard props
+  const mappedProducts = (products || []).map((product) => {
+    // Ensure we have a valid image URL or fallback to placeholder
+    const mainImage =
+      product.images?.[0] || product.image || '/images/placeholder-product.png'
+
+    // If the image path is relative, make sure it has the proper base URL
+    const getImageUrl = (img) => {
+      if (!img) return '/images/placeholder-product.png'
+      if (img.startsWith('http') || img.startsWith('/')) return img
+      return `/${img}` // Add leading slash if missing
+    }
+
+    return {
+      id: product._id || product.id,
+      name: product.productModel || product.name || 'Unnamed Product',
+      price: product.price || 0,
+      originalPrice: product.originalPrice || product.price || 0,
+      isNew: product.isNew || false,
+      brand: product.brand || 'Unknown Brand',
+      image: getImageUrl(mainImage), // Use image instead of images[0]
+      discount: product.discount || null,
+      ...product,
+    }
+  })
 
   return (
     <div className="px-4">
@@ -212,29 +199,51 @@ const RelatedProducts = () => {
             )}
             dotsClass="slick-dots"
           >
-            {relatedProducts.map((product) => (
-              <div key={product.id} className="px-2">
-                <div className="h-full">
-                  <ProductCard
-                    id={product.id}
-                    image={product.images[0]}
-                    name={product.name}
-                    price={product.price}
-                    discount={
-                      product.originalPrice
-                        ? Math.round(
-                            ((product.originalPrice - product.price) /
-                              product.originalPrice) *
-                              100,
-                          )
-                        : null
-                    }
-                    isNew={product.isNew}
-                    brand={product.brand}
-                  />
-                </div>
+            {status === 'loading' || status === 'idle' ? (
+              // Show loading skeleton or placeholder
+              Array(4)
+                .fill(0)
+                .map((_, index) => (
+                  <div key={`loading-${index}`} className="px-2">
+                    <div
+                      className="h-full bg-gray-100 rounded-lg animate-pulse"
+                      style={{ height: '400px' }}
+                    />
+                  </div>
+                ))
+            ) : status === 'failed' ? (
+              <div className="col-span-4 text-center text-red-500 py-8">
+                Failed to load related products. Please try again later.
               </div>
-            ))}
+            ) : mappedProducts.length === 0 ? (
+              <div className="col-span-4 text-center text-gray-500 py-8">
+                No related products found.
+              </div>
+            ) : (
+              mappedProducts.map((product) => (
+                <div key={product.id} className="px-2">
+                  <div className="h-full">
+                    <ProductCard
+                      id={product.id}
+                      image={product.image}
+                      name={product.name}
+                      price={product.price}
+                      discount={
+                        product.originalPrice
+                          ? Math.round(
+                              ((product.originalPrice - product.price) /
+                                product.originalPrice) *
+                                100,
+                            )
+                          : null
+                      }
+                      isNew={product.isNew}
+                      brand={product.brand}
+                    />
+                  </div>
+                </div>
+              ))
+            )}
           </Slider>
         </div>
       </div>

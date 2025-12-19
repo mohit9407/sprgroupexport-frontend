@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
 import { forgotPassword, resetForgotPasswordState } from '../authSlice'
-import toast from 'react-hot-toast'
+import { toast } from '@/utils/toastConfig'
 
 export const useForgotPassword = () => {
   const [email, setEmail] = useState('')

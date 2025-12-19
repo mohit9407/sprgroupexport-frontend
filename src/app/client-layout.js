@@ -5,7 +5,6 @@ import { Provider } from 'react-redux'
 import { store } from './store'
 import { AuthProvider } from '@/context/AuthContext'
 import Header from '@/components/Header'
-import { Toaster } from 'react-hot-toast'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -24,8 +23,7 @@ export default function ClientLayout({ children }) {
         <Provider store={store}>
           <AuthProvider>
             <Header />
-            <main className="min-h-[calc(100vh-300px)]">{children}</main>
-            <Toaster position="top-right" />
+            <main className="flex-1">{children}</main>
           </AuthProvider>
         </Provider>
       </body>

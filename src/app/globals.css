@@ -47,4 +47,22 @@
     color: var(--foreground);
     font-family: var(--font-sans);
   }
+
+  /* Add pointer cursor to all buttons and button-like elements */
+  button,
+  [role='button'] {
+    cursor: pointer;
+  }
+
+  /* Add cursor-pointer to all interactive elements */
+  button,
+  [role='button'],
+  a,
+  input[type='submit'],
+  input[type='button'],
+  input[type='reset'],
+  select,
+  .cursor-pointer {
+    cursor: pointer;
+  }
 }

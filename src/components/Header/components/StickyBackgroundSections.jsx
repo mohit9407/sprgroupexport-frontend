@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 
 /**
  * StickyBackgroundSections Component
@@ -23,6 +24,7 @@ export default function StickyBackgroundSections({
   overlayClass = 'bg-black/10',
   sectionClass = '',
 }) {
+  const router = useRouter()
   // Memoize sections array to prevent unnecessary recalculations
   const sectionsArray = useMemo(
     () => (Array.isArray(sections) ? sections : [sections]),
@@ -36,6 +38,18 @@ export default function StickyBackgroundSections({
   })
   const [bgLoaded, setBgLoaded] = useState(false)
   const [hoveredSection, setHoveredSection] = useState(null)
+
+  const handleButtonClick = (section) => {
+    // Call the provided onClick handler if it exists
+    if (onButtonClick) {
+      onButtonClick(section)
+    }
+
+    // If the section has a route, navigate to it
+    if (section.route) {
+      router.push(section.route)
+    }
+  }
   const observerRef = useRef(null)
 
   // Preload all background images and set up observer
@@ -145,12 +159,12 @@ export default function StickyBackgroundSections({
               </p>
               {section.buttonText && (
                 <button
-                  className={`absolute left-1/2 -translate-x-1/2 w-auto whitespace-nowrap bg-[#8B5A2B] hover:bg-[#6B4423] text-white font-medium py-3 px-8 rounded-md transition-all duration-300 text-lg mx-auto ${
+                  className={`absolute left-1/2 -translate-x-1/2 w-auto whitespace-nowrap bg-[#8B5A2B] hover:bg-[#6B4423] text-white font-medium py-3 px-8 rounded-md transition-all duration-300 text-lg mx-auto transform ${
                     hoveredSection === section.id
-                      ? 'translate-y-0 opacity-100 mt-4'
-                      : 'translate-y-4 opacity-0 -mt-8 pointer-events-none'
+                      ? 'translate-y-0 opacity-100 visible'
+                      : '-translate-y-4 opacity-0 invisible'
                   }`}
-                  onClick={() => onButtonClick?.(section)}
+                  onClick={() => handleButtonClick(section)}
                 >
                   {section.buttonText}
                 </button>

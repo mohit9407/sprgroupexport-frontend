@@ -1,7 +1,7 @@
 import './globals.css'
 import { Montserrat } from 'next/font/google'
 import { AuthProvider } from '@/context/AuthContext'
-import { Toaster } from 'react-hot-toast'
+import { Toaster } from '@/utils/toastConfig'
 import { Providers } from './providers'
 
 export const metadata = {
@@ -23,7 +23,7 @@ export default function RootLayout({ children }) {
         <Providers>
           <AuthProvider>
             {children}
-            <Toaster position="top-right" />
+            <Toaster />
           </AuthProvider>
         </Providers>
       </body>

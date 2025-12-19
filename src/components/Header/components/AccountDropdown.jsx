@@ -7,13 +7,34 @@ import { useAuth } from '@/context/AuthContext'
 
 const AccountDropdown = () => {
   const [showDropdown, setShowDropdown] = useState(false)
-  const { logout } = useAuth()
+  const { user, logout } = useAuth()
 
   const handleLogout = (e) => {
     e.preventDefault()
     logout()
   }
 
+  // If user is not logged in, show login/signup buttons
+  if (!user) {
+    return (
+      <div className="flex items-center space-x-3">
+        <Link
+          href="/login"
+          className="px-5 py-2 text-sm font-medium text-[#BA8B4E] bg-white hover:bg-gray-50 transition-colors rounded-md border border-[#BA8B4E]"
+        >
+          LOGIN
+        </Link>
+        <Link
+          href="/signup"
+          className="px-5 py-2 text-sm font-medium text-white bg-[#BA8B4E] hover:bg-[#9a7542] transition-colors rounded-md"
+        >
+          SIGN UP
+        </Link>
+      </div>
+    )
+  }
+
+  // If user is logged in, show account dropdown
   return (
     <div
       className="relative"
