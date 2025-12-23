@@ -1,16 +1,31 @@
 import './globals.css'
-import ClientLayout from './client-layout'
+import { Montserrat } from 'next/font/google'
+import { AuthProvider } from '@/context/AuthContext'
+import { Toaster } from '@/utils/toastConfig'
+import { Providers } from './providers'
 
 export const metadata = {
-  title: 'Admin & User Dashboard',
-  description: 'A Next.js application with admin and user dashboards',
+  title: 'SPR GROUP EXPORT',
+  description: 'spr group export ecommerce platform',
 }
+
+const montserrat = Montserrat({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-montserrat',
+  weight: ['400', '500', '600', '700'],
+})
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body>
-        <ClientLayout>{children}</ClientLayout>
+    <html lang="en" className={`${montserrat.variable} font-sans`}>
+      <body className="min-h-screen bg-gray-50">
+        <Providers>
+          <AuthProvider>
+            {children}
+            <Toaster />
+          </AuthProvider>
+        </Providers>
       </body>
     </html>
   )
