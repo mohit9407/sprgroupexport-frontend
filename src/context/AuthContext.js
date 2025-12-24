@@ -22,9 +22,16 @@ export function AuthProvider({ children }) {
   const login = (userData, token) => {
     const accessToken = token?.accessToken || token
     const refreshToken = token?.refreshToken
+    // Get roles from userData or default to ['user']
+    const roles = userData.roles || ['user']
+    const isAdmin = roles.includes('admin')
+    const role = isAdmin ? 'admin' : 'user'
 
     const userInfo = {
-      ...userData, // Spread all user data
+      ...userData,
+      roles, // Keep the roles array
+      role, // For backward compatibility
+      isAdmin,
       accessToken,
       refreshToken,
     }
@@ -42,9 +49,9 @@ export function AuthProvider({ children }) {
       }
     }
 
-    // Ensure we have the role before redirecting
-    const role = (userData.role || 'user') === 'admin' ? '/admin' : '/'
-    router.push(role)
+    // Redirect based on role
+    const redirectPath = isAdmin ? '/admin' : '/'
+    router.push(redirectPath)
   }
 
   const logout = () => {

@@ -140,16 +140,17 @@ const AuthForm = ({ isLogin = false }) => {
           login(
             {
               email: loginData.email,
-              role: result.user?.role || 'user',
               id: result.data._id,
-              ...result.user,
+              roles: Array.isArray(result.data?.roles)
+                ? result.data.roles
+                : ['user'],
+              ...result.data,
             },
             {
               accessToken: result.token.accessToken,
               refreshToken: result.token.refreshToken,
             },
           )
-
           toast.success('Login successful!')
         }
       } catch (error) {
