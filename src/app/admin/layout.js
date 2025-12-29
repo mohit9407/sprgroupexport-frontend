@@ -11,7 +11,18 @@ export default function AdminLayout({ children }) {
 
   const menu = [
     { key: 'dashboard', label: 'Dashboard', href: '/admin' },
-    { key: 'media', label: 'Media', href: '/admin/media' },
+    {
+      key: 'media',
+      label: 'Media',
+      children: [
+        { key: 'media', label: 'Media', href: '/admin/media' },
+        {
+          key: 'media-settings',
+          label: 'Media Settings',
+          href: '/admin/media/media-settings',
+        },
+      ],
+    },
     { key: 'customers', label: 'Customers', href: '/admin/customers' },
     {
       key: 'catalog',
