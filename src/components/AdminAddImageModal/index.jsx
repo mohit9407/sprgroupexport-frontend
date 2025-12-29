@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import Image from 'next/image'
-
-const MAX_SIZE = 5 * 1024 * 1024
+import api from '@/lib/axios'
 
 export default function MediaUploadModal({ open, onClose }) {
   const [files, setFiles] = useState([])
@@ -29,6 +28,7 @@ export default function MediaUploadModal({ open, onClose }) {
 
   const addFiles = (fileList) => {
     const existingNames = new Set(files.map((f) => f.file.name))
+    const MAX_SIZE = 5 * 1024 * 1024
 
     const newFiles = Array.from(fileList)
       .filter((file) => !existingNames.has(file.name))
@@ -48,7 +48,54 @@ export default function MediaUploadModal({ open, onClose }) {
     if (uploading) return
     addFiles(e.dataTransfer.files)
   }
-  const handleUpload = () => {
+  // const handleUpload = () => {
+  //   const validFiles = files.filter((f) => f.valid)
+  //   if (!validFiles.length) return
+
+  //   setUploading(true)
+  //   setProgress(0)
+  //   setStatus('idle')
+  //   setMessage('')
+
+  //   const formData = new FormData()
+  //   validFiles.forEach((f) => formData.append('images', f.file))
+
+  //   const xhr = new XMLHttpRequest()
+  //   xhr.open('POST', `${API_BASE_URL}/media/create`)
+  //   xhr.withCredentials = true
+
+  //   xhr.upload.onprogress = (e) => {
+  //     if (e.lengthComputable) {
+  //       setProgress(Math.round((e.loaded / e.total) * 100))
+  //     }
+  //   }
+
+  //   xhr.onload = () => {
+  //     setUploading(false)
+
+  //     if (xhr.status >= 200 && xhr.status < 300) {
+  //       setStatus('success')
+  //       setMessage('Images uploaded successfully')
+
+  //       setTimeout(() => {
+  //         handleClose()
+  //       }, 800)
+  //     } else {
+  //       setStatus('error')
+  //       setMessage('Upload failed. Please try again.')
+  //     }
+  //   }
+
+  //   xhr.onerror = () => {
+  //     setUploading(false)
+  //     setStatus('error')
+  //     setMessage('Network error. Please try again.')
+  //   }
+
+  //   xhr.send(formData)
+  // }
+
+  const handleUpload = async () => {
     const validFiles = files.filter((f) => f.valid)
     if (!validFiles.length) return
 
@@ -60,38 +107,36 @@ export default function MediaUploadModal({ open, onClose }) {
     const formData = new FormData()
     validFiles.forEach((f) => formData.append('images', f.file))
 
-    const xhr = new XMLHttpRequest()
-    xhr.open('POST', '/media/create')
+    try {
+      await api.post('/media/create', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percent = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total,
+            )
+            setProgress(percent)
+          }
+        },
+      })
 
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable) {
-        setProgress(Math.round((e.loaded / e.total) * 100))
-      }
-    }
+      setStatus('success')
+      setMessage('Images uploaded successfully')
 
-    xhr.onload = () => {
-      setUploading(false)
-
-      if (xhr.status >= 200 && xhr.status < 300) {
-        setStatus('success')
-        setMessage('Images uploaded successfully')
-
-        setTimeout(() => {
-          handleClose()
-        }, 800)
-      } else {
-        setStatus('error')
-        setMessage('Upload failed. Please try again.')
-      }
-    }
-
-    xhr.onerror = () => {
-      setUploading(false)
+      setTimeout(() => {
+        handleClose()
+      }, 800)
+    } catch (err) {
+      console.error('Upload error:', err)
       setStatus('error')
-      setMessage('Network error. Please try again.')
+      setMessage(
+        err?.response?.data?.message || 'Upload failed. Please try again.',
+      )
+    } finally {
+      setUploading(false)
     }
-
-    xhr.send(formData)
   }
 
   if (!open) return null

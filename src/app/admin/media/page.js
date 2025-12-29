@@ -5,33 +5,6 @@ import Image from 'next/image'
 import AdminAddImageModal from '@/components/AdminAddImageModal'
 import api from '@/lib/axios'
 
-const mockImages = {
-  data: [
-    {
-      _id: '6939571c5591824835160513',
-      originalUrl:
-        'https://vos43ibt37cj25fd.public.blob.vercel-storage.com/media/original/1765365531181-shizuka.jpg',
-      originalWidth: 738,
-      originalHeight: 983,
-      thumbnailUrl:
-        'https://vos43ibt37cj25fd.public.blob.vercel-storage.com/media/thumbnail/1765365532012-thumbnail_shizuka.jpg',
-      thumbnailWidth: 150,
-      thumbnailHeight: 150,
-      mediumUrl:
-        'https://vos43ibt37cj25fd.public.blob.vercel-storage.com/media/medium/1765365532021-medium_shizuka.jpg',
-      mediumWidth: 400,
-      mediumHeight: 400,
-      largeUrl:
-        'https://vos43ibt37cj25fd.public.blob.vercel-storage.com/media/large/1765365532028-large_shizuka.jpg',
-      largeWidth: 900,
-      largeHeight: 900,
-      createdAt: '2025-12-10T11:18:52.793Z',
-      updatedAt: '2025-12-10T11:18:52.793Z',
-      __v: 0,
-    },
-  ],
-}
-
 const fetchImages = async () => {
   try {
     const response = await api.get('/media/get-all')
@@ -39,7 +12,6 @@ const fetchImages = async () => {
   } catch (e) {
     console.error('Get All Images: ', e)
   }
-  return mockImages.data
 }
 
 export default function MediaListPage() {
@@ -67,7 +39,7 @@ export default function MediaListPage() {
     )
   }
 
-  const selectAll = () => setSelected(images.map((i) => i.id))
+  const selectAll = () => setSelected(images.map((i) => i._id))
   const unselectAll = () => setSelected([])
 
   const handleDelete = async () => {
@@ -124,24 +96,25 @@ export default function MediaListPage() {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
         {images.map((img) => (
-          <div key={img._id} className="text-center">
+          <div
+            key={img._id}
+            className={`text-center ${
+              isSelected(img._id)
+                ? 'border-2 border-blue-600 opacity-80'
+                : 'border border-gray-200 hover:border-2 hover:border-gray-400'
+            }`}
+          >
             <div
-              onClick={() => toggleSelect(img.id)}
+              onClick={() => toggleSelect(img._id)}
               className={`
-                cursor-pointer rounded border-2 p-1 transition
-                ${
-                  isSelected(img.id)
-                    ? 'border-2 border-blue-600 opacity-80'
-                    : 'border-transparent hover:border-gray-400'
-                }
-              `}
+                flex justify-center items-center cursor-pointer rounded p-1 transition h-32`}
             >
               <Image
                 src={img.thumbnailUrl}
                 alt=""
                 width={200}
-                height={200}
-                className="object-contain"
+                height={100}
+                className="max-h-28 object-contain"
               />
             </div>
 

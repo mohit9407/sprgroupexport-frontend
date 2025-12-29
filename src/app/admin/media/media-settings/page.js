@@ -1,7 +1,9 @@
 'use client'
 
 import AdminInputRow from '@/components/AdminInputRow'
-import { useState } from 'react'
+import api from '@/lib/axios'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 const RenderSections = ({ title, children }) => {
   return (
@@ -14,20 +16,63 @@ const RenderSections = ({ title, children }) => {
 }
 
 export default function MediaSettingsPage() {
+  const router = useRouter()
+  const [loading, setLoading] = useState(true)
   const [mediaSettings, setMediaSettings] = useState({
-    thumbnailHeight: 300,
-    thumbnailWidth: 300,
-    mediumHeight: 400,
-    mediumWidth: 400,
-    largeHeight: 900,
-    largeWidth: 900,
+    id: null,
+    thumbnail: { width: 150, height: 150 },
+    medium: { width: 400, height: 400 },
+    large: { width: 900, height: 900 },
   })
 
-  const handleOnChange = (ev) => {
-    setMediaSettings({
-      ...mediaSettings,
-      [ev.target.name]: ev.target.value,
-    })
+  const getMediaSettings = async () => {
+    setLoading(true)
+    try {
+      const resp = await api.get('/media-settings/get-settings')
+      const { _id, thumbnail, medium, large } = resp.data
+      setMediaSettings({ id: _id, thumbnail, medium, large })
+    } catch (e) {
+      console.error('Get Media Settings: ', e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const updateMediaSettings = async () => {
+    setLoading(true)
+    try {
+      await api.put(
+        `/media-settings/update-settings/${mediaSettings?.id}`,
+        mediaSettings,
+      )
+      await getMediaSettings()
+    } catch (e) {
+      console.error('Update Media Settings: ', e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleOnChange = (section, field) => (e) => {
+    setMediaSettings((prev) => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
+        [field]: Number(e.target.value),
+      },
+    }))
+  }
+
+  const goBack = () => {
+    router.back()
+  }
+
+  useEffect(() => {
+    getMediaSettings()
+  }, [])
+
+  if (!mediaSettings || loading) {
+    return
   }
 
   return (
@@ -44,8 +89,8 @@ export default function MediaSettingsPage() {
             label="Thumbnail Height"
             placeholder="height"
             helpText="Thumbnail Height"
-            value={mediaSettings.thumbnailHeight}
-            onChange={handleOnChange}
+            value={mediaSettings.thumbnail.height}
+            onChange={handleOnChange('thumbnail', 'height')}
           />
           <AdminInputRow
             type="number"
@@ -53,8 +98,8 @@ export default function MediaSettingsPage() {
             label="Thumbnail Width"
             placeholder="width"
             helpText="Thumbnail Width"
-            value={mediaSettings.thumbnailWidth}
-            onChange={handleOnChange}
+            value={mediaSettings.thumbnail.width}
+            onChange={handleOnChange('thumbnail', 'width')}
           />
         </RenderSections>
 
@@ -65,8 +110,8 @@ export default function MediaSettingsPage() {
             label="Medium Height"
             placeholder="height"
             helpText="Medium Height"
-            value={mediaSettings.mediumHeight}
-            onChange={handleOnChange}
+            value={mediaSettings.medium.height}
+            onChange={handleOnChange('medium', 'height')}
           />
           <AdminInputRow
             type="number"
@@ -74,8 +119,8 @@ export default function MediaSettingsPage() {
             label="Medium Width"
             placeholder="width"
             helpText="Medium Width"
-            value={mediaSettings.mediumWidth}
-            onChange={handleOnChange}
+            value={mediaSettings.medium.width}
+            onChange={handleOnChange('medium', 'width')}
           />
         </RenderSections>
 
@@ -86,8 +131,8 @@ export default function MediaSettingsPage() {
             label="Large Height"
             placeholder="height"
             helpText="Large Height"
-            value={mediaSettings.largeHeight}
-            onChange={handleOnChange}
+            value={mediaSettings.large.height}
+            onChange={handleOnChange('large', 'height')}
           />
           <AdminInputRow
             type="number"
@@ -95,23 +140,33 @@ export default function MediaSettingsPage() {
             label="Large Width"
             placeholder="width"
             helpText="Large Width"
-            value={mediaSettings.largeWidth}
-            onChange={handleOnChange}
+            value={mediaSettings.large.width}
+            onChange={handleOnChange('large', 'width')}
           />
         </RenderSections>
 
         <hr className="my-4 border-gray-300" />
 
         <div className="flex gap-3 pt-4 justify-center">
-          <button className="px-5 py-2 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700">
+          <button
+            className="px-5 py-2 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700"
+            onClick={updateMediaSettings}
+          >
             Submit
           </button>
 
-          <button className="px-5 py-2 rounded bg-green-600 text-white font-semibold hover:bg-green-700">
+          {/* TODO: Need API for Save & Regenerate */}
+          <button
+            className="px-5 py-2 rounded bg-green-600 text-white font-semibold hover:bg-green-700"
+            onClick={updateMediaSettings}
+          >
             Save & Regenerate
           </button>
 
-          <button className="px-5 py-2 rounded border border-gray-300 text font-semibold-gray-700 hover:bg-gray-100">
+          <button
+            className="px-5 py-2 rounded border border-gray-300 text font-semibold-gray-700 hover:bg-gray-100"
+            onClick={goBack}
+          >
             Back
           </button>
         </div>
