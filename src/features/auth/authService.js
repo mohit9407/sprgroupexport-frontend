@@ -53,12 +53,30 @@ const changePassword = async ({ oldPassword, newPassword }) => {
   return response.data
 }
 
+const guestLogin = async (email) => {
+  const response = await api.post('/auth/guest/request-otp', { email })
+  return response.data
+}
+
+const guestVerifyOTP = async (email, otp) => {
+  const response = await api.post('/auth/guest/verify-otp', { email, otp })
+  return response
+}
+
+const resendGuestOTP = async (email) => {
+  const response = await api.post('/auth/guest/resend-otp', { email })
+  return response.data
+}
+
 export const authService = {
   forgotPassword,
   login,
   register,
+  guestLogin,
+  guestVerifyOTP,
   verifyOTP,
   resetPassword,
   resendOTP,
   changePassword,
+  resendGuestOTP,
 }

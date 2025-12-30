@@ -14,6 +14,9 @@ export function WishlistProvider({ children }) {
       return []
     }
   })
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [pendingProduct, setPendingProduct] = useState(null)
+  const [authMode, setAuthMode] = useState('phone') // 'phone' or 'email'
 
   // Update localStorage when wishlist changes
   useEffect(() => {
@@ -22,13 +25,19 @@ export function WishlistProvider({ children }) {
     }
   }, [wishlist])
 
-  const addToWishlist = (product) => {
+  const addToWishlist = (product, isAuthenticated = false) => {
+    if (!isAuthenticated) {
+      setPendingProduct(product)
+      setShowAuthModal(true)
+      return false
+    }
+
     setWishlist((prev) => {
-      // Check if product is already in wishlist
       const exists = prev.some((item) => item.id === product.id)
       if (exists) return prev
       return [...prev, product]
     })
+    return true
   }
 
   const removeFromWishlist = (productId) => {
@@ -39,6 +48,22 @@ export function WishlistProvider({ children }) {
     return wishlist.some((item) => item.id === productId)
   }
 
+  const handleAuthSuccess = () => {
+    if (pendingProduct) {
+      addToWishlist(pendingProduct, true)
+      setPendingProduct(null)
+    }
+    setShowAuthModal(false)
+  }
+
+  const switchToEmail = () => {
+    setAuthMode('email')
+  }
+
+  const switchToPhone = () => {
+    setAuthMode('phone')
+  }
+
   return (
     <WishlistContext.Provider
       value={{
@@ -47,6 +72,12 @@ export function WishlistProvider({ children }) {
         removeFromWishlist,
         isInWishlist,
         wishlistCount: wishlist.length,
+        showAuthModal,
+        setShowAuthModal,
+        handleAuthSuccess,
+        authMode,
+        switchToEmail,
+        switchToPhone,
       }}
     >
       {children}

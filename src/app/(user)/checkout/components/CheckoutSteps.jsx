@@ -1,11 +1,6 @@
 import React from 'react'
 
-const steps = [
-  'Shipping Address',
-  'Billing Address',
-  'Shipping Methods',
-  'Order Detail',
-]
+const steps = ['Address', 'Shipping Methods', 'Order Detail']
 
 const ArrowRight = ({ isActive }) => (
   <div className="relative w-6 h-6 mx-1">
@@ -64,7 +59,7 @@ export default function CheckoutSteps({ currentStep = 1, onStepClick }) {
               <span
                 className={`ml-2 text-sm ${isActive || isCompleted ? 'text-[#c89b5a] font-medium' : 'text-gray-500'}`}
               >
-                {step}
+                {step === 'Address' ? 'Shipping Address' : step}
               </span>
             </div>
             {index < steps.length - 1 && <ArrowRight isActive={isCompleted} />}

@@ -3,45 +3,47 @@
 import { useParams, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import Link from 'next/link'
-import { FaHeart, FaStar, FaCheck, FaShoppingCart } from 'react-icons/fa'
+import { FaHeart, FaCheck, FaShoppingBag } from 'react-icons/fa'
+import OffersModal from '@/components/OffersModal'
 import { toast } from '@/utils/toastConfig'
-import RelatedProducts from '@/components/RelatedProducts'
 import ProductImages from '@/components/ProductImages'
 import {
   fetchProductDetails,
   clearProductDetails,
 } from '@/features/products/productDetailsSlice'
-import {
-  fetchCategoryById,
-  clearCategoryDetails,
-} from '@/features/categories/categoryDetailsSlice'
 import { useCart } from '@/context/CartContext'
 import { useWishlist } from '@/context/WishlistContext'
+import RelatedProducts from '@/components/RelatedProducts'
 
 export default function ProductDetails() {
   const dispatch = useDispatch()
   const router = useRouter()
   const params = useParams()
   const productId = params?.id
-  const { addToCart, isInCart } = useCart()
+  const { addToCart } = useCart()
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
 
   const [quantity, setQuantity] = useState(1)
-  const [activeTab, setActiveTab] = useState('descriptions')
   const [isAddingToCart, setIsAddingToCart] = useState(false)
+  const [selectedSize, setSelectedSize] = useState('Free Size')
+  const [activeTab, setActiveTab] = useState('descriptions')
+  const [showOffersModal, setShowOffersModal] = useState(false)
 
-  // Get product details and category from Redux store
+  const scrollToSpecial = () => {
+    const element = document.getElementById('why-special')
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  // Get product details from Redux store
   const {
     data: product,
     status,
     error,
   } = useSelector((state) => state.productDetails)
 
-  const categoryState = useSelector((state) => state.categoryDetails || {})
-  const categoryDetails = categoryState.data
-
-  // derive wishlist status from context to avoid setting state in effects
+  // derive wishlist status from context
   const isWishlisted = React.useMemo(
     () => (product ? isInWishlist(product.id) : false),
     [product, isInWishlist],
@@ -54,18 +56,8 @@ export default function ProductDetails() {
     }
     return () => {
       dispatch(clearProductDetails())
-      dispatch(clearCategoryDetails())
     }
   }, [dispatch, productId])
-
-  // Fetch category details when product data is available
-  useEffect(() => {
-    if (product?.category) {
-      dispatch(fetchCategoryById(product.category))
-    }
-  }, [dispatch, product?.category])
-
-  // Wishlist status is derived from context via useMemo. No local effect required.
 
   const handleAddToCart = () => {
     if (!product) return
@@ -77,17 +69,21 @@ export default function ProductDetails() {
         name: product.name,
         price: product.price,
         image: product.image,
-        slug: product.slug || `product-${product.id}`,
+        size: selectedSize,
       },
       quantity,
     )
 
     toast.success('Added to cart!')
+    setTimeout(() => setIsAddingToCart(false), 1000)
+  }
 
-    // Reset button state after animation
+  const handleBuyNow = () => {
+    handleAddToCart()
+    // Small delay to ensure cart is updated
     setTimeout(() => {
-      setIsAddingToCart(false)
-    }, 1000)
+      router.push('/cart')
+    }, 500)
   }
 
   const handleWishlistToggle = () => {
@@ -102,20 +98,9 @@ export default function ProductDetails() {
         name: product.name,
         price: product.price,
         image: product.image,
-        slug: product.slug || `product-${product.id}`,
       })
       toast.success('Added to wishlist!')
     }
-
-    // wishlist state comes from context and will update automatically; no local setState needed.
-  }
-
-  const handleBuyNow = () => {
-    handleAddToCart()
-    // Small delay to ensure cart is updated
-    setTimeout(() => {
-      router.push('/cart')
-    }, 500)
   }
 
   // Handle loading and error states
@@ -132,107 +117,123 @@ export default function ProductDetails() {
 
   if (status === 'failed') {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gray-50">
-        <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md text-center">
-          <div className="text-6xl mb-4">😕</div>
+      <div className="min-h-screen flex items-center justify-center bg-white p-6">
+        <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-3">
-            {error || 'Error Loading Product'}
+            {error || 'Product not found'}
           </h1>
-          <Link
-            href="/"
-            className="inline-block w-full bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium cursor-pointer mt-6"
+          <button
+            onClick={() => router.push('/')}
+            className="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800"
           >
-            ← Return to Home
-          </Link>
+            Continue Shopping
+          </button>
         </div>
       </div>
     )
   }
 
-  const handleQuantityChange = (increment) => {
-    setQuantity((prev) => (increment ? prev + 1 : Math.max(1, prev - 1)))
-  }
-
   return (
-    <div className="min-h-screen">
+    <div className="bg-white min-h-screen">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Centered Product Title */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            {product?.name?.toUpperCase()}
-          </h1>
-        </div>
-
-        <div className="flex flex-col md:flex-row gap-8">
-          {/* Product Images */}
-          <div className="md:w-1/2">
-            <ProductImages
-              images={[product.image]} // Main product image
-              sideImages={product.sideImages || []} // Side images array
-              productName={product.name || 'Product Image'}
-            />
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Product Images - Sticky */}
+          <div className="lg:w-1/2 lg:sticky lg:top-8 lg:self-start">
+            <div className="lg:pr-4">
+              <ProductImages
+                images={product.image}
+                sideImages={product.sideImages || []}
+                productName={product.productName}
+              />
+            </div>
           </div>
 
-          {/* Product Info */}
-          <div className="md:w-1/2 p-8 rounded-lg shadow">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              {product?.name?.toUpperCase?.() || 'Product Name'}
+          {/* Product Info - Scrollable */}
+          <div className="lg:w-1/2 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto lg:pr-4">
+            <h1 className="text-2xl font-medium text-[#b7853f] mb-1">
+              {product.productName}
             </h1>
-            <p className="text-gray-600 mb-4">
-              {product?.name || 'Product Name'}
-            </p>
-
-            <div className="mb-4">
-              <span className="text-3xl font-bold text-[#b7853f]">
-                {product?.price
-                  ? `₹${product.price.toLocaleString()}`
-                  : 'Price not available'}
-              </span>
+            <h2 className="text-gray-600 text-sm mb-4">
+              {product.productModel}
+            </h2>
+            <div className="mb-6">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl font-bold text-[#b7853f]">
+                  ₹{product.price?.toLocaleString('en-IN')}
+                </span>
+                <span className="text-sm text-gray-500">
+                  MRP (Incl. of all taxes)
+                </span>
+              </div>
             </div>
 
-            <div className="flex items-center mb-6">
-              <div className="flex">
-                {[...Array(5)].map((_, i) => (
-                  <svg
-                    key={i}
-                    className={`h-5 w-5 ${product?.reviews?.length > 0 ? (i < Math.round(product.reviews.reduce((acc, curr) => acc + curr.rating, 0) / product.reviews.length) ? 'text-yellow-400' : 'text-gray-300') : 'text-gray-300'}`}
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg"
+            {/* Offers Section */}
+            <div className="border-t border-b border-gray-200 py-4 mb-6">
+              <div className="flex justify-between items-center mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">
+                    {product.offers?.length || 0} OFFERS
+                  </span>
+                  <button
+                    onClick={() => setShowOffersModal(true)}
+                    className="text-xs text-[#b7853f] hover:underline"
                   >
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                  </svg>
-                ))}
+                    VIEW ALL
+                  </button>
+                </div>
               </div>
-              <span className="ml-2 text-sm text-gray-600">
-                {product?.reviews?.length || 0}{' '}
-                {product?.reviews?.length === 1 ? 'Review' : 'Reviews'}
-              </span>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-start gap-2">
+                  <FaCheck className="text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>
+                    10% Instant Discount up to ₹1,750 on ICICI Bank Credit Card
+                    EMI
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <FaCheck className="text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>5% Cashback on Flipkart Axis Bank Card</span>
+                </li>
+              </ul>
             </div>
 
-            <div className="space-y-2 text-sm text-gray-600 mb-6">
+            {/* Color and Size Selection - Side by Side */}
+            <div className="grid grid-cols-2 gap-6 mb-6">
+              {/* Color Selection */}
               <div>
-                <span className="font-medium">Product ID :</span>{' '}
-                {product?.id || 'N/A'}
+                <h3 className="text-sm font-medium text-gray-900 mb-2">
+                  Color
+                </h3>
+                <p className="text-sm text-gray-600">Gold Tone</p>
               </div>
+
+              {/* Size Selection */}
               <div>
-                <span className="font-medium">Category:</span>{' '}
-                {categoryDetails?.name || product?.category || 'Loading...'}
-              </div>
-              <div>
-                <span className="font-medium">Available:</span>{' '}
-                <span className="text-green-500">InStock</span>
-              </div>
-              <div>
-                <span className="font-medium">Min Order Limit:</span> 1
+                <h3 className="text-sm font-medium text-gray-900 mb-2">Size</h3>
+                <div className="flex flex-wrap gap-2">
+                  {['Free Size'].map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className={`px-4 py-2 border rounded-md text-sm w-full ${
+                        selectedSize === size
+                          ? 'border-black text-black'
+                          : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
+            {/* Quantity Selector */}
             <div className="flex items-center mb-6">
               <span className="mr-4 font-medium text-gray-700">Quantity:</span>
               <div className="flex items-center border border-gray-300 rounded">
                 <button
-                  onClick={() => handleQuantityChange(false)}
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 cursor-pointer"
                 >
                   -
@@ -241,7 +242,7 @@ export default function ProductDetails() {
                   {quantity}
                 </span>
                 <button
-                  onClick={() => handleQuantityChange(true)}
+                  onClick={() => setQuantity(quantity + 1)}
                   className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 cursor-pointer"
                 >
                   +
@@ -249,54 +250,40 @@ export default function ProductDetails() {
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 mb-8">
-              <div className="flex-1">
-                <button
-                  onClick={handleAddToCart}
-                  disabled={isAddingToCart}
-                  className={`w-full flex items-center justify-center gap-2 bg-[#b7853f] hover:bg-[#9a7237] text-white px-6 py-3 rounded font-medium transition-all ${isAddingToCart ? 'opacity-75' : ''}`}
-                >
-                  {isAddingToCart ? (
-                    <>
-                      <svg
-                        className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      ADDING...
-                    </>
-                  ) : (
-                    <>
-                      <FaShoppingCart className="text-white" />
-                      ADD TO CART
-                    </>
-                  )}
-                </button>
-              </div>
-              {/* <button
-                onClick={handleWishlistToggle}
-                className={`flex items-center justify-center px-6 py-3 rounded font-medium transition-colors ${isWishlisted
-                  ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 mb-8">
+              <button
+                onClick={handleAddToCart}
+                disabled={isAddingToCart}
+                className={`flex-1 bg-white border-2 border-[#b7853f] text-[#b7853f] px-6 py-3 rounded-md font-medium flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors`}
               >
-                <FaHeart className={`mr-2 ${isWishlisted ? 'text-red-500' : 'text-gray-600'}`} />
-                {isWishlisted ? 'WISHLISTED' : 'WISHLIST'}
-              </button> */}
+                <FaShoppingBag />
+                {isAddingToCart ? 'Adding...' : 'ADD TO CART'}
+              </button>
+              <button
+                onClick={handleBuyNow}
+                className="flex-1 bg-[#b7853f] text-gray-50 px-6 py-3 rounded-md font-medium hover:bg-[#b7853f] transition-colors"
+              >
+                BUY NOW
+              </button>
+            </div>
+
+            {/* Why It's Special */}
+            <div className="border-t border-gray-200 pt-6 mb-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-3">
+                WHY IT&apos;S SPECIAL
+              </h3>
+              <p className="text-sm text-gray-600 mb-2">
+                Elevate your look with this stunning Gold Tone Clemina Hinge
+                Metallic Cuff from Ted Baker. The intricate design and premium
+                finish make it a perfect accessory for any occasion.
+              </p>
+              <button
+                onClick={scrollToSpecial}
+                className="text-sm text-[#b7853f] hover:underline cursor-pointer"
+              >
+                Read More
+              </button>
             </div>
 
             <div className="border-t border-b border-gray-200 py-4">
@@ -343,6 +330,72 @@ export default function ProductDetails() {
                 )}
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Offers Modal */}
+        <OffersModal
+          isOpen={showOffersModal}
+          onClose={() => setShowOffersModal(false)}
+          offers={[
+            {
+              description:
+                '10% Instant Discount up to ₹1,750 on ICICI Bank Credit Card EMI',
+              code: 'ICICICREDIT',
+              validity: '31 Dec 2025',
+            },
+            {
+              description: '5% Cashback on Flipkart Axis Bank Card',
+              code: 'FLIPKART5',
+              validity: '15 Jan 2026',
+            },
+            {
+              description: 'Extra 10% off on SBI Credit Card',
+              code: 'SBICREDIT',
+              validity: '28 Feb 2026',
+            },
+            {
+              description: 'No Cost EMI on Bajaj Finserv',
+              code: 'BAJAJEMI',
+              validity: '31 Mar 2026',
+            },
+            {
+              description: 'Special price for Prime Members',
+              validity: 'Ongoing',
+            },
+            {
+              description: '5% Off on UPI payment',
+              code: 'UPI5',
+              validity: '20 Jan 2026',
+            },
+            {
+              description: 'Free shipping on orders above ₹999',
+              validity: 'Ongoing',
+            },
+            {
+              description: 'Buy 1 Get 1 Free on selected items',
+              code: 'B1G1',
+              validity: '14 Feb 2026',
+            },
+            {
+              description: 'Extra 5% off on prepaid orders',
+              code: 'PREPAID5',
+              validity: '28 Feb 2026',
+            },
+          ]}
+        />
+
+        {/* Why It's Special Section */}
+        <div id="why-special" className="mt-16 mb-12 px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-2xl font-medium text-gray-900 mb-6">
+              WHY IT&apos;S SPECIAL
+            </h2>
+            <p className="text-gray-600 leading-relaxed">
+              Elevate your look with this stunning Gold Tone Clemina Hinge
+              Metallic Cuff from Ted Baker. The intricate design and premium
+              finish make it a perfect accessory for any occasion.
+            </p>
           </div>
         </div>
 

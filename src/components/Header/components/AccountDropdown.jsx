@@ -37,7 +37,7 @@ const AccountDropdown = ({ showIcon = true }) => {
     return (
       <Link
         href="/login"
-        className="p-2 rounded-full bg-[#ced4da] hover:bg-gray-200 transition-colors relative"
+        className="p-2 rounded-full bg-[#ced4da] hover:bg-gray-200 transition-colors relative flex items-center justify-center"
       >
         <FaUserAlt className="text-lg" />
       </Link>
