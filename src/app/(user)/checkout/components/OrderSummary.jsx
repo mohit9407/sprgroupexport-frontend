@@ -1,20 +1,37 @@
 import React from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 
-export default function OrderSummary({ cartItems = [] }) {
+export default function OrderSummary({
+  cartItems = [],
+  shippingMethod = '',
+  orderTotal = 0,
+  currentStep = 1,
+  onContinue,
+}) {
   // Calculate subtotal from cart items
   const subtotal = cartItems.reduce((sum, item) => {
     return sum + item.price * item.quantity
   }, 0)
 
+  // Calculate shipping cost based on selected method
+  const getShippingCost = () => {
+    return shippingMethod === 'express' ? 200 : 0
+  }
+
+  const shippingCost = getShippingCost()
+  const total = subtotal + shippingCost
+
   const summaryItems = [
     { label: 'Sub Total', value: `₹${subtotal.toLocaleString('en-IN')}` },
     { label: 'Discount', value: '₹0' },
     { label: 'Tax', value: '₹0' },
-    { label: 'Shipping Cost', value: '₹0' },
+    {
+      label: 'Shipping Cost',
+      value:
+        shippingCost > 0 ? `₹${shippingCost.toLocaleString('en-IN')}` : 'FREE',
+    },
   ]
-
-  const total = subtotal // Add other charges if needed
 
   return (
     <div className="border border-gray-200 p-6 rounded-lg h-fit sticky top-6">
@@ -69,6 +86,34 @@ export default function OrderSummary({ cartItems = [] }) {
             ₹{total.toLocaleString('en-IN')}
           </span>
         </div>
+      </div>
+      {/* Order Total */}
+      <div className="border-t border-gray-200 pt-4 mt-4">
+        <div className="flex justify-between text-lg font-semibold">
+          <span>Order Total</span>
+          <span>₹{total.toLocaleString('en-IN')}</span>
+        </div>
+      </div>
+
+      {/* Continue Button */}
+      {currentStep < 3 && (
+        <button
+          type="button"
+          onClick={() => onContinue({}, currentStep + 1)}
+          className="w-full mt-6 bg-[#c89b5a] text-white py-3 px-4 rounded-md hover:bg-[#b38b4a] transition-colors font-medium uppercase text-sm tracking-wider"
+        >
+          {currentStep === 1 ? 'Continue to Shipping' : 'Continue to Payment'}
+        </button>
+      )}
+
+      {/* Back to Cart Link */}
+      <div className="mt-4 text-center">
+        <Link
+          href="/cart"
+          className="text-sm text-gray-600 hover:text-[#c89b5a] transition-colors"
+        >
+          Back to Cart
+        </Link>
       </div>
     </div>
   )

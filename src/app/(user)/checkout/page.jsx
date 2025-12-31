@@ -36,7 +36,11 @@ export default function CheckoutPage() {
       ...prev,
       ...stepData,
     }))
-    setCurrentStep(nextStep)
+
+    const targetStep = nextStep || currentStep + 1
+    setCurrentStep(targetStep)
+
+    window.scrollTo(0, 0)
   }
 
   const handleStepClick = (stepNumber) => {
@@ -80,6 +84,11 @@ export default function CheckoutPage() {
     return null
   }
 
+  // Calculate order total
+  const orderTotal = cart.reduce((total, item) => {
+    return total + item.price * item.quantity
+  }, 0)
+
   return (
     <div className="min-h-screen bg-white">
       {/* Auth Modal */}
@@ -99,7 +108,13 @@ export default function CheckoutPage() {
           <div className="lg:w-2/3">{renderStep()}</div>
 
           <div className="lg:w-1/3">
-            <OrderSummary cartItems={cart} />
+            <OrderSummary
+              cartItems={cart}
+              shippingMethod={formData.shippingMethod}
+              orderTotal={orderTotal}
+              currentStep={currentStep}
+              onContinue={handleContinue}
+            />
           </div>
         </div>
       </div>

@@ -1,35 +1,34 @@
 'use client'
 
-import { useState } from 'react'
-import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { toast } from '@/utils/toastConfig'
 import {
-  FaArrowLeft,
-  FaPlus,
-  FaTrash,
-  FaEdit,
-  FaMapMarkerAlt,
-  FaHome,
-  FaBuilding,
-} from 'react-icons/fa'
+  addAddress,
+  getAddresses,
+  setDefaultAddress,
+  deleteAddress,
+  updateAddress,
+} from '@/features/shippingAddress/shippingAddressSlice'
+import AddressForm from '@/components/address/AddressForm'
+import AddressList from '@/components/address/AddressList'
+import PageHeader from '@/components/address/PageHeader'
 
 export default function ShippingAddressPage() {
+  const dispatch = useDispatch()
   const [isAddingNew, setIsAddingNew] = useState(false)
-  const [addresses, setAddresses] = useState([
-    {
-      id: 1,
-      name: 'Test User',
-      company: 'Test Company',
-      address: '123 Test Street, Test Area',
-      city: 'Test City',
-      state: 'Test State',
-      pinCode: '123456',
-      isDefault: true,
-    },
-  ])
+  const [editingId, setEditingId] = useState(null)
+  const [isDefaultLoading, setIsDefaultLoading] = useState(false)
+
+  const {
+    addresses = [],
+    isLoading,
+    isAddressesLoading,
+  } = useSelector((state) => state.shippingAddress)
 
   const [formData, setFormData] = useState({
     name: '',
-    company: '',
+    mobile: '',
     address: '',
     city: '',
     state: '',
@@ -45,290 +44,162 @@ export default function ShippingAddressPage() {
     }))
   }
 
-  const handleSubmit = (e) => {
+  // Handle both add and update
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // If it's a new address, add it to the list
-    const newAddress = {
-      ...formData,
-      id: addresses.length + 1,
+
+    const addressData = {
+      name: formData.name,
+      mobile: formData.mobile,
+      address: formData.address,
+      city: formData.city,
+      state: formData.state,
+      pinCode: formData.pinCode,
+      isDefault: formData.isDefault,
     }
 
-    setAddresses((prev) => [newAddress, ...prev])
-    setIsAddingNew(false)
+    try {
+      if (editingId) {
+        await dispatch(
+          updateAddress({ id: editingId, ...addressData }),
+        ).unwrap()
+      } else {
+        await dispatch(addAddress(addressData)).unwrap()
+      }
+
+      // Refresh the addresses list
+      await dispatch(getAddresses()).unwrap()
+
+      // Reset form
+      resetForm()
+
+      toast.success(
+        editingId
+          ? 'Address updated successfully'
+          : 'Address added successfully',
+      )
+    } catch (error) {
+      console.error('Failed to save address:', error)
+      toast.error(error.message || 'Failed to save address')
+    }
+  }
+
+  const resetForm = () => {
     setFormData({
       name: '',
-      company: '',
+      mobile: '',
       address: '',
       city: '',
       state: '',
       pinCode: '',
       isDefault: false,
     })
+    setEditingId(null)
+    setIsAddingNew(false)
   }
 
-  const handleDelete = (id) => {
-    setAddresses((prev) => prev.filter((addr) => addr.id !== id))
+  // Handle edit button click
+  const handleEdit = (address) => {
+    setFormData({
+      name: address.fullName || address.name || '',
+      mobile: address.mobileNo || address.mobile || '',
+      address: address.address || '',
+      city: address.city || '',
+      state: address.state || '',
+      pinCode: address.zip || address.pinCode || '',
+      isDefault: address.isDefault || false,
+    })
+    setEditingId(address._id)
+    setIsAddingNew(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const setAsDefault = (id) => {
-    setAddresses((prev) =>
-      prev.map((addr) => ({
-        ...addr,
-        isDefault: addr.id === id,
-      })),
-    )
+  // Cancel editing/adding
+  const handleCancel = () => {
+    resetForm()
+  }
+
+  // Fetch addresses on component mount
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      try {
+        await dispatch(getAddresses()).unwrap()
+      } catch (error) {
+        console.error('Failed to fetch addresses:', error)
+        toast.error(error.message || 'Failed to load addresses')
+      }
+    }
+
+    fetchAddresses()
+  }, [dispatch])
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this address?')) {
+      try {
+        await dispatch(deleteAddress(id)).unwrap()
+        toast.success('Address deleted successfully')
+      } catch (error) {
+        console.error('Failed to delete address:', error)
+        toast.error(error.message || 'Failed to delete address')
+      }
+    }
+  }
+
+  const setAsDefault = async (id) => {
+    try {
+      setIsDefaultLoading(true)
+      await dispatch(setDefaultAddress(id)).unwrap()
+      // Refresh addresses after setting default
+      await dispatch(getAddresses()).unwrap()
+      toast.success('Default address updated successfully')
+    } catch (error) {
+      console.error('Failed to set default address:', error)
+      toast.error(error.message || 'Failed to update default address')
+    } finally {
+      setIsDefaultLoading(false)
+    }
+  }
+
+  const handleAddNew = () => {
+    resetForm()
+    setIsAddingNew(true)
   }
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        <Link
-          href="/"
-          className="flex items-center text-gray-600 hover:text-gray-900 mb-6"
-        >
-          <FaArrowLeft className="mr-2" />
-          <span>Back to Home</span>
-        </Link>
+        <PageHeader
+          title="Shipping Address"
+          subtitle="Manage your shipping addresses"
+        />
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          {/* Header */}
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h1 className="text-2xl font-semibold text-gray-800">
-              Shipping Address
-            </h1>
-            <p className="text-gray-500 text-sm">
-              Manage your shipping addresses
-            </p>
-          </div>
-
           <div className="p-6">
-            {/* Add New Address Button */}
-            {!isAddingNew && (
-              <button
-                onClick={() => setIsAddingNew(true)}
-                className="flex items-center justify-center w-full md:w-auto px-4 py-2 border border-[#BA8B4E] text-[#BA8B4E] rounded-md hover:bg-[#f9f5f0] mb-6 transition-colors"
-              >
-                <FaPlus className="mr-2" />
-                Add New Address
-              </button>
-            )}
-
-            {/* Add New Address Form */}
-            {isAddingNew && (
-              <form
-                onSubmit={handleSubmit}
-                className="mb-8 bg-gray-50 p-6 rounded-lg border border-gray-200"
-              >
+            {isAddingNew ? (
+              <>
                 <h3 className="text-lg font-medium text-gray-800 mb-4">
-                  Add New Address
+                  {editingId ? 'Edit Address' : 'Add New Address'}
                 </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="col-span-2 md:col-span-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Name
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#BA8B4E] focus:border-[#BA8B4E] outline-none"
-                      placeholder="Full Name"
-                      required
-                    />
-                  </div>
-
-                  <div className="col-span-2 md:col-span-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Company (Optional)
-                    </label>
-                    <input
-                      type="text"
-                      name="company"
-                      value={formData.company}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#BA8B4E] focus:border-[#BA8B4E] outline-none"
-                      placeholder="Company Name"
-                    />
-                  </div>
-
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Address
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <FaMapMarkerAlt className="h-4 w-4 text-gray-400" />
-                      </div>
-                      <input
-                        type="text"
-                        name="address"
-                        value={formData.address}
-                        onChange={handleChange}
-                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#BA8B4E] focus:border-[#BA8B4E] outline-none"
-                        placeholder="Street Address"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="col-span-2 md:col-span-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      City
-                    </label>
-                    <input
-                      type="text"
-                      name="city"
-                      value={formData.city}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#BA8B4E] focus:border-[#BA8B4E] outline-none"
-                      placeholder="City"
-                      required
-                    />
-                  </div>
-
-                  <div className="col-span-2 md:col-span-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      State
-                    </label>
-                    <input
-                      type="text"
-                      name="state"
-                      value={formData.state}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#BA8B4E] focus:border-[#BA8B4E] outline-none"
-                      placeholder="State/Province"
-                      required
-                    />
-                  </div>
-
-                  <div className="col-span-2 md:col-span-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      PIN Code
-                    </label>
-                    <input
-                      type="text"
-                      name="pinCode"
-                      value={formData.pinCode}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#BA8B4E] focus:border-[#BA8B4E] outline-none"
-                      placeholder="Postal/ZIP Code"
-                      required
-                    />
-                  </div>
-
-                  <div className="col-span-2 flex items-center">
-                    <input
-                      type="checkbox"
-                      id="isDefault"
-                      name="isDefault"
-                      checked={formData.isDefault}
-                      onChange={handleChange}
-                      className="h-4 w-4 text-[#BA8B4E] focus:ring-[#BA8B4E] border-gray-300 rounded"
-                    />
-                    <label
-                      htmlFor="isDefault"
-                      className="ml-2 block text-sm text-gray-700"
-                    >
-                      Set as default shipping address
-                    </label>
-                  </div>
-                </div>
-
-                <div className="mt-6 flex space-x-3">
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-[#BA8B4E] text-white rounded-md hover:bg-[#9a7542] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#BA8B4E] transition-colors"
-                  >
-                    Save Address
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsAddingNew(false)}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
+                <AddressForm
+                  formData={formData}
+                  handleChange={handleChange}
+                  handleSubmit={handleSubmit}
+                  handleCancel={handleCancel}
+                  isLoading={isLoading}
+                  isEditing={!!editingId}
+                />
+              </>
+            ) : (
+              <AddressList
+                addresses={addresses}
+                isAddressesLoading={isAddressesLoading}
+                onAddNew={handleAddNew}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onSetDefault={setAsDefault}
+                isDefaultLoading={isDefaultLoading}
+              />
             )}
-
-            {/* Address List */}
-            <div className="space-y-6">
-              {addresses.map((address) => (
-                <div
-                  key={address.id}
-                  className="border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start">
-                      <div className="bg-gray-100 p-3 rounded-full mr-4">
-                        {address.isDefault ? (
-                          <FaHome className="text-[#BA8B4E] text-xl" />
-                        ) : (
-                          <FaBuilding className="text-gray-500 text-xl" />
-                        )}
-                      </div>
-                      <div>
-                        <div className="flex items-center">
-                          <h3 className="font-medium text-gray-900">
-                            {address.name}
-                          </h3>
-                          {address.isDefault && (
-                            <span className="ml-2 px-2 py-0.5 text-xs bg-green-100 text-green-800 rounded-full">
-                              Default
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-sm text-gray-500">
-                          {address.company}
-                        </p>
-                        <p className="text-sm text-gray-700 mt-1">
-                          {address.address}
-                        </p>
-                        <p className="text-sm text-gray-700">
-                          {address.city}, {address.state} - {address.pinCode}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => setAsDefault(address.id)}
-                        disabled={address.isDefault}
-                        className={`p-2 rounded-md ${
-                          address.isDefault
-                            ? 'text-gray-300 cursor-not-allowed'
-                            : 'text-gray-500 hover:bg-gray-100'
-                        }`}
-                        title={
-                          address.isDefault
-                            ? 'Default Address'
-                            : 'Set as Default'
-                        }
-                      >
-                        <FaHome className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => {}}
-                        className="p-2 text-gray-500 hover:bg-gray-100 rounded-md"
-                        title="Edit Address"
-                      >
-                        <FaEdit className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(address.id)}
-                        className="p-2 text-red-500 hover:bg-red-50 rounded-md"
-                        title="Delete Address"
-                      >
-                        <FaTrash className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </div>

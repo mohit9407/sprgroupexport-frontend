@@ -6,6 +6,8 @@ import productDetailsReducer from '../features/products/productDetailsSlice'
 import categoryDetailsReducer from '../features/categories/categoryDetailsSlice'
 import categoriesReducer from '../features/categories/categoriesSlice'
 import userReducer from '../features/user/userSlice'
+import shippingAddressReducer from '../features/shippingAddress/shippingAddressSlice'
+import shippingReducer from '../features/shipping-method/shippingMethodSlice'
 
 export const store = configureStore({
   reducer: {
@@ -16,5 +18,7 @@ export const store = configureStore({
     categoryDetails: categoryDetailsReducer,
     categories: categoriesReducer,
     user: userReducer,
+    shippingAddress: shippingAddressReducer,
+    shipping: shippingReducer,
   },
 })

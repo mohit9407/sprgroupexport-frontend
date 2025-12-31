@@ -1,71 +1,91 @@
 import React from 'react'
 
-const steps = ['Address', 'Shipping Methods', 'Order Detail']
+const steps = [
+  { id: 1, label: 'Shipping Address' },
+  { id: 2, label: 'Shipping Methods' },
+  { id: 3, label: 'Order Detail' },
+]
 
 const ArrowRight = ({ isActive }) => (
-  <div className="relative w-6 h-6 mx-1">
-    <div
-      className={`absolute top-1/2 left-0 w-0 h-0 border-t-4 border-b-4 border-t-transparent border-b-transparent ${
-        isActive ? 'border-l-[#c89b5a]' : 'border-l-gray-200'
-      } border-l-6`}
-    ></div>
-  </div>
+  <svg
+    className={`w-4 h-4 mx-12 ${isActive ? 'text-[#c89b5a]' : 'text-gray-300'}`}
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M9 5l7 7-7 7"
+    />
+  </svg>
 )
 
-export default function CheckoutSteps({ currentStep = 1, onStepClick }) {
+export default function CheckoutSteps({ currentStep = 2, onStepClick }) {
   return (
-    <div className="flex items-center justify-between mb-8">
-      {steps.map((step, index) => {
-        const stepNumber = index + 1
-        const isActive = stepNumber === currentStep
-        const isCompleted = stepNumber < currentStep
+    <div className="py-6">
+      <div className="flex items-center">
+        {steps.map((step, index) => {
+          const isActive = step.id === currentStep
+          const isCompleted = step.id < currentStep
+          const isFuture = step.id > currentStep
+          const isClickable = isCompleted || isActive
 
-        return (
-          <React.Fragment key={step}>
-            <div
-              className={`flex items-center ${isCompleted || isActive ? 'cursor-pointer' : 'cursor-not-allowed'}`}
-              onClick={() =>
-                (isCompleted || isActive) && onStepClick(stepNumber)
-              }
-            >
+          return (
+            <React.Fragment key={step.id}>
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
-                  ${
-                    isActive
-                      ? 'bg-[#c89b5a] text-white'
-                      : isCompleted
-                        ? 'bg-[#c89b5a] text-white'
-                        : 'bg-gray-200 text-gray-600'
+                className={`flex flex-col items-center mx-2 ${isClickable ? 'cursor-pointer' : 'cursor-default'}`}
+                onClick={() =>
+                  isClickable && onStepClick && onStepClick(step.id)
+                }
+              >
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
+                    ${
+                      isActive
+                        ? 'bg-[#c89b5a] text-white border-2 border-[#c89b5a]'
+                        : isCompleted
+                          ? 'bg-[#c89b5a] text-white border-2 border-[#c89b5a]'
+                          : 'bg-white text-gray-400 border-2 border-gray-300'
+                    }`}
+                >
+                  {isCompleted ? (
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  ) : (
+                    step.id
+                  )}
+                </div>
+                <span
+                  className={`mt-2 text-sm whitespace-nowrap ${
+                    isActive || isCompleted
+                      ? 'text-[#c89b5a] font-medium'
+                      : 'text-gray-400'
                   }`}
-              >
-                {isCompleted ? (
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                ) : (
-                  stepNumber
-                )}
+                >
+                  {step.label}
+                </span>
               </div>
-              <span
-                className={`ml-2 text-sm ${isActive || isCompleted ? 'text-[#c89b5a] font-medium' : 'text-gray-500'}`}
-              >
-                {step === 'Address' ? 'Shipping Address' : step}
-              </span>
-            </div>
-            {index < steps.length - 1 && <ArrowRight isActive={isCompleted} />}
-          </React.Fragment>
-        )
-      })}
+
+              {index < steps.length - 1 && (
+                <ArrowRight isActive={isCompleted} />
+              )}
+            </React.Fragment>
+          )
+        })}
+      </div>
     </div>
   )
 }
