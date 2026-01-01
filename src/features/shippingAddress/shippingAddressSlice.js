@@ -3,9 +3,6 @@ import shippingAddressService, {
   updateShippingAddress,
 } from './shippingAddressService'
 
-// Get user from local storage
-const user = JSON.parse(localStorage.getItem('user'))
-
 // Initial state
 const initialState = {
   addresses: [],
