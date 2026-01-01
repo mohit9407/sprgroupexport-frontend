@@ -168,76 +168,19 @@ export default function CategoriesDisplayPage() {
   ]
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <div className="relative">
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="h-9 border rounded pl-3 pr-8 bg-white"
-          >
-            <option value="all">Filter By</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-        </div>
-        <div className="relative">
-          <input
-            className="h-9 border rounded pl-3 pr-9 bg-white w-64"
-            placeholder="Search..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400">
-            <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-              <path
-                fillRule="evenodd"
-                d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a1 1 0 01-1.415 1.414l-3.328-3.328A7 7 0 012 9z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </div>
-        </div>
-        <button className="ml-auto px-3 h-9 rounded bg-sky-600 text-white hover:bg-sky-700">
-          Add New
-        </button>
-      </div>
-
-      <DataTable
-        columns={columns}
-        data={filtered}
-        sortBy={sortBy}
-        sortDir={sortDir}
-        onSortChange={(key, dir) => {
-          setSortBy(key)
-          setSortDir(dir)
-        }}
-        page={page}
-        pageSize={pageSize}
-        total={filtered.length}
-        onPageChange={setPage}
-      />
-
-      {/* demo table with server-side mode */}
-      {/* <DataTable
-        columns={columns}
-        data={apiData}
-        total={totalRecords}
-        page={page}
-        pageSize={10}
-        sortBy={sortBy}
-        sortDir={sortDir}
-        onSortChange={(key, dir) => {
-          setSortBy(key)
-          setSortDir(dir)
-          fetchData({ page: 1, sortBy: key, sortDir: dir })
-        }}
-        onPageChange={(p) => {
-          setPage(p)
-          fetchData({ page: p, sortBy, sortDir })
-        }}
-        mode="server"
-      /> */}
-    </div>
+    <DataTable
+      columns={columns}
+      data={filtered}
+      sortBy={sortBy}
+      sortDir={sortDir}
+      onSortChange={(key, dir) => {
+        setSortBy(key)
+        setSortDir(dir)
+      }}
+      page={page}
+      pageSize={pageSize}
+      total={filtered.length}
+      onPageChange={setPage}
+    />
   )
 }

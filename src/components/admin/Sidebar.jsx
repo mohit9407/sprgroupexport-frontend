@@ -1,8 +1,8 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { useEffect, useState, useCallback } from 'react'
-import { routeMeta } from '@/config/routes'
+import { useEffect, useState } from 'react'
+import { routeMeta } from '@/config/adminRoutes'
 import { getActiveRouteChain } from '@/utils/adminRouteUtils'
 import { SidebarItem } from './SidebarItem'
 
@@ -15,7 +15,7 @@ export default function AdminSidebar({ collapsed = false, menu = [] }) {
   useEffect(() => {
     const next = {}
     menu.forEach((item) => {
-      if (item.children?.some((child) => activePaths.includes(child.href))) {
+      if (item.childrens?.some((child) => activePaths.includes(child.path))) {
         next[item.key] = true
       }
     })
@@ -30,7 +30,7 @@ export default function AdminSidebar({ collapsed = false, menu = [] }) {
 
   return (
     <aside
-      className={`${collapsed ? 'w-14' : 'w-64'}
+      className={`${collapsed ? 'w-14' : 'min-w-64 w-64'}
       transition-all duration-200 bg-slate-900 text-slate-100
       h-[calc(100vh-48px)] sticky top-12 overflow-y-auto`}
     >

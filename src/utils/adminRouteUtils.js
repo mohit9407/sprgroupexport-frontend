@@ -1,4 +1,4 @@
-function matchPath(pattern, pathname) {
+function matchPath(pattern = '', pathname = '') {
   const patternParts = pattern.split('/')
   const pathParts = pathname.split('/')
 
@@ -11,7 +11,7 @@ function matchPath(pattern, pathname) {
 }
 
 function findRouteMeta(pathname, routeMeta) {
-  return routeMeta.find((route) => matchPath(route.path, pathname))
+  return routeMeta.find((route) => matchPath(route?.path, pathname))
 }
 
 export function buildBreadcrumbs(pathname, routeMeta) {
@@ -22,8 +22,9 @@ export function buildBreadcrumbs(pathname, routeMeta) {
 
   while (current) {
     breadcrumbs.unshift({
+      ...current,
       label: current.label,
-      href: current.sidebar ? current.path : undefined,
+      path: current.sidebar ? current.path : undefined,
     })
 
     current = current.parent
@@ -64,4 +65,32 @@ export function Arrow({ open, collapsed }) {
       <path d="M7.21 14.77a.75.75 0 010-1.06L10.94 10 7.21 6.29a.75.75 0 111.06-1.06l4.24 4.24a.75.75 0 010 1.06l-4.24 4.24a.75.75 0 01-1.06 0z" />
     </svg>
   )
+}
+
+export const getSidebarMenuData = (routeMeta) => {
+  const addedPaths = []
+  return routeMeta.reduce((menu, route) => {
+    if (addedPaths.includes(route.path)) {
+      return menu
+    }
+
+    if (route?.sidebar && route?.path && !route?.sidebarChildrens?.length) {
+      addedPaths.push(route.path)
+      menu.push(route)
+      return menu
+    }
+
+    if (route?.sidebarChildrens) {
+      menu.push({
+        ...route,
+        childrens: route.sidebarChildrens.map((path) => {
+          addedPaths.push(path)
+          return routeMeta.find((route) => route.path === path)
+        }),
+      })
+      return menu
+    }
+
+    return menu
+  }, [])
 }

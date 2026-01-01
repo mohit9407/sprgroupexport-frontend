@@ -1,128 +1,211 @@
+import {
+  AiFillDashboard,
+  AiFillProduct,
+  AiOutlineBuild,
+  AiOutlineInbox,
+  AiOutlinePicture,
+  AiOutlineRadiusSetting,
+} from 'react-icons/ai'
+import {
+  FaRegImages,
+  FaFileAlt,
+  FaUsers,
+  FaDatabase,
+  FaList,
+  FaRegFileAlt,
+  FaTruck,
+  FaRegCreditCard,
+  FaLaptopCode,
+  FaBoxes,
+  FaFileUpload,
+  FaUpload,
+  FaRegGrinStars,
+} from 'react-icons/fa'
+import { FaGears, FaTicket } from 'react-icons/fa6'
+
 export const routeMeta = [
   // ===== Dashboard =====
   {
-    path: '/admin',
+    key: 'dashboard',
     label: 'Dashboard',
+    path: '/admin',
     sidebar: true,
+    icon: AiFillDashboard,
   },
 
   // ===== Media =====
   {
-    path: '/admin/media',
+    key: 'media',
     label: 'Media',
+    icon: AiOutlinePicture,
+    sidebar: true,
+    sidebarChildrens: ['/admin/media', '/admin/media/media-settings'],
+  },
+  {
+    key: 'media-list',
+    label: 'Media',
+    path: '/admin/media',
     parent: '/admin',
     sidebar: true,
+    icon: FaRegImages,
   },
   {
-    path: '/admin/media/media-settings',
+    key: 'media-settings',
     label: 'Media Settings',
+    path: '/admin/media/media-settings',
     parent: '/admin/media',
     sidebar: true,
+    icon: AiOutlineRadiusSetting,
   },
   {
+    key: 'image-details',
     path: '/admin/media/detail/:_id',
     label: 'Image Details',
     parent: '/admin/media',
     sidebar: false,
+    icon: FaFileAlt,
   },
 
   // ===== Customers =====
   {
+    key: 'customers',
     path: '/admin/customers',
     label: 'Customers',
+    description: 'Listing All The Customers...',
     parent: '/admin',
     sidebar: true,
+    icon: FaUsers,
   },
 
   // ===== Catalog =====
   {
+    key: 'catalog',
+    label: 'Catalog',
+    sidebar: true,
+    icon: FaDatabase,
+    sidebarChildrens: [
+      '/admin/categories/display',
+      '/admin/attributes',
+      '/admin/products',
+      '/admin/inventory',
+      '/admin/bulk-upload',
+      '/admin/reviews',
+    ],
+  },
+  {
+    key: 'categories',
     path: '/admin/categories/display',
     label: 'Categories',
     parent: '/admin',
     sidebar: true,
+    icon: FaBoxes,
   },
   {
+    key: 'attributes',
     path: '/admin/attributes',
     label: 'Product Attributes',
     parent: '/admin',
     sidebar: true,
+    icon: AiOutlineBuild,
   },
   {
+    key: 'products',
     path: '/admin/products',
     label: 'Products',
     parent: '/admin',
     sidebar: true,
+    icon: AiFillProduct,
   },
   {
+    key: 'inventory',
     path: '/admin/inventory',
     label: 'Inventory',
     parent: '/admin',
     sidebar: true,
+    icon: AiOutlineInbox,
   },
   {
+    key: 'bulk-upload',
     path: '/admin/bulk-upload',
     label: 'Bulk Upload',
     parent: '/admin',
     sidebar: true,
+    icon: FaUpload,
   },
   {
+    key: 'reviews',
     path: '/admin/reviews',
     label: 'Reviews',
     parent: '/admin',
     sidebar: true,
+    icon: FaRegGrinStars,
   },
 
   // ===== Orders =====
   {
+    key: 'orders',
     path: '/admin/orders',
     label: 'Orders',
     parent: '/admin',
     sidebar: true,
+    icon: FaList,
   },
 
   // ===== Reports =====
   {
+    key: 'reports',
     path: '/admin/reports',
     label: 'Reports',
     parent: '/admin',
     sidebar: true,
+    icon: FaRegFileAlt,
   },
 
   // ===== Coupons =====
   {
+    key: 'coupons',
     path: '/admin/coupons',
     label: 'Coupons',
     parent: '/admin',
     sidebar: true,
+    icon: FaTicket,
   },
 
   // ===== Shipping =====
   {
+    key: 'shipping-methods',
     path: '/admin/shipping-methods',
     label: 'Shipping Methods',
     parent: '/admin',
     sidebar: true,
+    icon: FaTruck,
   },
 
   // ===== Payment =====
   {
+    key: 'payment-methods',
     path: '/admin/payment-methods',
     label: 'Payment Methods',
     parent: '/admin',
     sidebar: true,
+    icon: FaRegCreditCard,
   },
 
   // ===== Settings =====
   {
+    key: 'general-settings',
     path: '/admin/settings/general',
     label: 'General Settings',
     parent: '/admin',
     sidebar: true,
+    icon: FaGears,
   },
   {
+    key: 'website-settings',
     path: '/admin/settings/website',
     label: 'Settings (Website)',
     parent: '/admin',
     sidebar: true,
+    icon: FaLaptopCode,
   },
 ]
