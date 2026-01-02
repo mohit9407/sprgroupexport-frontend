@@ -1,10 +1,10 @@
-import axios, { AxiosError } from 'axios'
-import { getAuthToken } from '@/features/user/userService'
+import axios from 'axios'
+import { refreshAccessToken } from '@/features/user/userService'
 
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
 
-const api = axios.create({
+export const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
   headers: {
@@ -12,48 +12,102 @@ const api = axios.create({
   },
 })
 
-/**
- * Request interceptor
- * - Attaches Authorization header IF token exists
- * - Still allows cookie-based auth
- */
+let isRefreshing = false
+let failedQueue = []
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error)
+    } else {
+      prom.resolve(token)
+    }
+  })
+  failedQueue = []
+}
+
+// Request interceptor
 api.interceptors.request.use(
   (config) => {
-    const token = getAuthToken?.() // safe optional call
-
+    const token =
+      typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null
     if (token) {
-      config.headers = config.headers ?? {}
       config.headers.Authorization = `Bearer ${token}`
     }
-
     return config
   },
   (error) => Promise.reject(error),
 )
 
-/**
- * Response interceptor
- * - Normalizes response
- * - Handles 401 globally
- */
+// Response interceptor
 api.interceptors.response.use(
   (response) => response.data,
-  (error) => {
-    if (error.response) {
-      const { status, data } = error.response
+  async (error) => {
+    const originalRequest = error.config
 
-      if (status === 401) {
-        console.error('Unauthorized – token expired or invalid')
+    // If error is not 401 or it's a refresh token request, reject
+    if (error.response?.status !== 401 || originalRequest._retry) {
+      return Promise.reject(error)
+    }
+
+    // If we're already refreshing token, add the request to the queue
+    if (isRefreshing) {
+      return new Promise((resolve, reject) => {
+        failedQueue.push({ resolve, reject })
+      })
+        .then((token) => {
+          originalRequest.headers.Authorization = `Bearer ${token}`
+          return api(originalRequest)
+        })
+        .catch((err) => Promise.reject(err))
+    }
+
+    // Set flag to prevent multiple refresh attempts
+    originalRequest._retry = true
+    isRefreshing = true
+
+    try {
+      const refreshToken =
+        typeof window !== 'undefined'
+          ? localStorage.getItem('refreshToken')
+          : null
+      if (!refreshToken) {
+        throw new Error('No refresh token available')
       }
 
-      return Promise.reject(data)
-    }
+      // Get new access token
+      const newAccessToken = await refreshAccessToken(refreshToken)
+      if (!newAccessToken) {
+        throw new Error('Failed to refresh token')
+      }
 
-    if (error.request) {
-      return Promise.reject({ message: 'No response from server' })
-    }
+      // Update stored token
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('accessToken', newAccessToken)
+      }
 
-    return Promise.reject({ message: error.message })
+      // Update the Authorization header
+      api.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`
+      originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
+
+      // Process queued requests
+      processQueue(null, newAccessToken)
+
+      // Retry the original request
+      return api(originalRequest)
+    } catch (refreshError) {
+      // Clear auth state and redirect to login
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('accessToken')
+        localStorage.removeItem('refreshToken')
+        localStorage.removeItem('user')
+        window.location.href = '/login'
+      }
+      processQueue(refreshError, null)
+      return Promise.reject(refreshError)
+    } finally {
+      isRefreshing = false
+    }
   },
 )
 

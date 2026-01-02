@@ -72,6 +72,7 @@ const ProductCard = ({
   sideImages = [],
   viewMode = 'grid', // 'grid' or 'list'
   categoryId,
+  isLiked: isLikedProp = false,
   ...props
 }) => {
   const router = useRouter()
@@ -115,8 +116,9 @@ const ProductCard = ({
   const { addToCart, cart } = useCart()
   const [isAdding, setIsAdding] = useState(false)
 
-  // Derive wishlist and cart booleans from context instead of mutating state in effects
-  const isWishlisted = React.useMemo(() => isInWishlist(id), [id, isInWishlist])
+  // Use the isLiked prop if provided, otherwise fall back to wishlist context
+  const isWishlisted =
+    isLikedProp !== undefined ? isLikedProp : isInWishlist(id)
   const isInCart = React.useMemo(
     () => !!cart.find((item) => item.id === id),
     [cart, id],
@@ -152,7 +154,7 @@ const ProductCard = ({
     }, 2000)
   }
 
-  const handleWishlistClick = (e) => {
+  const handleWishlistClick = async (e) => {
     e.preventDefault()
     e.stopPropagation()
 
@@ -164,23 +166,39 @@ const ProductCard = ({
       brand,
     }
 
-    if (isWishlisted) {
-      removeFromWishlist(id)
-      toast.success('Removed from wishlist')
-    } else {
-      // Check if user is authenticated before adding to wishlist
-      const isAuthenticated = !!user
-
-      const success = addToWishlist(product, isAuthenticated)
-
-      if (success) {
-        toast.success('Added to wishlist')
-      } else if (isAuthenticated) {
-        // This handles the case where the product is already in the wishlist
-        toast.success('Already in wishlist')
+    try {
+      if (isWishlisted) {
+        await removeFromWishlist(id)
+        toast.success('Removed from wishlist')
+        // Update the parent component's like state
+        if (props.onLikeStatusChange) {
+          props.onLikeStatusChange(id, false)
+        }
       } else {
-        setShowAuthModal(true)
+        // Check if user is authenticated before adding to wishlist
+        const isAuthenticated = !!user
+
+        const success = await addToWishlist(product, isAuthenticated)
+
+        if (success) {
+          toast.success('Added to wishlist')
+          // Update the parent component's like state
+          if (props.onLikeStatusChange) {
+            props.onLikeStatusChange(id, true)
+          }
+        } else if (isAuthenticated) {
+          // This handles the case where the product is already in the wishlist
+          toast.success('Already in wishlist')
+          if (props.onLikeStatusChange) {
+            props.onLikeStatusChange(id, true)
+          }
+        } else {
+          setShowAuthModal(true)
+        }
       }
+    } catch (error) {
+      console.error('Error updating wishlist:', error)
+      toast.error('Failed to update wishlist. Please try again.')
     }
   }
 
@@ -223,7 +241,7 @@ const ProductCard = ({
                   >
                     <div className="flex gap-3">
                       <button
-                        className={`w-10 h-10 rounded-full bg-[#BA8B4E] flex items-center justify-center ${isWishlisted ? 'text-red-500' : 'text-white'} transition-colors`}
+                        className={`w-10 h-10 rounded-full bg-red-500 flex items-center justify-center ${isWishlisted ? 'text-white bg-[#BA8B4E] border-2 border-[#BA8B4E]' : 'text-white'} transition-colors`}
                         onClick={handleWishlistClick}
                       >
                         <FiHeart
@@ -372,7 +390,7 @@ const ProductCard = ({
             >
               <div className="flex gap-4">
                 <button
-                  className={`w-10 h-10 rounded-full bg-[#BA8B4E] flex items-center justify-center ${isWishlisted ? 'text-red-500' : 'text-white hover:bg-[#BA8B4E]'} transition-colors ${isHovered ? 'opacity-100' : 'opacity-0'}`}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center ${isWishlisted ? 'text-[#BA8B4E] bg-white border-2 border-[#BA8B4E]' : 'text-white bg-[#BA8B4E] hover:bg-[#a87d45]'} transition-colors ${isHovered ? 'opacity-100' : 'opacity-0'}`}
                   onClick={handleWishlistClick}
                 >
                   <FiHeart

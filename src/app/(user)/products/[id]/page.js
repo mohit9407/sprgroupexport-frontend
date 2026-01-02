@@ -400,7 +400,12 @@ export default function ProductDetails() {
         </div>
 
         {/* Related Products Section */}
-        <RelatedProducts />
+        {product && (
+          <RelatedProducts
+            category={product.category?._id || product.category}
+            excludeProductId={product._id || product.id}
+          />
+        )}
       </main>
     </div>
   )

@@ -26,8 +26,20 @@ const adminPaths = [
   '/dashboard', // Assuming dashboard is also admin-only
 ]
 
-// Function to decode JWT token (client-side decoding - for demo purposes only)
-// In production, consider using a proper JWT library or server-side validation
+// Function to check if token is expired
+const isTokenExpired = (token) => {
+  if (!token) return true
+  try {
+    const decoded = decodeToken(token)
+    if (!decoded || !decoded.exp) return true
+    return decoded.exp * 1000 < Date.now()
+  } catch (e) {
+    console.error('Error checking token expiration:', e)
+    return true
+  }
+}
+
+// Function to decode JWT token
 const decodeToken = (token) => {
   if (!token) return null
   try {
@@ -47,9 +59,49 @@ const decodeToken = (token) => {
   }
 }
 
-export function middleware(request) {
+// Function to refresh access token
+const refreshAccessToken = async (refreshToken) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refreshToken }),
+      },
+    )
+
+    if (!response.ok) {
+      throw new Error('Failed to refresh token')
+    }
+
+    const data = await response.json()
+    // Update the stored tokens in localStorage if we're in the browser
+    if (typeof window !== 'undefined') {
+      const user = JSON.parse(localStorage.getItem('user') || '{}')
+      user.accessToken = data.accessToken
+      // Update refresh token if a new one is provided
+      if (data.refreshToken) {
+        user.refreshToken = data.refreshToken
+      }
+      localStorage.setItem('user', JSON.stringify(user))
+    }
+    return data.accessToken
+  } catch (error) {
+    console.error('Error refreshing token:', error)
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('user')
+    }
+    return null
+  }
+}
+
+export async function middleware(request) {
   const { pathname } = request.nextUrl
-  const token = request.cookies.get('accessToken')?.value
+  const accessToken = request.cookies.get('accessToken')?.value
+  const refreshToken = request.cookies.get('refreshToken')?.value
 
   // Allow all static files
   if (
@@ -66,10 +118,41 @@ export function middleware(request) {
     return NextResponse.next()
   }
 
+  // Check if access token is expired but refresh token exists
+  if (accessToken && refreshToken && isTokenExpired(accessToken)) {
+    try {
+      // Attempt to refresh the access token
+      const newAccessToken = await refreshAccessToken(refreshToken)
+      if (newAccessToken) {
+        // Create response with new access token
+        const response = NextResponse.next()
+        response.cookies.set('accessToken', newAccessToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          path: '/',
+        })
+        return response
+      } else {
+        // If refresh fails, clear tokens and redirect to login
+        const response = NextResponse.redirect(new URL('/login', request.url))
+        response.cookies.delete('accessToken')
+        response.cookies.delete('refreshToken')
+        return response
+      }
+    } catch (error) {
+      console.error('Error during token refresh:', error)
+      const response = NextResponse.redirect(new URL('/login', request.url))
+      response.cookies.delete('accessToken')
+      response.cookies.delete('refreshToken')
+      return response
+    }
+  }
+
   // Get user data from token if exists
   let user = null
-  if (token) {
-    user = decodeToken(token)
+  if (accessToken) {
+    user = decodeToken(accessToken)
   }
 
   // Check if path is admin path
@@ -83,7 +166,7 @@ export function middleware(request) {
         (Array.isArray(user.roles) && user.roles.includes('admin')) ||
         user.isAdmin === true)
 
-    if (!token || !user || !hasAdminRole) {
+    if (!accessToken || !user || !hasAdminRole) {
       // If not an admin, redirect to home or unauthorized page
       return NextResponse.redirect(new URL('/', request.url))
     }
@@ -94,7 +177,7 @@ export function middleware(request) {
   if (isPublicPath) {
     // If user is logged in and tries to access auth pages, redirect to home
     if (
-      token &&
+      accessToken &&
       (pathname.startsWith('/login') || pathname.startsWith('/register'))
     ) {
       return NextResponse.redirect(new URL('/', request.url))
@@ -109,10 +192,33 @@ export function middleware(request) {
 
   if (isProtectedPath) {
     // Redirect to login if not authenticated
-    if (!token || !user) {
+    if (!accessToken || !user) {
+      // If refresh token exists but access token is missing/expired, try to refresh
+      if (refreshToken) {
+        try {
+          const newAccessToken = await refreshAccessToken(refreshToken)
+          if (newAccessToken) {
+            const response = NextResponse.next()
+            response.cookies.set('accessToken', newAccessToken, {
+              httpOnly: true,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'strict',
+              path: '/',
+            })
+            return response
+          }
+        } catch (error) {
+          console.error('Error during token refresh:', error)
+        }
+      }
+
+      // If we get here, either refresh token is missing or refresh failed
       const loginUrl = new URL('/login', request.url)
       loginUrl.searchParams.set('redirect', pathname)
-      return NextResponse.redirect(loginUrl)
+      const response = NextResponse.redirect(loginUrl)
+      response.cookies.delete('accessToken')
+      response.cookies.delete('refreshToken')
+      return response
     }
 
     // Check if user is an admin trying to access user routes
