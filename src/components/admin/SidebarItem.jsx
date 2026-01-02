@@ -12,16 +12,18 @@ export function SidebarItem({
 }) {
   const deepestActivePath = getDeepestActivePath(activePaths)
 
-  if (item.children?.length) {
+  if (item.childrens?.length) {
     return (
       <div>
         <button
           onClick={() => toggle(item.key)}
           className={`w-full flex items-center justify-between px-3 py-2 rounded
-          hover:bg-slate-800 ${open ? 'bg-slate-800' : ''}`}
+          hover:bg-slate-800`}
         >
           <span className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-slate-500" />
+            {item?.icon && (
+              <item.icon className="mr-2 w-4 h-4 text-slate-300" />
+            )}
             {!collapsed && item.label}
           </span>
 
@@ -29,17 +31,20 @@ export function SidebarItem({
         </button>
 
         {open && !collapsed && (
-          <div className="ml-6 space-y-1">
-            {item.children.map((child) => {
-              const active = child.href === deepestActivePath
+          <div className="ml-3 space-y-1">
+            {item.childrens.map((child) => {
+              const active = child.path === deepestActivePath
 
               return (
                 <Link
                   key={child.key}
-                  href={child.href}
-                  className={`block px-3 py-1.5 rounded hover:bg-slate-800
+                  href={child.path}
+                  className={`flex items-center px-3 py-1.5 rounded hover:bg-slate-800
                   ${active ? 'bg-slate-800 text-white' : 'text-slate-300'}`}
                 >
+                  {child.icon && (
+                    <child.icon className="mr-2 w-4 h-4 text-slate-300" />
+                  )}
                   {child.label}
                 </Link>
               )
@@ -59,15 +64,15 @@ export function SidebarItem({
   }
 
   const active =
-    item.href && isSidebarItemActive(item.href, pathname, activePaths)
+    item.path && isSidebarItemActive(item.path, pathname, activePaths)
 
   return (
     <Link
-      href={item.href || '#'}
+      href={item.path || '#'}
       className={`flex items-center gap-2 px-3 py-2 rounded
       hover:bg-slate-800 ${active ? 'bg-slate-800' : ''}`}
     >
-      <span className="w-2 h-2 rounded-full bg-slate-500" />
+      {item?.icon && <item.icon className="mr-2 w-4 h-4 text-slate-300" />}
       {!collapsed && item.label}
     </Link>
   )

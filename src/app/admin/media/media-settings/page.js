@@ -1,6 +1,6 @@
 'use client'
 
-import AdminInputRow from '@/components/AdminInputRow'
+import { AdminInputRow } from '@/components/admin/AdminInputRow'
 import api from '@/lib/axios'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -149,7 +149,7 @@ export default function MediaSettingsPage() {
 
         <div className="flex gap-3 pt-4 justify-center">
           <button
-            className="px-5 py-2 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700"
+            className="px-5 py-2 rounded bg-sky-600 text-white font-semibold hover:bg-sky-700"
             onClick={updateMediaSettings}
           >
             Submit
