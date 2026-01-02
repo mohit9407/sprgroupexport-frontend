@@ -1,12 +1,14 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import ProductCard from '../ProductCard'
-import Link from 'next/link'
 import { fetchProducts } from '@/features/products/productsSlice'
-import { toast } from 'react-hot-toast'
+import { useAuth } from '@/context/AuthContext'
+import { useWishlist } from '@/context/WishlistContext'
 
 const NewArrivalSection = () => {
   const dispatch = useDispatch()
+  const [localLikes, setLocalLikes] = useState({})
+  const { isInWishlist } = useWishlist()
   const {
     items: products = [],
     status = 'idle',
@@ -19,24 +21,67 @@ const NewArrivalSection = () => {
     }
   }, [status, dispatch])
 
+  // Get current user from auth context
+  const { user } = useAuth()
+  const currentUserId = user?._id
+
+  // Update local likes when products or wishlist changes
+  useEffect(() => {
+    let timer
+    if (products && products.length > 0) {
+      const initialLikes = {}
+      products.forEach((product) => {
+        const productId = product._id || product.id
+        // Use isInWishlist from context to determine if product is liked
+        initialLikes[productId] = isInWishlist(productId)
+      })
+      timer = setTimeout(() => {
+        setLocalLikes((prevLikes) => ({
+          ...prevLikes,
+          ...initialLikes,
+        }))
+      }, 0)
+    }
+    return () => clearTimeout(timer)
+  }, [products, isInWishlist])
+
   // Map API response to match ProductCard props
-  const mappedProducts = (products || []).map((product) => ({
-    id: product._id,
-    image: product.image || '/images/placeholder-product.png',
-    brand: product.brand || 'Unknown Brand',
-    name: product.productModel || product.name || 'Unnamed Product',
-    price: product.price || 0,
-    isNew: product.isNew || false,
-    isVideo: product.isVideo || false,
-    flashSale: product.flashSale || false,
-    special: product.special || false,
-    discount: product.discount || null,
-    status: product.status || 'in-stock',
-    minOrderLimit: product.minOrderLimit || 1,
-    sideImages: product.sideImages || [],
-    categoryId: product.category,
-    ...product, // Spread the rest of the product properties
-  }))
+  const mappedProducts = useMemo(() => {
+    return (products || []).map((product) => {
+      const productId = product._id || product.id
+      // Use isInWishlist from context to determine if product is liked
+      const isLiked = isInWishlist(productId) || localLikes[productId] || false
+
+      return {
+        id: product._id,
+        image: product.image || '/images/placeholder-product.png',
+        brand: product.brand || 'Unknown Brand',
+        name: product.productModel || product.name || 'Unnamed Product',
+        price: product.price || 0,
+        isNew: product.isNew || false,
+        isVideo: product.isVideo || false,
+        flashSale: product.flashSale || false,
+        special: product.special || false,
+        discount: product.discount || null,
+        status: product.status || 'in-stock',
+        minOrderLimit: product.minOrderLimit || 1,
+        sideImages: product.sideImages || [],
+        categoryId: product.category,
+        isLiked,
+        onLikeStatusChange: (productId, newLikeStatus) => {
+          setLocalLikes((prev) => ({
+            ...prev,
+            [productId]: newLikeStatus,
+          }))
+
+          // Update the wishlist context
+          // The wishlist context will handle the actual like/unlike action
+          // We just need to ensure the local state stays in sync
+        },
+        ...product,
+      }
+    })
+  }, [products, localLikes, isInWishlist])
 
   if (status === 'loading' || status === 'idle') {
     return (

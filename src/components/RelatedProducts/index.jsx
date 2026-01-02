@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import Slider from 'react-slick'
 import 'slick-carousel/slick/slick.css'
@@ -7,6 +7,8 @@ import ProductCard from '@/components/ProductCard'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 import { fetchProducts } from '@/features/products/productsSlice'
 import { toast } from 'react-hot-toast'
+import { useAuth } from '@/context/AuthContext'
+import { useWishlist } from '@/context/WishlistContext'
 
 // Custom arrow components for the slider
 const NextArrow = ({ className, style, onClick, isHovered }) => {
@@ -39,13 +41,15 @@ const PrevArrow = ({ className, style, onClick, isHovered }) => {
   )
 }
 
-const RelatedProducts = () => {
+const RelatedProducts = ({ category, excludeProductId }) => {
   const dispatch = useDispatch()
   const { items: products = [], status } = useSelector(
     (state) => state.products || {},
   )
   const sliderRef = useRef(null)
   const [isHovered, setIsHovered] = useState(false)
+  const [localLikes, setLocalLikes] = useState({})
+  const { isInWishlist } = useWishlist()
   const autoPlaySpeed = 3000 // 3 seconds
 
   useEffect(() => {
@@ -87,6 +91,30 @@ const RelatedProducts = () => {
       }
     }
   }, [autoPlaySpeed])
+  // Get current user from auth context
+  const { user } = useAuth()
+  const currentUserId = user?._id
+
+  // Update local likes when products, wishlist, or isInWishlist changes
+  useEffect(() => {
+    let timer
+    if (products && products.length > 0) {
+      const initialLikes = {}
+      products.forEach((product) => {
+        const productId = product._id || product.id
+        // Use isInWishlist from context to determine if product is liked
+        initialLikes[productId] = isInWishlist(productId)
+      })
+      timer = setTimeout(() => {
+        setLocalLikes((prevLikes) => ({
+          ...prevLikes,
+          ...initialLikes,
+        }))
+      }, 0)
+    }
+    return () => clearTimeout(timer)
+  }, [products, isInWishlist])
+
   // Fetch products on component mount
   useEffect(() => {
     if (status === 'idle') {
@@ -99,38 +127,120 @@ const RelatedProducts = () => {
     }
   }, [dispatch, status])
 
-  // Map API response to match ProductCard props
-  const mappedProducts = (products || []).map((product) => {
-    // Ensure we have a valid image URL or fallback to placeholder
-    const mainImage =
-      product.images?.[0] || product.image || '/images/placeholder-product.png'
+  // Filter products by category and exclude current product
+  const filteredProducts = products.filter((product) => {
+    if (!product) return false
 
-    // If the image path is relative, make sure it has the proper base URL
-    const getImageUrl = (img) => {
-      if (!img) return '/images/placeholder-product.png'
-      if (img.startsWith('http') || img.startsWith('/')) return img
-      return `/${img}` // Add leading slash if missing
+    // Get IDs as strings for consistent comparison
+    const productId = String(product.id || product._id || '').trim()
+    const excludeId = String(excludeProductId || '').trim()
+
+    // Log for debugging
+    console.log('Product ID:', productId, 'Exclude ID:', excludeId)
+
+    // Check if this is the current product
+    if (excludeId && productId === excludeId) {
+      console.log('Excluding current product:', productId)
+      return false
     }
 
-    return {
-      id: product._id || product.id,
-      name: product.productModel || product.name || 'Unnamed Product',
-      price: product.price || 0,
-      originalPrice: product.originalPrice || product.price || 0,
-      isNew: product.isNew || false,
-      brand: product.brand || 'Unknown Brand',
-      image: getImageUrl(mainImage), // Use image instead of images[0]
-      discount: product.discount || null,
-      ...product,
+    // If category is provided, filter by category
+    if (category) {
+      const getCategoryId = (cat) => {
+        if (!cat) return null
+        if (typeof cat === 'string') return cat.trim()
+        if (cat._id) return String(cat._id).trim()
+        return String(cat).trim()
+      }
+
+      const productCategoryId = getCategoryId(
+        product.category || product.categoryId || product.categoryData,
+      )
+      const currentCategoryId = getCategoryId(category)
+
+      console.log('Category check:', {
+        productCategoryId,
+        currentCategoryId,
+        isMatch: productCategoryId === currentCategoryId,
+      })
+
+      return (
+        productCategoryId &&
+        currentCategoryId &&
+        productCategoryId === currentCategoryId
+      )
     }
+
+    return true
   })
+
+  console.log(
+    'Filtered products count:',
+    filteredProducts.length,
+    'out of',
+    products.length,
+  )
+
+  const mappedProducts = useMemo(() => {
+    return (filteredProducts || []).map((product) => {
+      // Ensure we have a valid image URL or fallback to placeholder
+      const mainImage =
+        product.images?.[0] ||
+        product.image ||
+        '/images/placeholder-product.png'
+
+      // If the image path is relative, make sure it has the proper base URL
+      const getImageUrl = (img) => {
+        if (!img) return '/images/placeholder-product.png'
+        if (img.startsWith('http') || img.startsWith('/')) return img
+        return `/${img}` // Add leading slash if missing
+      }
+
+      const productId = product._id || product.id
+      // Use isInWishlist from context to determine if product is liked
+      const isLiked = isInWishlist(productId) || localLikes[productId] || false
+
+      return {
+        id: productId,
+        name: product.productModel || product.name || 'Unnamed Product',
+        price: product.price || 0,
+        originalPrice: product.originalPrice || product.price || 0,
+        isNew: product.isNew || false,
+        brand: product.brand || 'Unknown Brand',
+        image: getImageUrl(mainImage),
+        discount: product.discount || null,
+        status: product.status || 'in-stock',
+        minOrderLimit: product.minOrderLimit || 1,
+        sideImages: product.sideImages || [],
+        categoryId: product.category,
+        isLiked,
+        onLikeStatusChange: (productId, newLikeStatus) => {
+          setLocalLikes((prev) => ({
+            ...prev,
+            [productId]: newLikeStatus,
+          }))
+
+          // Update the wishlist context
+          if (newLikeStatus) {
+            // If liked, we don't need to do anything special here as the wishlist context will handle it
+          } else {
+            // If unliked, we need to ensure the local state stays in sync
+            // The wishlist context will handle the actual removal
+          }
+        },
+        ...product,
+      }
+    })
+  }, [filteredProducts, localLikes, isInWishlist])
 
   return (
     <div className="px-4">
       <div className="max-w-7xl mx-auto">
-        <div className="container mx-auto px-4 py-16 relative group">
-          <h2 className="text-3xl font-bold text-center mb-10 text-gray-800">
-            Related Products
+        <div className="container mx-auto px-4 relative group">
+          <h2 className="text-3xl font-bold text-center mb-4 text-gray-800">
+            {category && typeof category === 'string' && !category.includes(' ')
+              ? 'Related Products'
+              : `More ${category || 'Related Products'}`}
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto text-center">
             Discover more stunning pieces that complement your selection
@@ -216,8 +326,37 @@ const RelatedProducts = () => {
                 Failed to load related products. Please try again later.
               </div>
             ) : mappedProducts.length === 0 ? (
-              <div className="col-span-4 text-center text-gray-500 py-8">
-                No related products found.
+              <div className="w-full py-12 text-center">
+                <div className="max-w-md mx-auto">
+                  <div className="w-20 h-20 mx-auto mb-4 text-gray-300">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1}
+                        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No Related Products Available
+                  </h3>
+                  <p className="text-gray-500 mb-6">
+                    We couldn&apos;t find any related products at the moment.
+                    Check back later or explore our collection.
+                  </p>
+                  <button
+                    onClick={() => router.push('/products')}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#b7853f] hover:bg-[#9a7135] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#b7853f]"
+                  >
+                    Browse All Products
+                  </button>
+                </div>
               </div>
             ) : (
               mappedProducts.map((product) => (
@@ -239,6 +378,12 @@ const RelatedProducts = () => {
                       }
                       isNew={product.isNew}
                       brand={product.brand}
+                      isLiked={product.isLiked}
+                      onLikeStatusChange={product.onLikeStatusChange}
+                      status={product.status}
+                      minOrderLimit={product.minOrderLimit}
+                      sideImages={product.sideImages}
+                      categoryId={product.categoryId}
                     />
                   </div>
                 </div>
