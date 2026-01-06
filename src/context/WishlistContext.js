@@ -24,8 +24,17 @@ export function WishlistProvider({ children }) {
   const [pendingProduct, setPendingProduct] = useState(null)
   const [authMode, setAuthMode] = useState('phone') // 'phone' or 'email'
 
-  // State to track wishlist items locally for immediate feedback
-  const [localWishlist, setLocalWishlist] = useState([])
+  // Initialize local wishlist from localStorage or empty array
+  const [localWishlist, setLocalWishlist] = useState(() => {
+    if (typeof window === 'undefined') return []
+    try {
+      const saved = localStorage.getItem('wishlist')
+      return saved ? JSON.parse(saved) : []
+    } catch (e) {
+      console.error('Failed to load wishlist from localStorage', e)
+      return []
+    }
+  })
 
   // Memoized derived wishlist products from Redux store
   const derivedWishlist = useMemo(() => {
@@ -82,17 +91,36 @@ export function WishlistProvider({ children }) {
     return uniqueMerged
   }, [user?.wishlist, allProducts])
 
-  // Sync derived wishlist into local state when it changes
+  // Save to localStorage whenever localWishlist changes
   useEffect(() => {
-    let timer
-    if (JSON.stringify(derivedWishlist) !== JSON.stringify(localWishlist)) {
-      timer = setTimeout(() => setLocalWishlist(derivedWishlist), 0)
+    try {
+      if (localWishlist.length > 0) {
+        localStorage.setItem('wishlist', JSON.stringify(localWishlist))
+      } else {
+        localStorage.removeItem('wishlist')
+      }
+    } catch (e) {
+      console.error('Failed to update wishlist in localStorage', e)
     }
-    return () => clearTimeout(timer)
-  }, [derivedWishlist, localWishlist])
+  }, [localWishlist])
 
-  // Expose the effective wishlist (prefer local optimistic updates)
-  const wishlist = localWishlist.length > 0 ? localWishlist : derivedWishlist
+  // Sync with server when authenticated
+  useEffect(() => {
+    if (isAuthenticated && user?.wishlist && localWishlist.length === 0) {
+      const serverWishlist = user.wishlist.map((item) => ({
+        id: item.productId,
+        name: item.productName || 'Product',
+        price: item.price || 0,
+        image: item.image || '/placeholder-product.jpg',
+        ...item,
+      }))
+      const id = setTimeout(() => setLocalWishlist(serverWishlist), 0)
+      return () => clearTimeout(id)
+    }
+  }, [isAuthenticated, user?.wishlist, localWishlist.length])
+
+  // Use localWishlist as the single source of truth
+  const wishlist = localWishlist
 
   // Fetch user data when authentication status changes
   useEffect(() => {
@@ -108,24 +136,33 @@ export function WishlistProvider({ children }) {
   }, [isAuthenticated, dispatch])
 
   const addToWishlist = async (product, isUserAuthenticated = false) => {
+    // Check if product already exists in wishlist
+    const productExists = localWishlist.some((item) => item.id === product.id)
+
+    if (productExists) {
+      return true // Already in wishlist
+    }
+
+    // For unauthenticated users, just update local state
     if (!isUserAuthenticated) {
+      const updatedWishlist = [...localWishlist, product]
+      setLocalWishlist(updatedWishlist)
       setPendingProduct(product)
       setShowAuthModal(true)
       return false
     }
 
     try {
-      // Optimistically update local state
-      setLocalWishlist((prev) => {
-        if (prev.some((item) => item.id === product.id)) return prev
-        return [...prev, product]
-      })
-
+      // Make API call first for authenticated users
       await api.post(`/product/${product.id}/like`)
-      const storedUser =
-        typeof window !== 'undefined' ? localStorage.getItem('user') : null
-      const userId = storedUser ? JSON.parse(storedUser)?.id : null
 
+      // Update local state on success
+      const updatedWishlist = [...localWishlist, product]
+      setLocalWishlist(updatedWishlist)
+
+      // Sync with user data if available
+      const storedUser = localStorage.getItem('user')
+      const userId = storedUser ? JSON.parse(storedUser)?.id : null
       if (userId) {
         await dispatch(getUserById(userId))
       }
@@ -133,51 +170,39 @@ export function WishlistProvider({ children }) {
       return true
     } catch (error) {
       console.error('Error adding to wishlist:', error)
-      // Revert optimistic update on error
-      setLocalWishlist((prev) => prev.filter((item) => item.id !== product.id))
       return false
     }
   }
 
   const removeFromWishlist = async (productId) => {
     try {
-      // Optimistically update local state
-      setLocalWishlist((prev) => prev.filter((item) => item.id !== productId))
+      // Create updated wishlist without the product
+      const updatedWishlist = localWishlist.filter(
+        (item) => item.id !== productId,
+      )
 
-      await api.post(`/product/${productId}/unlike`)
+      // Update state and localStorage in one go
+      setLocalWishlist(updatedWishlist)
 
-      // Force a refresh of the user data to ensure consistency
-      const storedUser =
-        typeof window !== 'undefined' ? localStorage.getItem('user') : null
+      // Make API call for authenticated users
+      const storedUser = localStorage.getItem('user')
       const userId = storedUser ? JSON.parse(storedUser)?.id : null
 
       if (userId) {
-        // Force a fresh fetch of user data
+        await api.post(`/product/${productId}/unlike`)
         await dispatch(getUserById(userId))
-        // Force a re-render by updating the local state again
-        setLocalWishlist((prev) => {
-          const updated = prev.filter((item) => item.id !== productId)
-          return updated
-        })
       }
 
       return true
     } catch (error) {
       console.error('Error removing from wishlist:', error)
-
-      // Re-fetch the wishlist from the server to ensure consistency
-      if (error.response?.status !== 401) {
-        const storedUser =
-          typeof window !== 'undefined' ? localStorage.getItem('user') : null
-        const userId = storedUser ? JSON.parse(storedUser)?.id : null
-        if (userId) {
-          await dispatch(getUserById(userId))
-        }
-        // Update local state after re-fetch
-        setLocalWishlist((prev) => {
-          const updated = [...prev]
-          return updated
-        })
+      // On error, try to restore from localStorage
+      try {
+        const saved = localStorage.getItem('wishlist')
+        setLocalWishlist(saved ? JSON.parse(saved) : [])
+      } catch (e) {
+        console.error('Error restoring wishlist:', e)
+        setLocalWishlist([])
       }
       return false
     }
@@ -190,12 +215,28 @@ export function WishlistProvider({ children }) {
     [wishlist],
   )
 
-  const handleAuthSuccess = () => {
+  const handleAuthSuccess = async () => {
     if (pendingProduct) {
-      addToWishlist(pendingProduct, true)
-      setPendingProduct(null)
+      // First, close the auth modal
+      setShowAuthModal(false)
+
+      // Then add the product to wishlist with authenticated flag
+      const success = await addToWishlist(pendingProduct, true)
+
+      // If successful, clear the pending product
+      if (success) {
+        setPendingProduct(null)
+
+        // Force a refresh of the user data to sync the wishlist
+        const storedUser = localStorage.getItem('user')
+        const userId = storedUser ? JSON.parse(storedUser)?.id : null
+        if (userId) {
+          await dispatch(getUserById(userId))
+        }
+      }
+    } else {
+      setShowAuthModal(false)
     }
-    setShowAuthModal(false)
   }
 
   const switchToEmail = () => {

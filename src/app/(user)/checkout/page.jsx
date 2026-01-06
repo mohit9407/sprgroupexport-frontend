@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useDispatch, useSelector } from 'react-redux'
 import { useCart } from '@/context/CartContext'
 import { useAuth } from '@/context/AuthContext'
+import { createOrder, resetOrderState } from '@/features/order/orderSlice'
 import AuthModal from '@/components/Auth/AuthModal'
 import CheckoutSteps from './components/CheckoutSteps'
 import OrderSummary from './components/OrderSummary'
@@ -13,25 +15,111 @@ import OrderDetail from './components/OrderDetail'
 
 export default function CheckoutPage() {
   const router = useRouter()
+  const dispatch = useDispatch()
   const { user } = useAuth()
-  const { cart } = useCart()
+  const { cart, clearCart } = useCart()
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState({
     shippingAddress: {},
-    shippingMethod: '',
+    shippingMethod: {},
     paymentMethod: 'cod',
+    orderNotes: '',
   })
+  const [outOfStockError, setOutOfStockError] = useState(null)
+
+  // Get order state from Redux
+  const { order, loading, error, success } = useSelector((state) => state.order)
 
   // Check authentication on component mount and when user changes
   useEffect(() => {
-    if (!user) {
-      const timer = setTimeout(() => setShowAuthModal(true), 0)
-      return () => clearTimeout(timer)
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token')
+      if (!user || !token) {
+        const timer = setTimeout(() => setShowAuthModal(true), 0)
+        return () => clearTimeout(timer)
+      }
     }
   }, [user])
 
-  const handleContinue = (stepData, nextStep) => {
+  // Handle order submission
+  useEffect(() => {
+    if (success && order) {
+      clearCart()
+      dispatch(resetOrderState())
+
+      // Force navigation to orders page
+      window.location.href = '/orders'
+    }
+  }, [success, order, clearCart, dispatch])
+
+  const handleContinue = async (stepData, nextStep) => {
+    // If this is the final step (place order)
+    if (nextStep === 'placeOrder') {
+      try {
+        // Verify user and token again before proceeding
+        const token = localStorage.getItem('token')
+        if (!user || !token) {
+          setShowAuthModal(true)
+          return
+        }
+
+        if (!formData.shippingAddress?._id) {
+          return
+        }
+
+        // Prepare order data
+        const orderData = {
+          user: user?._id,
+          shippingMethod: formData.shippingMethod?._id,
+          shippingCost: formData.shippingMethod?.price || 0,
+          shippingAddressId: formData.shippingAddress._id,
+          products: cart.map((item) => ({
+            productId: item.id,
+            quantity: item.quantity,
+          })),
+          paymentMethod: formData.paymentMethod,
+          paymentStatus:
+            formData.paymentMethod === 'cod' ? 'pending' : 'completed',
+          orderStatus: 'pending',
+          subtotal: cart.reduce(
+            (sum, item) => sum + item.price * item.quantity,
+            0,
+          ),
+          tax: 0,
+          total:
+            cart.reduce((sum, item) => sum + item.price * item.quantity, 0) +
+            (formData.shippingMethod?.price || 0),
+          comments: formData.orderNotes || '',
+        }
+
+        // Dispatch the createOrder action
+        const result = await dispatch(createOrder(orderData))
+
+        if (createOrder.rejected.match(result)) {
+          const error =
+            result.error?.message || result.payload || 'Failed to place order'
+
+          // Handle out of stock error
+          if (
+            error.includes('Insufficient stock') ||
+            result.payload?.includes('Insufficient stock')
+          ) {
+            const productId = error.match(/product\s+(\w+)$/i)?.[1]
+            setOutOfStockError(productId || 'one or more products')
+          }
+        }
+      } catch (error) {
+        if (error?.response?.status === 401) {
+          // Clear invalid token and show auth modal
+          localStorage.removeItem('token')
+          setShowAuthModal(true)
+        }
+      }
+      return
+    }
+
+    // For non-final steps
     setFormData((prev) => ({
       ...prev,
       ...stepData,
@@ -39,7 +127,6 @@ export default function CheckoutPage() {
 
     const targetStep = nextStep || currentStep + 1
     setCurrentStep(targetStep)
-
     window.scrollTo(0, 0)
   }
 
@@ -103,7 +190,27 @@ export default function CheckoutPage() {
           currentStep={currentStep}
           onStepClick={handleStepClick}
         />
-
+        {outOfStockError ? (
+          <div className="text-red-500 text-sm text-center p-4 bg-red-50 rounded border border-red-200 mb-4">
+            <p className="font-medium">Out of Stock</p>
+            <p>
+              Sorry, there&apos;s insufficient stock for one or more items in
+              your cart.
+            </p>
+            <button
+              onClick={() => router.push('/cart')}
+              className="mt-2 text-blue-600 hover:underline"
+            >
+              Update Cart
+            </button>
+          </div>
+        ) : (
+          error && (
+            <div className="text-red-500 text-sm text-center p-2 bg-red-50 rounded">
+              {error}
+            </div>
+          )
+        )}
         <div className="flex flex-col lg:flex-row gap-8 mt-8">
           <div className="lg:w-2/3">{renderStep()}</div>
 
@@ -114,6 +221,8 @@ export default function CheckoutPage() {
               orderTotal={orderTotal}
               currentStep={currentStep}
               onContinue={handleContinue}
+              isLoading={loading}
+              error={error}
             />
           </div>
         </div>

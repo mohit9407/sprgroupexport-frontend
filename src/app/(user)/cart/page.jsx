@@ -7,7 +7,13 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 export default function CartPage() {
-  const { cart, removeFromCart, updateQuantity, getCartTotal } = useCart()
+  const {
+    cart,
+    removeFromCart,
+    updateQuantity,
+    getCartTotal,
+    removeAllFromCart,
+  } = useCart()
   const [coupon, setCoupon] = useState('')
 
   const handleQuantityChange = (productId, newQuantity) => {
@@ -160,8 +166,15 @@ export default function CartPage() {
               ← Continue Shopping
             </Link>
             <button
-              onClick={() => {}}
-              className="px-6 py-2 border border-gray-300 rounded-full text-gray-700 hover:bg-gray-50 transition-colors flex items-center"
+              onClick={async () => {
+                if (
+                  window.confirm('Are you sure you want to clear your cart?')
+                ) {
+                  await removeAllFromCart()
+                }
+              }}
+              className="px-6 py-2 border border-gray-300 rounded-full text-gray-700 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors flex items-center"
+              disabled={cart.length === 0}
             >
               <FiTrash2 className="mr-2" /> Clear Cart
             </button>

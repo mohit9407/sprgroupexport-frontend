@@ -121,7 +121,6 @@ const RelatedProducts = ({ category, excludeProductId }) => {
       dispatch(fetchProducts())
         .unwrap()
         .catch((error) => {
-          console.error('Error fetching products:', error)
           toast.error('Failed to load related products')
         })
     }
@@ -135,12 +134,8 @@ const RelatedProducts = ({ category, excludeProductId }) => {
     const productId = String(product.id || product._id || '').trim()
     const excludeId = String(excludeProductId || '').trim()
 
-    // Log for debugging
-    console.log('Product ID:', productId, 'Exclude ID:', excludeId)
-
     // Check if this is the current product
     if (excludeId && productId === excludeId) {
-      console.log('Excluding current product:', productId)
       return false
     }
 
@@ -158,12 +153,6 @@ const RelatedProducts = ({ category, excludeProductId }) => {
       )
       const currentCategoryId = getCategoryId(category)
 
-      console.log('Category check:', {
-        productCategoryId,
-        currentCategoryId,
-        isMatch: productCategoryId === currentCategoryId,
-      })
-
       return (
         productCategoryId &&
         currentCategoryId &&
@@ -173,13 +162,6 @@ const RelatedProducts = ({ category, excludeProductId }) => {
 
     return true
   })
-
-  console.log(
-    'Filtered products count:',
-    filteredProducts.length,
-    'out of',
-    products.length,
-  )
 
   const mappedProducts = useMemo(() => {
     return (filteredProducts || []).map((product) => {

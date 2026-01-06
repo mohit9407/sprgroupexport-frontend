@@ -10,8 +10,8 @@ export default function ProtectedRoute({ children }) {
   const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIsClient(true)
+    const id = setTimeout(() => setIsClient(true), 0)
+    return () => clearTimeout(id)
   }, [])
 
   useEffect(() => {

@@ -128,6 +128,12 @@ const ProductCard = ({
     e.preventDefault()
     e.stopPropagation()
 
+    // Check if user is authenticated
+    if (!user) {
+      setShowAuthModal(true)
+      return
+    }
+
     setIsAdding(true)
 
     // Add item to cart

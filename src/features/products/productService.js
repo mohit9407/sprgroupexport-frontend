@@ -43,7 +43,6 @@ export const fetchAllProducts = async (filters = {}) => {
 export const fetchProductById = async (productId) => {
   try {
     const response = await api.get(`/product/${productId}`)
-    console.log('API Response:', response) // Log the full response
 
     // Handle different possible response structures
     if (response.data && response.data.data) {

@@ -4,10 +4,12 @@ import Link from 'next/link'
 
 export default function OrderSummary({
   cartItems = [],
-  shippingMethod = '',
+  shippingMethod = {},
   orderTotal = 0,
   currentStep = 1,
   onContinue,
+  isLoading = false,
+  error = null,
 }) {
   // Calculate subtotal from cart items
   const subtotal = cartItems.reduce((sum, item) => {
@@ -15,11 +17,7 @@ export default function OrderSummary({
   }, 0)
 
   // Calculate shipping cost based on selected method
-  const getShippingCost = () => {
-    return shippingMethod === 'express' ? 200 : 0
-  }
-
-  const shippingCost = getShippingCost()
+  const shippingCost = shippingMethod?.price || 0
   const total = subtotal + shippingCost
 
   const summaryItems = [
@@ -95,26 +93,72 @@ export default function OrderSummary({
         </div>
       </div>
 
-      {/* Continue Button */}
-      {currentStep < 3 && (
-        <button
-          type="button"
-          onClick={() => onContinue({}, currentStep + 1)}
-          className="w-full mt-6 bg-[#c89b5a] text-white py-3 px-4 rounded-md hover:bg-[#b38b4a] transition-colors font-medium uppercase text-sm tracking-wider"
-        >
-          {currentStep === 1 ? 'Continue to Shipping' : 'Continue to Payment'}
-        </button>
-      )}
+      {/* Action Buttons */}
+      <div className="mt-6 space-y-3">
+        {error && (
+          <div className="text-red-500 text-sm text-center p-2 bg-red-50 rounded">
+            {error}
+          </div>
+        )}
 
-      {/* Back to Cart Link */}
-      <div className="mt-4 text-center">
-        <Link
-          href="/cart"
-          className="text-sm text-gray-600 hover:text-[#c89b5a] transition-colors"
-        >
-          Back to Cart
-        </Link>
+        {currentStep < 3 ? (
+          <button
+            type="button"
+            onClick={() => onContinue({}, currentStep + 1)}
+            className="w-full bg-[#c89b5a] text-white py-3 px-4 rounded-md hover:bg-[#b38b4a] transition-colors font-medium uppercase text-sm tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isLoading}
+          >
+            {currentStep === 1 ? 'Continue to Shipping' : 'Continue to Payment'}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => onContinue({}, 'placeOrder')}
+            className="w-full bg-[#2c3e50] text-white py-3 px-4 rounded-md hover:bg-[#1a252f] transition-colors font-medium uppercase text-sm tracking-wider disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <svg
+                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                PLACING ORDER...
+              </>
+            ) : (
+              'PLACE ORDER'
+            )}
+          </button>
+        )}
       </div>
+
+      {/* Back to Cart Link - Only show if not in final step */}
+      {currentStep < 3 && (
+        <div className="mt-4 text-center">
+          <Link
+            href="/cart"
+            className="text-sm text-gray-600 hover:text-[#c89b5a] transition-colors"
+          >
+            Back to Cart
+          </Link>
+        </div>
+      )}
     </div>
   )
 }

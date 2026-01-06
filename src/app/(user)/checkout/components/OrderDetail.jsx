@@ -44,8 +44,8 @@ export default function OrderDetail({
         paymentMethod,
         orderNotes,
       },
-      5,
-    ) // Assuming 5 is the next step after order detail
+      'placeOrder',
+    )
   }
 
   return (
