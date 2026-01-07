@@ -9,6 +9,8 @@ import userReducer from '../features/user/userSlice'
 import shippingAddressReducer from '../features/shippingAddress/shippingAddressSlice'
 import shippingReducer from '../features/shipping-method/shippingMethodSlice'
 import orderReducer from '../features/order/orderSlice'
+import attributesReducer from '../features/attributes/attributesSlice'
+import couponsReducer from '../features/coupons/couponsSlice'
 
 export const store = configureStore({
   reducer: {
@@ -22,5 +24,7 @@ export const store = configureStore({
     shippingAddress: shippingAddressReducer,
     shipping: shippingReducer,
     order: orderReducer,
+    attributes: attributesReducer,
+    coupons: couponsReducer,
   },
 })
