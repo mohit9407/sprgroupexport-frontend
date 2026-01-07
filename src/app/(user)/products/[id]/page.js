@@ -1,7 +1,7 @@
 'use client'
 
 import { useParams, useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { FaHeart, FaCheck, FaShoppingBag } from 'react-icons/fa'
 import OffersModal from '@/components/OffersModal'
@@ -11,6 +11,15 @@ import {
   fetchProductDetails,
   clearProductDetails,
 } from '@/features/products/productDetailsSlice'
+import {
+  fetchAllAttributes,
+  selectAllAttributes,
+  selectAttributeStatus,
+} from '@/features/attributes/attributesSlice'
+import {
+  fetchProductOffers,
+  selectProductOffers,
+} from '@/features/coupons/couponsSlice'
 import { useCart } from '@/context/CartContext'
 import { useWishlist } from '@/context/WishlistContext'
 import RelatedProducts from '@/components/RelatedProducts'
@@ -25,16 +34,10 @@ export default function ProductDetails() {
 
   const [quantity, setQuantity] = useState(1)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
-  const [selectedSize, setSelectedSize] = useState('Free Size')
-  const [activeTab, setActiveTab] = useState('descriptions')
+  const [selectedSize, setSelectedSize] = useState(null)
+  const [selectedColor, setSelectedColor] = useState(null)
+  const [activeTab, setActiveTab] = useState('details')
   const [showOffersModal, setShowOffersModal] = useState(false)
-
-  const scrollToSpecial = () => {
-    const element = document.getElementById('why-special')
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' })
-    }
-  }
 
   // Get product details from Redux store
   const {
@@ -43,33 +46,96 @@ export default function ProductDetails() {
     error,
   } = useSelector((state) => state.productDetails)
 
+  // Get offers after product is defined
+  const offers =
+    useSelector((state) => selectProductOffers(product?._id)(state)) || []
+
+  const scrollToSpecial = () => {
+    const element = document.getElementById('why-special')
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  // Get attributes from Redux store
+  const attributes = useSelector(selectAllAttributes)
+  const attributesStatus = useSelector(selectAttributeStatus)
+
+  // Show loading state when either product or attributes are loading
+  const isLoading = status === 'loading' || attributesStatus === 'loading'
+
   // derive wishlist status from context
   const isWishlisted = React.useMemo(
     () => (product ? isInWishlist(product.id) : false),
     [product, isInWishlist],
   )
 
-  // Fetch product details when component mounts or productId changes
+  // Fetch product details and attributes when component mounts or productId changes
   useEffect(() => {
     if (productId) {
-      dispatch(fetchProductDetails(productId)).catch(console.error)
+      dispatch(fetchProductDetails(productId))
+      dispatch(fetchAllAttributes())
     }
+
     return () => {
       dispatch(clearProductDetails())
     }
   }, [dispatch, productId])
 
+  // Fetch offers when product data is loaded
+  useEffect(() => {
+    if (product?._id && product?.coupons?.length) {
+      dispatch(fetchProductOffers(product))
+    }
+  }, [product, dispatch])
+
+  // Set default selected color and size when product or attributes are loaded
+  useEffect(() => {
+    const timers = []
+
+    if (product?.colors?.length > 0 && attributes.colors?.length > 0) {
+      const defaultColor = attributes.colors.find((c) =>
+        product.colors.includes(c._id),
+      )
+      if (defaultColor) {
+        timers.push(setTimeout(() => setSelectedColor(defaultColor._id), 0))
+      }
+    }
+
+    if (product?.sizes?.length > 0 && attributes.sizes?.length > 0) {
+      const defaultSize = attributes.sizes.find((s) =>
+        product.sizes.includes(s._id),
+      )
+      if (defaultSize) {
+        timers.push(setTimeout(() => setSelectedSize(defaultSize._id), 0))
+      }
+    }
+
+    return () => timers.forEach(clearTimeout)
+  }, [product, attributes])
+
   const handleAddToCart = () => {
-    if (!product) return
+    if (!product || !selectedColor || !selectedSize) {
+      toast.error('Please select color and size')
+      return
+    }
 
     setIsAddingToCart(true)
+
+    // Find the selected color and size details
+    const color = attributes.colors.find((c) => c._id === selectedColor)
+    const size = attributes.sizes.find((s) => s._id === selectedSize)
+
     addToCart(
       {
         id: product.id,
         name: product.name,
         price: product.price,
         image: product.image,
-        size: selectedSize,
+        color: color?.value || '',
+        colorId: selectedColor,
+        size: size?.value || '',
+        sizeId: selectedSize,
       },
       quantity,
     )
@@ -104,7 +170,7 @@ export default function ProductDetails() {
   }
 
   // Handle loading and error states
-  if (status === 'loading' || !product) {
+  if (isLoading || !product) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -168,34 +234,35 @@ export default function ProductDetails() {
             </div>
 
             {/* Offers Section */}
-            <div className="border-t border-b border-gray-200 py-4 mb-6">
-              <div className="flex justify-between items-center mb-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">
-                    {product.offers?.length || 0} OFFERS
-                  </span>
-                  <button
-                    onClick={() => setShowOffersModal(true)}
-                    className="text-xs text-[#b7853f] hover:underline"
-                  >
-                    VIEW ALL
-                  </button>
+            {offers.length > 0 && (
+              <div className="border-t border-b border-gray-200 py-4 mb-6">
+                <div className="flex justify-between items-center mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">
+                      {offers.length} OFFER{offers.length !== 1 ? 'S' : ''}
+                    </span>
+                    {offers.length > 2 && (
+                      <button
+                        onClick={() => setShowOffersModal(true)}
+                        className="text-xs text-[#b7853f] hover:underline"
+                      >
+                        VIEW ALL
+                      </button>
+                    )}
+                  </div>
                 </div>
+                <ul className="space-y-2 text-sm">
+                  {offers.slice(0, 2).map((offer, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <FaCheck className="text-green-500 mt-0.5 flex-shrink-0" />
+                      <span>
+                        {offer.description || `Special Offer ${index + 1}`}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <ul className="space-y-2 text-sm">
-                <li className="flex items-start gap-2">
-                  <FaCheck className="text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>
-                    10% Instant Discount up to ₹1,750 on ICICI Bank Credit Card
-                    EMI
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <FaCheck className="text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>5% Cashback on Flipkart Axis Bank Card</span>
-                </li>
-              </ul>
-            </div>
+            )}
 
             {/* Color and Size Selection - Side by Side */}
             <div className="grid grid-cols-2 gap-6 mb-6">
@@ -204,26 +271,52 @@ export default function ProductDetails() {
                 <h3 className="text-sm font-medium text-gray-900 mb-2">
                   Color
                 </h3>
-                <p className="text-sm text-gray-600">Gold Tone</p>
+                <div className="flex flex-wrap gap-2">
+                  {product?.colors?.length > 0 ? (
+                    attributes.colors
+                      .filter((color) => product.colors.includes(color._id))
+                      .map((color) => (
+                        <button
+                          key={color._id}
+                          onClick={() => setSelectedColor(color._id)}
+                          className={`px-3 py-1.5 border rounded-md text-sm ${
+                            selectedColor === color._id
+                              ? 'border-black text-black'
+                              : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                          }`}
+                        >
+                          {color.value}
+                        </button>
+                      ))
+                  ) : (
+                    <p className="text-sm text-gray-600">No colors available</p>
+                  )}
+                </div>
               </div>
 
               {/* Size Selection */}
               <div>
                 <h3 className="text-sm font-medium text-gray-900 mb-2">Size</h3>
                 <div className="flex flex-wrap gap-2">
-                  {['Free Size'].map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      className={`px-4 py-2 border rounded-md text-sm w-full ${
-                        selectedSize === size
-                          ? 'border-black text-black'
-                          : 'border-gray-300 text-gray-700 hover:border-gray-400'
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
+                  {product?.sizes?.length > 0 ? (
+                    attributes.sizes
+                      .filter((size) => product.sizes.includes(size._id))
+                      .map((size) => (
+                        <button
+                          key={size._id}
+                          onClick={() => setSelectedSize(size._id)}
+                          className={`px-4 py-2 border rounded-md text-sm ${
+                            selectedSize === size._id
+                              ? 'border-black text-black'
+                              : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                          }`}
+                        >
+                          {size.value}
+                        </button>
+                      ))
+                  ) : (
+                    <p className="text-sm text-gray-600">No sizes available</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -287,16 +380,16 @@ export default function ProductDetails() {
             </div>
 
             <div className="border-t border-b border-gray-200 py-4">
-              <div className="flex space-x-1 mb-4">
+              <div className="flex space-x-1">
                 <button
-                  onClick={() => setActiveTab('descriptions')}
+                  onClick={() => setActiveTab('details')}
                   className={`px-6 py-2 rounded-t font-medium cursor-pointer ${
-                    activeTab === 'descriptions'
+                    activeTab === 'details'
                       ? 'bg-[#b7853f] text-white'
                       : 'bg-gray-100 text-gray-600'
                   }`}
                 >
-                  Descriptions
+                  Details
                 </button>
                 <button
                   onClick={() => setActiveTab('reviews')}
@@ -310,8 +403,54 @@ export default function ProductDetails() {
                 </button>
               </div>
               <div className="text-gray-700 text-sm p-4">
-                {activeTab === 'descriptions' ? (
-                  <p>{product?.description}</p>
+                {activeTab === 'details' ? (
+                  <div className="space-y-4">
+                    {product?.productDetails && (
+                      <div className="mt-6">
+                        <h4 className="text-lg font-medium text-gray-900 mb-3">
+                          Product Details
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {product.productDetails.totalMetalWeight && (
+                            <div>
+                              <span className="text-gray-600">
+                                Total Weight:{' '}
+                              </span>
+                              <span className="font-medium">
+                                {product.productDetails.totalMetalWeight}
+                              </span>
+                            </div>
+                          )}
+                          {product.productDetails.materialType && (
+                            <div>
+                              <span className="text-gray-600">Material: </span>
+                              <span className="font-medium">
+                                {product.productDetails.materialType}
+                              </span>
+                            </div>
+                          )}
+                          {product.productDetails.metalType && (
+                            <div>
+                              <span className="text-gray-600">
+                                Metal Type:{' '}
+                              </span>
+                              <span className="font-medium">
+                                {product.productDetails.metalType}
+                              </span>
+                            </div>
+                          )}
+                          {product.productDetails.occasionType?.length > 0 && (
+                            <div className="md:col-span-2">
+                              <span className="text-gray-600">Occasions: </span>
+                              <span className="font-medium">
+                                {product.productDetails.occasionType.join(', ')}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <div className="space-y-6">
                     {product?.reviews?.length > 0 ? (
@@ -334,56 +473,12 @@ export default function ProductDetails() {
         </div>
 
         {/* Offers Modal */}
-        <OffersModal
-          isOpen={showOffersModal}
-          onClose={() => setShowOffersModal(false)}
-          offers={[
-            {
-              description:
-                '10% Instant Discount up to ₹1,750 on ICICI Bank Credit Card EMI',
-              code: 'ICICICREDIT',
-              validity: '31 Dec 2025',
-            },
-            {
-              description: '5% Cashback on Flipkart Axis Bank Card',
-              code: 'FLIPKART5',
-              validity: '15 Jan 2026',
-            },
-            {
-              description: 'Extra 10% off on SBI Credit Card',
-              code: 'SBICREDIT',
-              validity: '28 Feb 2026',
-            },
-            {
-              description: 'No Cost EMI on Bajaj Finserv',
-              code: 'BAJAJEMI',
-              validity: '31 Mar 2026',
-            },
-            {
-              description: 'Special price for Prime Members',
-              validity: 'Ongoing',
-            },
-            {
-              description: '5% Off on UPI payment',
-              code: 'UPI5',
-              validity: '20 Jan 2026',
-            },
-            {
-              description: 'Free shipping on orders above ₹999',
-              validity: 'Ongoing',
-            },
-            {
-              description: 'Buy 1 Get 1 Free on selected items',
-              code: 'B1G1',
-              validity: '14 Feb 2026',
-            },
-            {
-              description: 'Extra 5% off on prepaid orders',
-              code: 'PREPAID5',
-              validity: '28 Feb 2026',
-            },
-          ]}
-        />
+        {showOffersModal && (
+          <OffersModal
+            offers={offers}
+            onClose={() => setShowOffersModal(false)}
+          />
+        )}
 
         {/* Why It's Special Section */}
         <div id="why-special" className="mt-16 mb-12 px-4">

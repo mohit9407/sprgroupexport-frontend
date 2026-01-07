@@ -8,7 +8,7 @@ import {
   selectShippingMethod,
 } from '@/features/shipping-method/shippingMethodSlice'
 
-export default function ShippingMethods({ onContinue, initialMethod = '' }) {
+export default function ShippingMethods({ onContinue, initialMethod = null }) {
   const dispatch = useDispatch()
   const shippingMethods = useSelector(selectAllShippingMethods)
   const status = useSelector(selectShippingStatus)
@@ -26,19 +26,31 @@ export default function ShippingMethods({ onContinue, initialMethod = '' }) {
   useEffect(() => {
     let timer
     if (shippingMethods && shippingMethods.length > 0 && !selectedMethod) {
-      timer = setTimeout(() => setSelectedMethod(shippingMethods[0]._id), 0)
+      const defaultMethod = shippingMethods[0]
+      timer = setTimeout(() => {
+        setSelectedMethod(defaultMethod._id)
+        // Also update the form data with the default shipping method
+        if (typeof onContinue === 'function') {
+          onContinue({ shippingMethod: defaultMethod }, 1, true)
+        }
+      }, 0)
     }
     return () => clearTimeout(timer)
-  }, [shippingMethods, selectedMethod])
+  }, [shippingMethods, selectedMethod, onContinue])
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    onContinue(
-      {
-        shippingMethod: selectedMethod,
-      },
-      3, // Changed from 4 to 3 to go to Order Details (step 3)
+    const selectedShippingMethod = shippingMethods.find(
+      (method) => method._id === selectedMethod,
     )
+    if (selectedShippingMethod) {
+      onContinue(
+        {
+          shippingMethod: selectedShippingMethod, // Pass the complete method object
+        },
+        3, // Go to Order Details (step 3)
+      )
+    }
   }
 
   return (
