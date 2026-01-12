@@ -1,6 +1,7 @@
 'use client'
 
 import { AddEditCustomerAddressModal } from '@/components/admin/AddEditCustomerAddressModal'
+import ConfirmationModal from '@/components/admin/ConfirmationModal'
 import { TanstackTable } from '@/components/admin/TanstackTable'
 import {
   deleteCustomerAddress,
@@ -103,6 +104,7 @@ export const CustomerAddressPage = ({ params }) => {
   const { _id: userId } = use(params)
   const dispatch = useDispatch()
   const [showModal, setShowModal] = useState(false)
+  const [openDelete, setOpenDelete] = useState(false)
   const [editData, setEditData] = useState(false)
   const {
     data: addresses,
@@ -117,7 +119,7 @@ export const CustomerAddressPage = ({ params }) => {
 
   const handleDelete = () => {
     dispatch(deleteCustomerAddress())
-    setShowModal(false)
+    setOpenDelete(false)
   }
 
   useEffect(() => {
@@ -142,7 +144,7 @@ export const CustomerAddressPage = ({ params }) => {
       <TanstackTable
         columns={addressColumns({
           onEdit: handleEdit,
-          onDelete: handleDelete,
+          onDelete: () => setOpenDelete(true),
         })}
         data={addresses?.[userId] || []}
         isLoading={isLoading}
@@ -157,6 +159,16 @@ export const CustomerAddressPage = ({ params }) => {
           onSuccess={() => dispatch(getCustomerAddress({ userId }))}
         />
       )}
+
+      <ConfirmationModal
+        open={openDelete}
+        onClose={() => setOpenDelete(false)}
+        onConfirm={handleDelete}
+        title="Delete Address"
+        description="Are you sure you want to delete this address?"
+        confirmText="Delete"
+        theme="error"
+      />
     </div>
   )
 }
