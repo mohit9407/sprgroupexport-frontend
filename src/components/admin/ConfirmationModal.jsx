@@ -50,9 +50,9 @@ export default function ConfirmationModal({
   const styles = MODAL_THEMES[theme]
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div className="fixed top:0 left:0 h-screen md:w-auto md:h-auto md:fixed inset-0 z-50 overflow-hidden flex items-center md:justify-center bg-black/40">
       <div
-        className={`w-full max-w-md rounded-lg bg-white shadow-xl border ${styles.border}`}
+        className={`w-screen md:w-full max-w-md rounded-lg bg-white shadow-xl border ${styles.border}`}
       >
         <div
           className={

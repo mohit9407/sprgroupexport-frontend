@@ -20,6 +20,11 @@ const updateCustomer = async (id, payload) => {
   return await api.put('/auth/edit-profile', payload)
 }
 
+const deleteCustomer = async (id) => {
+  if (!id) return
+  return await api.delete(`/auth/soft-delete/${id}`)
+}
+
 const getCustomerAddress = async (userId) => {
   const response = await api.get(
     `/auth/admin/user/${userId}/shipping-addresses`,
@@ -53,6 +58,7 @@ export const customerAddressService = {
   getCustomer,
   addNewCustomer,
   updateCustomer,
+  deleteCustomer,
   getCustomerAddress,
   addCustomerAddress,
   updateCustomerAddress,
