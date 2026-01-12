@@ -20,9 +20,9 @@ const updateCustomer = async (id, payload) => {
   return await api.put('/auth/edit-profile', payload)
 }
 
-const deleteCustomer = async (id, payload) => {
+const deleteCustomer = async (id) => {
   if (!id) return
-  return await api.put('/auth/edit-profile', payload)
+  return await api.delete(`/auth/soft-delete/${id}`)
 }
 
 const getCustomerAddress = async (userId) => {
