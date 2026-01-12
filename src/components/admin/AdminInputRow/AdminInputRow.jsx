@@ -14,6 +14,7 @@ export function AdminInputRow({
   type = 'text',
   onBlur,
   required,
+  fullWidth,
   ...rest
 }) {
   const inputId = id ?? name
@@ -26,10 +27,10 @@ export function AdminInputRow({
           ${error ? 'text-red-600' : 'text-gray-700'}`}
       >
         {label}
-        {required && <span>*</span>}
+        {required && <span className="text-red-600">*</span>}
       </label>
 
-      <div className="col-span-12 md:col-span-4">
+      <div className={fullWidth ? 'col-span-8' : 'col-span-12 md:col-span-4'}>
         <input
           {...rest}
           id={inputId}
@@ -66,6 +67,7 @@ export function FormAdminInputRow({
   type = 'text',
   defaultValue = '',
   required,
+  fullWidth,
   ...rest
 }) {
   const { control } = useFormContext()
@@ -88,6 +90,7 @@ export function FormAdminInputRow({
           helpText={helpText}
           type={type}
           required={required}
+          fullWidth={fullWidth}
         />
       )}
     />

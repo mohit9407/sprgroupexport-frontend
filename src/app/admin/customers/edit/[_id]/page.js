@@ -1,17 +1,23 @@
 'use client'
 
+import ButtonLoader from '@/components/admin/ButtonLoader'
 import { CustomerFormPage } from '@/components/admin/CustomerFormPage'
-import { getCustomer } from '@/features/admin/customersService'
-import React, { use, useEffect, useState } from 'react'
+import { getCustomer } from '@/features/customers/customersSlice'
+import React, { use, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 
 export default function EditCustomerPage({ params }) {
   const { _id } = use(params)
-  const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const dispatch = useDispatch()
+  const { data, isLoading } = useSelector(
+    (state) => state.customers.getCustomer,
+  )
 
-  const getFormattedResponse = (response) => {
-    const { firstName, lastName, email, gender, dob, mobileNo, status } =
-      response
+  const customerDetails = useMemo(() => {
+    if (!data) {
+      return null
+    }
+    const { firstName, lastName, email, gender, dob, mobileNo, status } = data
     return {
       firstName: firstName,
       lastName: lastName,
@@ -21,20 +27,26 @@ export default function EditCustomerPage({ params }) {
       mobileNo: mobileNo,
       status: status,
     }
-  }
+  }, [data])
 
   useEffect(() => {
     if (!_id) return
-
-    getCustomer(_id)
-      .then((resp) => setData(getFormattedResponse(resp)))
-      .catch(console.error)
-      .finally(() => setLoading(false))
+    dispatch(getCustomer({ id: _id }))
   }, [_id])
 
-  if (loading) return <div>Loading...</div>
+  if (isLoading)
+    return (
+      <div className="flex justify-center items-center">
+        <ButtonLoader className="inline-flex text-sky-600" /> Loading...
+      </div>
+    )
 
   return (
-    <CustomerFormPage mode="edit" title="Edit Customer" defaultValues={data} />
+    <CustomerFormPage
+      mode="edit"
+      title="Edit Customer"
+      userId={_id}
+      defaultValues={customerDetails}
+    />
   )
 }
