@@ -58,6 +58,20 @@ export const updateCustomer = createAsyncThunk(
   },
 )
 
+export const deleteCustomer = createAsyncThunk(
+  'customer/deleteCustomer',
+  async ({ id }, { rejectWithValue }) => {
+    try {
+      const response = await customerAddressService.deleteCustomer(id)
+      return response.data
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Unable to delete customer',
+      )
+    }
+  },
+)
+
 export const getCustomerAddress = createAsyncThunk(
   'customer/customerAddress',
   async ({ userId }, { rejectWithValue }) => {
@@ -140,6 +154,7 @@ const customersSlice = createSlice({
     updateCustomer: {
       data: null,
     },
+    deleteCustomer: {},
     addresses: {
       data: null,
     },
@@ -195,15 +210,26 @@ const customersSlice = createSlice({
       })
       .addCase(updateCustomer.fulfilled, (state) => {
         state.updateCustomer.isLoading = false
-        if (customerIndex !== undefined) {
-          state.updateCustomer.isSuccess = true
-          state.updateCustomer.message = 'Customer updated Successfully'
-        }
+        state.updateCustomer.isSuccess = true
+        state.updateCustomer.message = 'Customer updated Successfully'
       })
       .addCase(updateCustomer.rejected, (state, action) => {
         state.updateCustomer.isLoading = false
         state.updateCustomer.isError = true
         state.updateCustomer.message = action.payload
+      })
+      .addCase(deleteCustomer.rejected, (state, action) => {
+        state.deleteCustomer.isLoading = false
+        state.deleteCustomer.isError = true
+        state.deleteCustomer.message = action.payload
+      })
+      .addCase(deleteCustomer.pending, (state) => {
+        state.deleteCustomer.isLoading = true
+      })
+      .addCase(deleteCustomer.fulfilled, (state) => {
+        state.deleteCustomer.isLoading = false
+        state.deleteCustomer.isSuccess = true
+        state.deleteCustomer.message = 'Customer deleted successfully'
       })
       .addCase(getCustomerAddress.pending, (state) => {
         state.addresses.isLoading = true

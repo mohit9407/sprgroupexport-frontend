@@ -8,10 +8,11 @@ import { getAddressString } from '@/utils/stringUtils'
 import { useRouter } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux'
 import { getAllCustomers } from '@/features/customers/customersSlice'
+import ConfirmationModal from '@/components/admin/ConfirmationModal'
 
 const columnHelper = createColumnHelper()
 
-const columns = [
+const columns = (onDelete) => [
   columnHelper.accessor('id', {
     header: 'ID',
     cell: (info) => info.getValue(),
@@ -58,7 +59,7 @@ const columns = [
             {
               label: 'Delete',
               danger: true,
-              onClick: () => ('Delete', id),
+              onClick: () => onDelete(id),
             },
           ]}
         />
@@ -76,6 +77,7 @@ export default function CustomersPage() {
   })
   const [sorting, setSorting] = useState([])
   const [filterBy, setFilterBy] = useState('')
+  const [deleteModal, setDeleteModal] = useState({ open: false })
   const {
     data,
     pagination: apiPagination,
@@ -117,39 +119,57 @@ export default function CustomersPage() {
     )
   }, [data])
 
+  const handleDelete = () => {
+    dispatch(deleteCustomer({ id: deleteModal.id }))
+    setDeleteModal({
+      open: false,
+    })
+  }
+
   useEffect(() => {
     getCustomers()
   }, [pagination.pageIndex, sorting])
 
   return (
-    <TanstackTable
-      columns={columns}
-      data={customers}
-      isLoading={isLoading}
-      mode="server"
-      pageCount={apiPagination?.totalPages}
-      pagination={pagination}
-      sorting={sorting}
-      onPaginationChange={setPagination}
-      onSortingChange={setSorting}
-      onSearch={(val) => {
-        setPagination((p) => ({ ...p, pageIndex: 0 }))
-        getCustomers(val, 1)
-      }}
-      filterByValue={filterBy}
-      filterByOptions={[
-        { label: 'Name', value: 'name' },
-        { label: 'Email', value: 'email' },
-      ]}
-      onFilterChange={setFilterBy}
-      actions={
-        <button
-          className="bg-sky-600 text-white px-3 py-1.5 rounded text-sm"
-          onClick={() => router.push('/admin/customers/add')}
-        >
-          Add New
-        </button>
-      }
-    />
+    <>
+      <TanstackTable
+        columns={columns((id) => setDeleteModal({ open: true, id }))}
+        data={customers}
+        isLoading={isLoading}
+        mode="server"
+        pageCount={apiPagination?.totalPages}
+        pagination={pagination}
+        sorting={sorting}
+        onPaginationChange={setPagination}
+        onSortingChange={setSorting}
+        onSearch={(val) => {
+          setPagination((p) => ({ ...p, pageIndex: 0 }))
+          getCustomers(val, 1)
+        }}
+        filterByValue={filterBy}
+        filterByOptions={[
+          { label: 'Name', value: 'name' },
+          { label: 'Email', value: 'email' },
+        ]}
+        onFilterChange={setFilterBy}
+        actions={
+          <button
+            className="bg-sky-600 text-white px-3 py-1.5 rounded text-sm"
+            onClick={() => router.push('/admin/customers/add')}
+          >
+            Add New
+          </button>
+        }
+      />
+      <ConfirmationModal
+        open={deleteModal.open}
+        onClose={() => setDeleteModal({ open: false })}
+        onConfirm={handleDelete}
+        title="Delete Customer"
+        description="Are you sure you want to delete this customer?"
+        confirmText="Delete"
+        theme="error"
+      />
+    </>
   )
 }
