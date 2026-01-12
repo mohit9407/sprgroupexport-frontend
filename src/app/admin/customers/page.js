@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux'
 import { getAllCustomers } from '@/features/customers/customersSlice'
 import ConfirmationModal from '@/components/admin/ConfirmationModal'
+import toast from 'react-hot-toast'
 
 const columnHelper = createColumnHelper()
 
@@ -124,6 +125,7 @@ export default function CustomersPage() {
     setDeleteModal({
       open: false,
     })
+    toast.success('Successfully deleted customer')
   }
 
   useEffect(() => {
