@@ -12,6 +12,7 @@ import orderReducer from '../features/order/orderSlice'
 import attributesReducer from '../features/attributes/attributesSlice'
 import couponsReducer from '../features/coupons/couponsSlice'
 import customersReducer from '../features/customers/customersSlice'
+import orderStatusReducer from '../features/orderStatus/orderStatusSlice'
 
 export const store = configureStore({
   reducer: {
@@ -28,5 +29,6 @@ export const store = configureStore({
     attributes: attributesReducer,
     coupons: couponsReducer,
     customers: customersReducer,
+    orderStatus: orderStatusReducer,
   },
 })

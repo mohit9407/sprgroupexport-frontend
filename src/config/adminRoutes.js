@@ -20,6 +20,7 @@ import {
   FaUserEdit,
   FaUpload,
   FaRegGrinStars,
+  FaEye,
 } from 'react-icons/fa'
 import { FaGears, FaTicket } from 'react-icons/fa6'
 
@@ -162,11 +163,36 @@ export const routeMeta = [
   // ===== Orders =====
   {
     key: 'orders',
+    label: 'Orders',
+    sidebar: true,
+    icon: FaList,
+    sidebarChildrens: ['/admin/orders', '/admin/orders/order-status'],
+  },
+  {
+    key: 'orders-list',
     path: '/admin/orders',
     label: 'Orders',
     parent: '/admin',
     sidebar: true,
     icon: FaList,
+  },
+  {
+    key: 'order-status',
+    path: '/admin/orders/order-status',
+    label: 'Order Status',
+    parent: '/admin/orders',
+    sidebar: true,
+    icon: FaList,
+  },
+
+  {
+    key: 'edit-order',
+    path: '/admin/orders/:_id',
+    label: 'Edit Order',
+    description: 'Edit Order...',
+    parent: '/admin/orders',
+    sidebar: false,
+    icon: FaEye,
   },
 
   // ===== Reports =====

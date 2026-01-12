@@ -274,7 +274,7 @@ export default function OrderDetailsPage() {
                       Shipping Address
                     </h3>
                     <div className="mt-2 text-sm text-gray-900">
-                      <p>{shippingAddress?.fullName || user?.name}</p>
+                      <p>{shippingAddress?.fullName}</p>
                       <p>{shippingAddress?.address}</p>
                       <p>
                         {shippingAddress?.city}, {shippingAddress?.state}{' '}
@@ -294,7 +294,7 @@ export default function OrderDetailsPage() {
                       Shipping Method
                     </h3>
                     <p className="mt-2 text-sm text-gray-900">
-                      {order.shippingMethod || 'Standard Shipping'}
+                      {order.shippingMethod.name || 'Standard Shipping'}
                     </p>
                     {order.trackingNumber && (
                       <div className="mt-4">

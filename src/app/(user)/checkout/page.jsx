@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useCart } from '@/context/CartContext'
 import { useAuth } from '@/context/AuthContext'
 import { createOrder, resetOrderState } from '@/features/order/orderSlice'
+import { fetchOrderStatuses } from '@/features/orderStatus/orderStatusSlice'
 import AuthModal from '@/components/Auth/AuthModal'
 import CheckoutSteps from './components/CheckoutSteps'
 import OrderSummary from './components/OrderSummary'
@@ -28,8 +29,9 @@ export default function CheckoutPage() {
   })
   const [outOfStockError, setOutOfStockError] = useState(null)
 
-  // Get order state from Redux
+  // Get order and order status state from Redux
   const { order, loading, error, success } = useSelector((state) => state.order)
+  const { statuses } = useSelector((state) => state.orderStatus)
 
   // Check authentication on component mount and when user changes
   useEffect(() => {
@@ -41,6 +43,11 @@ export default function CheckoutPage() {
       }
     }
   }, [user])
+
+  // Fetch order statuses on component mount
+  useEffect(() => {
+    dispatch(fetchOrderStatuses())
+  }, [dispatch])
 
   // Handle order submission
   useEffect(() => {
@@ -56,6 +63,17 @@ export default function CheckoutPage() {
   const handleContinue = async (stepData, nextStep) => {
     // If this is the final step (place order)
     if (nextStep === 'placeOrder') {
+      // Check if statuses are loaded
+      if (!statuses || statuses.length === 0) {
+        try {
+          await dispatch(fetchOrderStatuses()).unwrap()
+          // After fetching, try again
+          return handleContinue(stepData, nextStep)
+        } catch (error) {
+          return
+        }
+      }
+
       try {
         // Verify user and token again before proceeding
         const token = localStorage.getItem('token')
@@ -65,6 +83,16 @@ export default function CheckoutPage() {
         }
 
         if (!formData.shippingAddress?._id) {
+          console.error('Shipping address is required')
+          return
+        }
+
+        // Get the pending status ID
+        const pendingStatus = statuses.find(
+          (status) => status.orderStatus?.toLowerCase() === 'pending',
+        )
+
+        if (!pendingStatus?._id) {
           return
         }
 
@@ -81,7 +109,7 @@ export default function CheckoutPage() {
           paymentMethod: formData.paymentMethod,
           paymentStatus:
             formData.paymentMethod === 'cod' ? 'pending' : 'completed',
-          orderStatus: 'pending',
+          orderStatus: pendingStatus._id, // Use the found status ID
           subtotal: cart.reduce(
             (sum, item) => sum + item.price * item.quantity,
             0,
@@ -90,7 +118,7 @@ export default function CheckoutPage() {
           total:
             cart.reduce((sum, item) => sum + item.price * item.quantity, 0) +
             (formData.shippingMethod?.price || 0),
-          comments: formData.orderNotes || '',
+          comments: stepData.orderNotes || '',
         }
 
         // Dispatch the createOrder action
@@ -142,21 +170,27 @@ export default function CheckoutPage() {
       case 1:
         return (
           <ShippingAddress
-            onContinue={handleContinue}
+            onContinue={(data, step) => {
+              handleContinue(data, step)
+            }}
             initialData={formData.shippingAddress}
           />
         )
       case 2:
         return (
           <ShippingMethods
-            onContinue={handleContinue}
+            onContinue={(data, step) => {
+              handleContinue(data, step)
+            }}
             initialMethod={formData.shippingMethod}
           />
         )
       case 3:
         return (
           <OrderDetail
-            onContinue={handleContinue}
+            onContinue={(data, step) => {
+              handleContinue(data, step)
+            }}
             paymentMethod={formData.paymentMethod}
           />
         )

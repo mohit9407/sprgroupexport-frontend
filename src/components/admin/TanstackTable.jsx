@@ -41,7 +41,14 @@ export function TanstackTable({
   const [localSorting, setLocalSorting] = useState([])
   const [search, setSearch] = useState('')
 
+  const handleFilterChange = (value) => {
+    // Only update filter value, don't trigger search
+    setSearch('')
+    onFilterChange?.(value)
+  }
+
   const pagination = mode === 'server' ? externalPagination : localPagination
+  const totalPageCount = Math.ceil(data.length / pagination.pageSize)
   const sorting = mode === 'server' ? externalSorting : localSorting
 
   const table = useReactTable({
@@ -62,52 +69,92 @@ export function TanstackTable({
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-2 pb-3">
-        <div className="flex gap-2">
-          <select
-            className="border border-gray-300 bg-gray-100 px-3 py-1.5 text-sm rounded-xs"
-            value={filterByValue ?? ''}
-            onChange={(e) => onFilterChange?.(e.target.value)}
-          >
-            <option value="" disabled hidden>
-              {'Filter By'}
-            </option>
-            {filterByOptions.map((opt) => (
-              <option key={opt.label} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-
-          <input
-            className="border border-gray-300 px-3 py-1.5 text-sm rounded-xs w-48"
-            placeholder="Search term..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-
-          <button
-            onClick={() => onSearch?.(search)}
-            className="bg-sky-600 text-white px-3 py-1.5 rounded text-sm"
-          >
-            <FaSearch />
-          </button>
-          {filterByValue && search && (
-            <button
-              onClick={() => {
-                onFilterChange('')
-                setSearch('')
-                onSearch?.('')
-              }}
-              className="bg-red-400 disabled:bg-gray-400 text-white px-3 py-1.5 rounded text-sm"
+      {Boolean(filterByOptions?.length) && (
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-3">
+          <div className="flex gap-2">
+            <select
+              className="border border-gray-300 bg-gray-100 px-3 py-1.5 text-sm rounded-xs"
+              value={filterByValue ?? ''}
+              onChange={(e) => handleFilterChange(e.target.value)}
             >
-              <ImBlocked />
-            </button>
-          )}
-        </div>
+              <option value="" disabled hidden>
+                {'Filter By'}
+              </option>
+              {filterByOptions.map((opt) => (
+                <option key={opt.label} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
 
-        {actions}
-      </div>
+            {filterByValue ? (
+              (() => {
+                const selectedFilter = filterByOptions.find(
+                  (opt) => opt.value === filterByValue,
+                )
+                const filterType = selectedFilter?.type || 'text'
+
+                if (filterType === 'select') {
+                  const options = selectedFilter.options || []
+                  return (
+                    <select
+                      className="border border-gray-300 px-3 py-1.5 text-sm rounded-xs w-48"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                    >
+                      <option value="">All {selectedFilter.label}</option>
+                      {options.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  )
+                }
+
+                return (
+                  <input
+                    className="border border-gray-300 px-3 py-1.5 text-sm rounded-xs w-48"
+                    placeholder={`Search by ${selectedFilter?.label || '...'}`}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && onSearch(search)}
+                  />
+                )
+              })()
+            ) : (
+              <input
+                className="border border-gray-300 px-3 py-1.5 text-sm rounded-xs w-48"
+                placeholder="Search term..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && onSearch(search)}
+                disabled
+              />
+            )}
+
+            <button
+              onClick={() => onSearch?.(search)}
+              className="bg-sky-600 text-white px-3 py-1.5 rounded text-sm"
+            >
+              <FaSearch />
+            </button>
+            {(filterByValue || search) && (
+              <button
+                onClick={() => {
+                  onFilterChange('')
+                  setSearch('')
+                  onSearch?.('')
+                }}
+                className="bg-red-400 disabled:bg-gray-400 text-white px-3 py-1.5 rounded text-sm"
+              >
+                <ImBlocked />
+              </button>
+            )}
+          </div>
+          {actions}
+        </div>
+      )}
 
       <div className="py-4">
         <table className="w-full text-sm border-collapse">
@@ -187,24 +234,23 @@ export function TanstackTable({
         </table>
       </div>
 
-      <div className="flex justify-end items-center gap-1 p-3 text-sm">
-        <TablePagination
-          pageIndex={pagination.pageIndex}
-          pageCount={
-            mode === 'server'
-              ? pageCount
-              : Math.ceil(data.length / pagination.pageSize)
-          }
-          onPageChange={(newIndex) =>
-            (mode === 'server' ? onPaginationChange : setLocalPagination)?.(
-              (old) => ({
-                ...old,
-                pageIndex: newIndex,
-              }),
-            )
-          }
-        />
-      </div>
+      {((mode === 'server' && onPaginationChange) ||
+        (mode === 'client' && data?.length > 0 && totalPageCount > 1)) && (
+        <div className="flex justify-end items-center gap-1 p-3 text-sm">
+          <TablePagination
+            pageIndex={pagination.pageIndex}
+            pageCount={mode === 'server' ? pageCount : totalPageCount}
+            onPageChange={(newIndex) =>
+              (mode === 'server' ? onPaginationChange : setLocalPagination)?.(
+                (old) => ({
+                  ...old,
+                  pageIndex: newIndex,
+                }),
+              )
+            }
+          />
+        </div>
+      )}
     </div>
   )
 }

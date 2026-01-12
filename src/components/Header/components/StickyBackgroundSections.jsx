@@ -123,7 +123,7 @@ export default function StickyBackgroundSections({
     <div className="relative h-[500px]">
       {/* Sticky Background */}
       <div
-        className="fixed inset-0 bg-cover bg-center transition-all duration-1000 ease-in-out w-full transform-gpu"
+        className="fixed inset-0 bg-cover bg-center transition-all w-full transform-gpu"
         style={{
           backgroundImage: `url(${activeBg})`,
           backgroundColor: '#E6F0F5',
