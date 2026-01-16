@@ -7,7 +7,7 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { useEffect, useState } from 'react'
+import { memo, startTransition, useEffect, useState } from 'react'
 import {
   FaSearch,
   FaSort,
@@ -19,7 +19,7 @@ import { useTableQueryParams } from './utils'
 import TablePagination from './TablePagination'
 import ButtonLoader from '../ButtonLoader'
 
-export function TanstackTable({
+export const TanstackTable = memo(function TanstackTable({
   columns,
   data,
   pageCount,
@@ -46,7 +46,7 @@ export function TanstackTable({
           })
         : updater
 
-    setParams({ page: next.pageIndex + 1 })
+    startTransition(() => setParams({ page: next.pageIndex + 1 }))
   }
 
   const handleSortingChange = (updater) => {
@@ -60,17 +60,21 @@ export function TanstackTable({
         : updater
 
     if (!nextSorting.length) {
-      setParams({
-        sortBy: null,
-        direction: null,
-        page: 1,
-      })
+      startTransition(() =>
+        setParams({
+          sortBy: null,
+          direction: null,
+          page: 1,
+        }),
+      )
     } else {
-      setParams({
-        sortBy: nextSorting[0].id,
-        direction: nextSorting[0].desc ? 'desc' : 'asc',
-        page: 1,
-      })
+      startTransition(() =>
+        setParams({
+          sortBy: nextSorting[0].id,
+          direction: nextSorting[0].desc ? 'desc' : 'asc',
+          page: 1,
+        }),
+      )
     }
   }
 
@@ -242,7 +246,7 @@ export function TanstackTable({
           </thead>
 
           <tbody>
-            {isLoading ? (
+            {isLoading && (
               <tr>
                 <td colSpan={columns.length} className="p-4 text-center">
                   <div className="flex justify-center items-center">
@@ -251,15 +255,19 @@ export function TanstackTable({
                   </div>
                 </td>
               </tr>
-            ) : table.getRowModel().rows.length === 0 ? (
+            )}
+            {!isLoading && table.getRowModel().rows.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="p-4 text-center">
                   No records found
                 </td>
               </tr>
             ) : (
-              table.getRowModel().rows.map((row) => (
-                <tr key={row.id} className="even:bg-gray-50 hover:bg-gray-100">
+              table.getRowModel()?.rows?.map((row) => (
+                <tr
+                  key={row.id}
+                  className={`even:bg-gray-50 hover:bg-gray-100`}
+                >
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="p-2 border border-gray-200">
                       {flexRender(
@@ -290,4 +298,6 @@ export function TanstackTable({
       )}
     </div>
   )
-}
+})
+
+export default TanstackTable
