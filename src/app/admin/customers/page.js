@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { createColumnHelper } from '@tanstack/react-table'
-import { TanstackTable } from '@/components/admin/TanstackTable'
 import { RowActionsMenu } from '@/components/admin/RowActionMenu'
 import { getAddressString } from '@/utils/stringUtils'
 import { useRouter } from 'next/navigation'
@@ -10,10 +9,14 @@ import { useDispatch, useSelector } from 'react-redux'
 import { getAllCustomers } from '@/features/customers/customersSlice'
 import ConfirmationModal from '@/components/admin/ConfirmationModal'
 import toast from 'react-hot-toast'
+import {
+  TanstackTable,
+  useTableQueryParams,
+} from '@/components/admin/TanStackTable'
 
 const columnHelper = createColumnHelper()
 
-const columns = (onDelete) => [
+const getColumns = (onDelete) => [
   columnHelper.accessor('id', {
     header: 'ID',
     cell: (info) => info.getValue(),
@@ -72,12 +75,7 @@ const columns = (onDelete) => [
 export default function CustomersPage() {
   const router = useRouter()
   const dispatch = useDispatch()
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 10,
-  })
-  const [sorting, setSorting] = useState([])
-  const [filterBy, setFilterBy] = useState('')
+  const { params } = useTableQueryParams()
   const [deleteModal, setDeleteModal] = useState({ open: false })
   const {
     data,
@@ -85,18 +83,21 @@ export default function CustomersPage() {
     isLoading,
   } = useSelector((state) => state.customers.allCustomers)
 
-  const getCustomers = async (search = '', page) => {
+  const columns = useMemo(
+    () => getColumns((id) => setDeleteModal({ open: true, id })),
+    [],
+  )
+
+  const getCustomers = async () => {
     try {
-      const sort = sorting[0]
-      const sortType = sort?.desc ? 'desc' : 'asc'
       dispatch(
         getAllCustomers({
-          search: search ?? undefined,
-          sortBy: sort?.id,
-          direction: sort?.id ? sortType : undefined,
-          page: page ?? pagination.pageIndex + 1,
-          limit: pagination.pageSize ?? 10,
-          filterBy: filterBy || undefined,
+          search: params?.search ?? undefined,
+          sortBy: params?.sortBy,
+          direction: params?.sortBy ? params.direction : undefined,
+          page: params?.pageIndex + 1,
+          limit: params?.pageSize ?? 10,
+          filterBy: params?.filterBy || undefined,
         }),
       )
     } catch (error) {
@@ -128,32 +129,27 @@ export default function CustomersPage() {
     toast.success('Successfully deleted customer')
   }
 
+  const filterByOptions = useMemo(
+    () => [
+      { label: 'Name', value: 'name' },
+      { label: 'Email', value: 'email' },
+    ],
+    [],
+  )
+
   useEffect(() => {
     getCustomers()
-  }, [pagination.pageIndex, sorting])
+  }, [params])
 
   return (
     <>
       <TanstackTable
-        columns={columns((id) => setDeleteModal({ open: true, id }))}
+        columns={columns}
         data={customers}
         isLoading={isLoading}
         mode="server"
         pageCount={apiPagination?.totalPages}
-        pagination={pagination}
-        sorting={sorting}
-        onPaginationChange={setPagination}
-        onSortingChange={setSorting}
-        onSearch={(val) => {
-          setPagination((p) => ({ ...p, pageIndex: 0 }))
-          getCustomers(val, 1)
-        }}
-        filterByValue={filterBy}
-        filterByOptions={[
-          { label: 'Name', value: 'name' },
-          { label: 'Email', value: 'email' },
-        ]}
-        onFilterChange={setFilterBy}
+        filterByOptions={filterByOptions}
         actions={
           <button
             className="bg-sky-600 text-white px-3 py-1.5 rounded text-sm"

@@ -3,9 +3,9 @@ import { customerAddressService } from './customersService'
 
 export const getAllCustomers = createAsyncThunk(
   'customer/allCustomers',
-  async (_, { rejectWithValue }) => {
+  async (data, { rejectWithValue }) => {
     try {
-      const response = await customerAddressService.getAllUsers()
+      const response = await customerAddressService.getAllUsers(data)
       return response
     } catch (error) {
       return rejectWithValue(

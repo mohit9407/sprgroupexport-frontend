@@ -18,7 +18,7 @@ import {
 import { ImBlocked } from 'react-icons/im'
 import ButtonLoader from './ButtonLoader'
 
-export function TanstackTable({
+export function TanstackTableOld({
   columns,
   data,
   pageCount,

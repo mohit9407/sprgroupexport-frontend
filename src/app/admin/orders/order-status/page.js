@@ -1,10 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { createColumnHelper } from '@tanstack/react-table'
-import { TanstackTable } from '@/components/admin/TanstackTable'
 import { useRouter } from 'next/navigation'
-import { FaEdit, FaTrash, FaPlus, FaCheck, FaTimes } from 'react-icons/fa'
+import { FaEdit, FaTrash, FaPlus, FaCheck } from 'react-icons/fa'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   fetchOrderStatuses,
@@ -12,6 +11,7 @@ import {
   updateOrderStatus,
 } from '@/features/orderStatus/orderStatusSlice'
 import { toast } from '@/utils/toastConfig'
+import { TanstackTable } from '@/components/admin/TanStackTable'
 
 const columnHelper = createColumnHelper()
 
