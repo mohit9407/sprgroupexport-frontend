@@ -2,13 +2,14 @@
 
 import { AddEditCustomerAddressModal } from '@/components/admin/AddEditCustomerAddressModal'
 import ConfirmationModal from '@/components/admin/ConfirmationModal'
-import { TanstackTable } from '@/components/admin/TanstackTable'
+import { TanstackTable } from '@/components/admin/TanStackTable'
 import {
   deleteCustomerAddress,
   getCustomerAddress,
 } from '@/features/customers/customersSlice'
 import { createColumnHelper } from '@tanstack/react-table'
 import React, { use, useEffect, useState } from 'react'
+import toast from 'react-hot-toast'
 import { FaEdit, FaTrash } from 'react-icons/fa'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -119,6 +120,7 @@ export const CustomerAddressPage = ({ params }) => {
 
   const handleDelete = () => {
     dispatch(deleteCustomerAddress())
+    toast.error('successfully deleted customer address')
     setOpenDelete(false)
   }
 

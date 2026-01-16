@@ -2,33 +2,22 @@
 
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import { createColumnHelper } from '@tanstack/react-table'
-import { TanstackTable } from '@/components/admin/TanstackTable'
 import { useRouter } from 'next/navigation'
 import { FaEdit, FaTrash, FaEye } from 'react-icons/fa'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchAdminOrders } from '@/features/order/orderSlice'
 import { fetchOrderStatuses } from '@/features/orderStatus/orderStatusSlice'
+import {
+  TanstackTable,
+  useTableQueryParams,
+} from '@/components/admin/TanStackTable'
 
 const columnHelper = createColumnHelper()
 
 export default function OrdersPage() {
   const router = useRouter()
+  const { params } = useTableQueryParams()
   const dispatch = useDispatch()
-  const [sorting, setSorting] = useState([])
-  const [filterBy, setFilterBy] = useState('')
-  const [searchTerm, setSearchTerm] = useState('')
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 10,
-  })
-
-  // Keep the pending filter in a ref so selecting it doesn't immediately change getOrders identity
-  const filterRef = useRef(filterBy)
-
-  const handleFilterChange = (val) => {
-    setFilterBy(val)
-    filterRef.current = val
-  }
 
   const columns = useMemo(
     () => [
@@ -142,38 +131,31 @@ export default function OrdersPage() {
 
   const { statuses: orderStatuses } = useSelector((state) => state.orderStatus)
 
+  const getOrders = async () => {
+    try {
+      dispatch(
+        fetchAdminOrders({
+          searchValue: params?.search || undefined,
+          sortBy: params?.sortBy,
+          direction: params?.sortBy ? params?.direction : undefined,
+          page: params?.pageIndex ?? 1,
+          limit: params?.pageSize,
+          filterBy: params?.filterBy || undefined,
+        }),
+      )
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
   // Fetch order statuses on component mount
   useEffect(() => {
     dispatch(fetchOrderStatuses())
   }, [dispatch])
 
-  const getOrders = useCallback(
-    async (search = searchTerm, page) => {
-      try {
-        const sort = sorting[0]
-        const sortType = sort?.desc ? 'desc' : 'asc'
-        const filter = filterRef.current
-
-        dispatch(
-          fetchAdminOrders({
-            searchValue: search || undefined,
-            sortBy: sort?.id,
-            direction: sort?.id ? sortType : undefined,
-            page: page ?? pagination.pageIndex + 1,
-            limit: pagination.pageSize,
-            filterBy: filter || undefined,
-          }),
-        )
-      } catch (error) {
-        console.error(error)
-      }
-    },
-    [sorting, pagination.pageSize, pagination.pageIndex, dispatch, searchTerm],
-  )
-
   useEffect(() => {
     getOrders()
-  }, [pagination.pageIndex, getOrders])
+  }, [params])
 
   // Format data for table
   const tableData = orders.map((order) => {
@@ -213,12 +195,6 @@ export default function OrdersPage() {
         isLoading={loading}
         mode="server"
         pageCount={serverPagination?.totalPages || 1}
-        pagination={pagination}
-        sorting={sorting}
-        onPaginationChange={setPagination}
-        onSortingChange={setSorting}
-        // onSearch={(val) => setSearchTerm(val)}
-        filterByValue={filterBy}
         filterByOptions={[
           {
             label: 'Name',
@@ -235,15 +211,6 @@ export default function OrdersPage() {
             })),
           },
         ]}
-        statusOptions={orderStatuses.map((status) => ({
-          label: status.orderStatus || status.name,
-          value: status._id,
-        }))}
-        onFilterChange={handleFilterChange}
-        onSearch={(val) => {
-          setPagination((p) => ({ ...p, pageIndex: 0 }))
-          getOrders(val, 1)
-        }}
       />
     </div>
   )
