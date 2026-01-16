@@ -14,13 +14,13 @@ import {
 const CategorySection = () => {
   const router = useRouter()
   const dispatch = useDispatch()
-  const categories = useSelector(selectAllCategories)
+  const categoriesData = useSelector(selectAllCategories)
   const status = useSelector(selectCategoriesStatus)
   const error = useSelector(selectCategoriesError)
 
   const handleCategoryClick = (category) => {
     // Navigate to shop with category filter
-    router.push(`/shop`)
+    router.push(`/shop?category=${category.slug}`)
   }
 
   useEffect(() => {
@@ -30,14 +30,14 @@ const CategorySection = () => {
   }, [status, dispatch])
 
   // Map API response to match CategoryCard props
-  const mappedCategories = Array.isArray(categories)
-    ? categories
+  const mappedCategories = categoriesData?.data
+    ? categoriesData.data
         .filter((category) => !category.parent) // Only include categories with no parent
         .map((category) => ({
           id: category._id,
           title: category.name?.toUpperCase() || 'CATEGORY',
           image: category.image || '/bg1.jpg',
-          href: `/shop`,
+          slug: category.slug,
           onClick: () => handleCategoryClick(category),
         }))
     : []
@@ -77,7 +77,7 @@ const CategorySection = () => {
                 <CategoryCard
                   title={category.title}
                   imageUrl={category.image}
-                  href={category.href}
+                  href={`/shop?category=${category.slug}`}
                   onClick={category.onClick}
                   className="w-full h-full cursor-pointer hover:opacity-90 transition-opacity"
                 />

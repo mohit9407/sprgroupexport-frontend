@@ -29,18 +29,31 @@ const ShopContent = dynamic(() => Promise.resolve(ShopPageContent), {
 })
 
 // Transform flat categories array into a nested structure
+// Transform flat categories array into a nested structure
 const mapCategories = (categories = []) => {
+  // Ensure categories is an array
+  const categoriesArray = Array.isArray(categories)
+    ? categories
+    : Array.isArray(categories?.data)
+      ? categories.data
+      : []
+
   // Create a map of all categories by their _id for quick lookup
   const categoryMap = {}
-  categories.forEach((category) => {
-    categoryMap[category._id] = { ...category, children: [] }
+  categoriesArray.forEach((category) => {
+    if (category?._id) {
+      categoryMap[category._id] = { ...category, children: [] }
+    }
   })
 
   // Build the category tree
   const categoryTree = []
 
-  categories.forEach((category) => {
+  categoriesArray.forEach((category) => {
+    if (!category?._id) return // Skip if no _id
+
     const node = categoryMap[category._id]
+    if (!node) return // Skip if node not found in map
 
     if (category.parent) {
       // If it has a parent, add it to the parent's children array
@@ -61,21 +74,18 @@ const mapCategories = (categories = []) => {
 
 // Helper function to get category name by ID
 const getCategoryNameById = (categoryId, categories) => {
-  if (!categoryId || !categories) return 'N/A'
+  if (!categoryId || !categories) return 'Uncategorized'
 
-  // First try to find in the flat array
-  const category = categories.find((cat) => cat._id === categoryId)
-  if (category) return category.name
+  // Ensure categories is an array
+  const categoriesArray = Array.isArray(categories)
+    ? categories
+    : Array.isArray(categories?.data)
+      ? categories.data
+      : []
 
-  // If not found, search in nested categories
-  for (const cat of categories) {
-    if (cat.children) {
-      const found = cat.children.find((child) => child._id === categoryId)
-      if (found) return found.name
-    }
-  }
-
-  return 'N/A'
+  // Try to find the category
+  const category = categoriesArray.find((cat) => cat?._id === categoryId)
+  return category?.name || 'Uncategorized'
 }
 
 // Map products to match ProductCard props
@@ -108,7 +118,7 @@ function ShopPageContent() {
     filters: currentFilters,
   } = useSelector((state) => state.products || {})
 
-  const { categories: allCategories = [], status: categoriesStatus } =
+  const { allCategories = { data: [] }, status: categoriesStatus } =
     useSelector((state) => state.categories || {})
 
   const [priceRange, setPriceRange] = useState([0, 150000])
@@ -121,8 +131,8 @@ function ShopPageContent() {
 
   // Map categories for display
   const categories = useMemo(
-    () => mapCategories(allCategories),
-    [allCategories],
+    () => mapCategories(allCategories.data || []),
+    [allCategories.data],
   )
 
   // Handle filter changes
@@ -213,7 +223,6 @@ function ShopPageContent() {
       limit: 15,
     })
   }
-
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Shop</h1>
