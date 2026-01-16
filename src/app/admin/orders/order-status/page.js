@@ -121,7 +121,7 @@ const OrderStatusTable = () => {
         <h1 className="text-2xl font-semibold">List Of All Order Status</h1>
         <button
           onClick={() => router.push('/admin/orders/order-status/add')}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center"
+          className="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center"
         >
           <FaPlus className="mr-2" /> Add Order Status
         </button>

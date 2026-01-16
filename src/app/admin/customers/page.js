@@ -1,17 +1,19 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { createColumnHelper } from '@tanstack/react-table'
 import { TanstackTable } from '@/components/admin/TanstackTable'
 import { RowActionsMenu } from '@/components/admin/RowActionMenu'
-import api from '@/lib/axios'
 import { getAddressString } from '@/utils/stringUtils'
 import { useRouter } from 'next/navigation'
-import { getAllUsers } from '@/features/admin/customersService'
+import { useDispatch, useSelector } from 'react-redux'
+import { getAllCustomers } from '@/features/customers/customersSlice'
+import ConfirmationModal from '@/components/admin/ConfirmationModal'
+import toast from 'react-hot-toast'
 
 const columnHelper = createColumnHelper()
 
-const columns = [
+const columns = (onDelete) => [
   columnHelper.accessor('id', {
     header: 'ID',
     cell: (info) => info.getValue(),
@@ -53,12 +55,12 @@ const columns = [
             },
             {
               label: 'Edit Address',
-              href: `/admin/customers/address/display/${id}`,
+              href: `/admin/customers/address/${id}`,
             },
             {
               label: 'Delete',
               danger: true,
-              onClick: () => console.log('Delete', id),
+              onClick: () => onDelete(id),
             },
           ]}
         />
@@ -69,54 +71,61 @@ const columns = [
 
 export default function CustomersPage() {
   const router = useRouter()
-  const [customers, setCustomers] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
+  const dispatch = useDispatch()
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
   })
-  const [totalPages, setTotalPages] = useState({
-    total: 0,
-    totalPages: 1,
-  })
   const [sorting, setSorting] = useState([])
   const [filterBy, setFilterBy] = useState('')
+  const [deleteModal, setDeleteModal] = useState({ open: false })
+  const {
+    data,
+    pagination: apiPagination,
+    isLoading,
+  } = useSelector((state) => state.customers.allCustomers)
 
   const getCustomers = async (search = '', page) => {
-    setIsLoading(true)
-
     try {
       const sort = sorting[0]
       const sortType = sort?.desc ? 'desc' : 'asc'
-      const res = await getAllUsers({
-        search: search ?? undefined,
-        sortBy: sort?.id,
-        direction: sort?.id ? sortType : undefined,
-        page: page ?? pagination.pageIndex + 1,
-        limit: pagination.pageSize ?? 10,
-        filterBy: filterBy || undefined,
-      })
-
-      const normalized =
-        res?.data?.map((u) => {
-          const defaultAddress = u.shippingAddress?.find((a) => a.isDefault)
-
-          return {
-            id: u._id,
-            name: `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim(),
-            email: u.email,
-            phone: u.mobileNo || '-',
-            address: getAddressString(defaultAddress) || '-',
-          }
-        }) || []
-
-      setCustomers(normalized)
-      setTotalPages(res?.pagination)
+      dispatch(
+        getAllCustomers({
+          search: search ?? undefined,
+          sortBy: sort?.id,
+          direction: sort?.id ? sortType : undefined,
+          page: page ?? pagination.pageIndex + 1,
+          limit: pagination.pageSize ?? 10,
+          filterBy: filterBy || undefined,
+        }),
+      )
     } catch (error) {
       console.error(error)
-    } finally {
-      setIsLoading(false)
     }
+  }
+
+  const customers = useMemo(() => {
+    return (
+      data?.map((u) => {
+        const defaultAddress = u.shippingAddress?.find((a) => a.isDefault)
+
+        return {
+          id: u._id,
+          name: `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim(),
+          email: u.email,
+          phone: u.mobileNo || '-',
+          address: getAddressString(defaultAddress) || '-',
+        }
+      }) || []
+    )
+  }, [data])
+
+  const handleDelete = () => {
+    dispatch(deleteCustomer({ id: deleteModal.id }))
+    setDeleteModal({
+      open: false,
+    })
+    toast.success('Successfully deleted customer')
   }
 
   useEffect(() => {
@@ -124,34 +133,45 @@ export default function CustomersPage() {
   }, [pagination.pageIndex, sorting])
 
   return (
-    <TanstackTable
-      columns={columns}
-      data={customers}
-      isLoading={isLoading}
-      mode="server"
-      pageCount={totalPages?.totalPages}
-      pagination={pagination}
-      sorting={sorting}
-      onPaginationChange={setPagination}
-      onSortingChange={setSorting}
-      onSearch={(val) => {
-        setPagination((p) => ({ ...p, pageIndex: 0 }))
-        getCustomers(val, 1)
-      }}
-      filterByValue={filterBy}
-      filterByOptions={[
-        { label: 'Name', value: 'name' },
-        { label: 'Email', value: 'email' },
-      ]}
-      onFilterChange={setFilterBy}
-      actions={
-        <button
-          className="bg-sky-600 text-white px-3 py-1.5 rounded text-sm"
-          onClick={() => router.push('/admin/customers/add')}
-        >
-          Add New
-        </button>
-      }
-    />
+    <>
+      <TanstackTable
+        columns={columns((id) => setDeleteModal({ open: true, id }))}
+        data={customers}
+        isLoading={isLoading}
+        mode="server"
+        pageCount={apiPagination?.totalPages}
+        pagination={pagination}
+        sorting={sorting}
+        onPaginationChange={setPagination}
+        onSortingChange={setSorting}
+        onSearch={(val) => {
+          setPagination((p) => ({ ...p, pageIndex: 0 }))
+          getCustomers(val, 1)
+        }}
+        filterByValue={filterBy}
+        filterByOptions={[
+          { label: 'Name', value: 'name' },
+          { label: 'Email', value: 'email' },
+        ]}
+        onFilterChange={setFilterBy}
+        actions={
+          <button
+            className="bg-sky-600 text-white px-3 py-1.5 rounded text-sm"
+            onClick={() => router.push('/admin/customers/add')}
+          >
+            Add New
+          </button>
+        }
+      />
+      <ConfirmationModal
+        open={deleteModal.open}
+        onClose={() => setDeleteModal({ open: false })}
+        onConfirm={handleDelete}
+        title="Delete Customer"
+        description="Are you sure you want to delete this customer?"
+        confirmText="Delete"
+        theme="error"
+      />
+    </>
   )
 }

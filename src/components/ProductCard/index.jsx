@@ -94,7 +94,10 @@ const ProductCard = ({
   } = useWishlist()
 
   const categoryName = categoryId
-    ? getCategoryNameById(categoryId, allCategories)
+    ? getCategoryNameById(
+        categoryId,
+        Array.isArray(allCategories?.data) ? allCategories.data : allCategories,
+      )
     : null
 
   const handleImageError = () => {

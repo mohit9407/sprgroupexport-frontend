@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import AdminAddImageModal from '@/components/AdminAddImageModal'
 import api from '@/lib/axios'
+import toast from 'react-hot-toast'
+import ConfirmationModal from '@/components/admin/ConfirmationModal'
 
 const fetchImages = async () => {
   try {
@@ -18,6 +20,7 @@ export default function MediaListPage() {
   const [images, setImages] = useState([])
   const [selected, setSelected] = useState([])
   const [openAddImage, setOpenAddImage] = useState(false)
+  const [openDelete, setOpenDelete] = useState(false)
 
   const loadImages = async () => {
     const imgs = await fetchImages()
@@ -42,21 +45,29 @@ export default function MediaListPage() {
   const selectAll = () => setSelected(images.map((i) => i._id))
   const unselectAll = () => setSelected([])
 
-  const handleDelete = async () => {
+  const deleteImages = async () => {
     if (!selected.length) {
       alert('Select at least one image')
       return
     }
+    setOpenDelete(true)
+  }
 
-    if (!confirm('Delete selected images?')) return
-
-    await api.delete('/media/delete-multiple', {
-      data: {
-        ids: selected,
-      },
-    })
-
-    await loadImages()
+  const handleDelete = async () => {
+    try {
+      await api.delete('/media/delete-multiple', {
+        data: {
+          ids: selected,
+        },
+      })
+      toast.success('Successfully deleted images.')
+    } catch (e) {
+      console.error('Delete Images error: ', e)
+      toast.error('Unable to delete images please try again.')
+    } finally {
+      await loadImages()
+      setOpenDelete(true)
+    }
   }
 
   return (
@@ -66,7 +77,7 @@ export default function MediaListPage() {
 
         <div className="flex gap-2">
           <button
-            onClick={handleDelete}
+            onClick={deleteImages}
             className="px-4 py-2 bg-red-600 text-white rounded font-semibold"
           >
             Delete
@@ -133,6 +144,15 @@ export default function MediaListPage() {
           </div>
         ))}
       </div>
+      <ConfirmationModal
+        open={openDelete}
+        onClose={() => setOpenDelete(false)}
+        onConfirm={handleDelete}
+        title="Delete Media"
+        description="Are you sure you want to delete this media?"
+        confirmText="Delete"
+        theme="error"
+      />
     </div>
   )
 }

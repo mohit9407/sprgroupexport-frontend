@@ -4,6 +4,7 @@ import { AdminInputRow } from '@/components/admin/AdminInputRow'
 import api from '@/lib/axios'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import toast from 'react-hot-toast'
 
 const RenderSections = ({ title, children }) => {
   return (
@@ -45,9 +46,11 @@ export default function MediaSettingsPage() {
         `/media-settings/update-settings/${mediaSettings?.id}`,
         mediaSettings,
       )
+      toast.success('Media settings saved successfully')
       await getMediaSettings()
     } catch (e) {
       console.error('Update Media Settings: ', e)
+      toast.success('Error updating media settings')
     } finally {
       setLoading(false)
     }

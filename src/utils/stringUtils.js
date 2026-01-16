@@ -19,3 +19,33 @@ export const getAddressString = (address) => {
 
   return addressParts?.length ? addressParts.join(', ') : null
 }
+
+export const getUpdatedObjectFields = (values, defaultValues) => {
+  const updated = {}
+
+  Object.keys(values).forEach((key) => {
+    const current = values[key]
+    const original = defaultValues?.[key]
+
+    // normalize empty values
+    const normalizedCurrent =
+      current === '' || current === undefined ? null : current
+    const normalizedOriginal =
+      original === '' || original === undefined ? null : original
+
+    // special case: dates
+    if (key === 'dob' && current) {
+      const formatted = new Date(current).toISOString().split('T')[0]
+      if (formatted !== original) {
+        updated.dob = formatted
+      }
+      return
+    }
+
+    if (normalizedCurrent !== normalizedOriginal) {
+      updated[key] = current
+    }
+  })
+
+  return updated
+}

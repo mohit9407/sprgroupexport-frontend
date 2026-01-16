@@ -9,6 +9,7 @@ export function AdminSelect({
   onChange,
   options = [],
   error,
+  fullWidth,
 }) {
   return (
     <div className="grid grid-cols-12 gap-4 items-start mb-4">
@@ -19,7 +20,7 @@ export function AdminSelect({
         {label}
       </label>
 
-      <div className="col-span-12 md:col-span-4">
+      <div className={fullWidth ? 'col-span-8' : 'col-span-12 md:col-span-4'}>
         <select
           name={name}
           value={value ?? ''}
@@ -43,7 +44,7 @@ export function AdminSelect({
   )
 }
 
-export function FormAdminSelect({ name, label, options }) {
+export function FormAdminSelect({ name, label, options, fullWidth }) {
   const {
     control,
     formState: { errors },
@@ -58,6 +59,7 @@ export function FormAdminSelect({ name, label, options }) {
           label={label}
           name={name}
           options={options}
+          fullWidth={fullWidth}
           value={field.value}
           onChange={field.onChange}
           error={errors[name]?.message}

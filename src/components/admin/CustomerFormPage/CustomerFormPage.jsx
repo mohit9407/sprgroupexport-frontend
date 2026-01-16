@@ -5,15 +5,17 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { FormAdminInputRow } from '../AdminInputRow'
 import { FormAdminRadioGroup } from '../AdminRadioGroup'
 import { FormAdminSelect } from '../AdminSelect'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import * as yup from 'yup'
 import { useRouter } from 'next/navigation'
 import { AdminCheckbox } from '../AdminCheckbox'
+import { toast } from '@/utils/toastConfig'
 import {
   addNewCustomer,
   updateCustomer,
-} from '@/features/admin/customersService'
-import { toast } from '@/utils/toastConfig'
+} from '@/features/customers/customersSlice'
+import { useDispatch, useSelector } from 'react-redux'
+import { getUpdatedObjectFields } from '@/utils/stringUtils'
 
 const getCustomerSchema = (isPasswordRequired = true) => {
   const passwordSchema = yup
@@ -45,12 +47,20 @@ const getCustomerSchema = (isPasswordRequired = true) => {
   })
 }
 
-export function CustomerFormPage({ mode = 'add', defaultValues, title }) {
+export function CustomerFormPage({
+  mode = 'add',
+  userId,
+  defaultValues,
+  title,
+}) {
   const isEditMode = mode === 'edit'
-
+  const dispatch = useDispatch()
   const router = useRouter()
-  const [cusomerDetails, setCusomerDetails] = useState(null)
   const [wantPasswordChange, setWantPasswordChange] = useState(false)
+  const {
+    updateCustomer: updateCustomerData,
+    addNewCustomer: addNewCustomerData,
+  } = useSelector((state) => state.customers)
   const formProviders = useForm({
     resolver: yupResolver(getCustomerSchema(!isEditMode || wantPasswordChange)),
     defaultValues: defaultValues,
@@ -82,38 +92,44 @@ export function CustomerFormPage({ mode = 'add', defaultValues, title }) {
       gender,
       status,
     } = values
+    const dateObj = new Date(dob)
+    const isoString = dateObj.toISOString()
+    const formattedDate = isoString.split('T')[0]
     const payload = {
       firstName: firstName,
       lastName: lastName,
       email: email,
       password: password,
       gender: gender,
-      dob: dob,
+      dob: formattedDate,
       mobileNo: mobileNo,
       status: status,
     }
 
-    if (isEditMode) {
-      const resp = await updateCustomer(cusomerDetails?._id, { ...payload })
-      if (resp.status) {
-        setCusomerDetails(resp?.data)
+    try {
+      if (isEditMode) {
+        const editPayload = getUpdatedObjectFields(payload, defaultValues)
+        dispatch(updateCustomer({ id: userId, data: editPayload }))
         toast.success('Customer Updated Successfully!')
-      } else if (resp?.message) {
-        setFieldErrorFromAPI({ ...resp.message })
-      } else {
-        toast.error('Error: Updating Customer')
+        return
       }
-    }
-    const resp = await addNewCustomer(payload)
-    if (resp?.status) {
+      const resp = await dispatch(addNewCustomer(payload)).unwrap()
       toast.success('Customer Created Successfully!')
       router.push(`/admin/customers/edit/${resp?.data._id}`)
-    } else if (resp?.message) {
-      setFieldErrorFromAPI({ ...resp.message })
-    } else {
-      toast.error('Error: Creating Customer')
+      return
+    } catch (e) {
+      console.error(e)
     }
   }
+
+  useEffect(() => {
+    if (addNewCustomerData?.isError || updateCustomerData?.isError) {
+      setFieldErrorFromAPI({
+        ...(addNewCustomerData?.message || {}),
+        ...(updateCustomerData?.message || {}),
+      })
+    }
+  }, [addNewCustomerData?.isError, updateCustomerData?.isError])
 
   return (
     <div className="space-y-3">

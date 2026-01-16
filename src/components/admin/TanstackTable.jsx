@@ -16,6 +16,7 @@ import {
   FaSortAlphaDownAlt,
 } from 'react-icons/fa'
 import { ImBlocked } from 'react-icons/im'
+import ButtonLoader from './ButtonLoader'
 
 export function TanstackTable({
   columns,
@@ -203,7 +204,10 @@ export function TanstackTable({
             {isLoading ? (
               <tr>
                 <td colSpan={columns.length} className="p-4 text-center">
-                  Loading...
+                  <div className="flex justify-center items-center">
+                    <ButtonLoader className="inline-flex text-sky-600" />{' '}
+                    Loading...
+                  </div>
                 </td>
               </tr>
             ) : table.getRowModel().rows.length === 0 ? (
