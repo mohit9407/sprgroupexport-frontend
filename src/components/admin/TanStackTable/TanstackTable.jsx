@@ -26,7 +26,6 @@ export const TanstackTable = memo(function TanstackTable({
   mode = 'client',
   isLoading,
   filterByOptions = [],
-  filterByValue,
   actions,
 }) {
   const isServerMode = mode === 'server'
@@ -110,7 +109,7 @@ export const TanstackTable = memo(function TanstackTable({
   }
 
   const selectedFilter = filterByOptions.find(
-    (opt) => opt.value === filterByValue,
+    (opt) => opt.value === filterSearchDraft.filterBy,
   )
   const filterType = selectedFilter?.type || 'text'
   const options = selectedFilter?.options || []

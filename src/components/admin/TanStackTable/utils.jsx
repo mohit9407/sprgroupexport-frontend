@@ -8,26 +8,39 @@ export function useTableQueryParams() {
   const searchParams = useSearchParams()
 
   const params = useMemo(() => {
+    const page = Number(searchParams.get('page') ?? 1)
+    const pageSize = Number(searchParams.get('pageSize') ?? 10)
+
     return {
-      pageIndex: Number(searchParams.get('page') || 1) - 1,
-      pageSize: Number(searchParams.get('pageSize') || 10),
-      search: searchParams.get('search') || '',
-      filterBy: searchParams.get('filterBy') || '',
+      pageIndex: page - 1,
+      pageSize,
       sortBy: searchParams.get('sortBy'),
       direction: searchParams.get('direction'),
+      filterBy: searchParams.get('filterBy') ?? '',
+      search: searchParams.get('search') ?? '',
     }
   }, [searchParams])
 
   const setParams = useCallback(
-    (updates: Record<string, string | number | null>) => {
+    (next) => {
       const sp = new URLSearchParams(searchParams.toString())
+      let changed = false
 
-      Object.entries(updates).forEach(([key, value]) => {
-        if (value === null || value === '') sp.delete(key)
-        else sp.set(key, String(value))
+      Object.entries(next).forEach(([key, value]) => {
+        if (value === null || value === '' || value === undefined) {
+          if (sp.has(key)) {
+            sp.delete(key)
+            changed = true
+          }
+        } else if (sp.get(key) !== String(value)) {
+          sp.set(key, String(value))
+          changed = true
+        }
       })
 
-      router.push(`?${sp.toString()}`)
+      if (!changed) return
+
+      router.replace(`?${sp.toString()}`, { scroll: false })
     },
     [router, searchParams],
   )
@@ -35,7 +48,7 @@ export function useTableQueryParams() {
   return { params, setParams }
 }
 
-export function useDebouncedValue<T>(value: T, delay = 400) {
+export function useDebouncedValue(value, delay = 400) {
   const [debounced, setDebounced] = useState(value)
 
   useEffect(() => {
