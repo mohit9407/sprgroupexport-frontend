@@ -10,7 +10,6 @@ import * as yup from 'yup'
 import { useRouter } from 'next/navigation'
 import { toast } from '@/utils/toastConfig'
 import { useDispatch, useSelector } from 'react-redux'
-import { getUpdatedObjectFields } from '@/utils/stringUtils'
 import {
   createCategory,
   updateCategory,

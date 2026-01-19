@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { createColumnHelper } from '@tanstack/react-table'
-import { TanstackTable } from '@/components/admin/TanstackTable'
+import { TanstackTable } from '@/components/admin/TanStackTable/TanstackTable'
 import { FaEdit, FaTrash } from 'react-icons/fa'
 import {
   fetchAllCategories,

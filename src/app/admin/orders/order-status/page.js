@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { createColumnHelper } from '@tanstack/react-table'
 import { useRouter } from 'next/navigation'
 import { FaEdit, FaTrash, FaPlus, FaCheck } from 'react-icons/fa'
@@ -12,6 +12,7 @@ import {
 } from '@/features/orderStatus/orderStatusSlice'
 import { toast } from '@/utils/toastConfig'
 import { TanstackTable } from '@/components/admin/TanStackTable'
+import ConfirmationModal from '@/components/admin/ConfirmationModal'
 
 const columnHelper = createColumnHelper()
 
@@ -21,22 +22,35 @@ const OrderStatusTable = () => {
 
   // Get order statuses from Redux store
   const { statuses, loading, error } = useSelector((state) => state.orderStatus)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [selectedStatusId, setSelectedStatusId] = useState(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // Fetch order statuses on component mount
   useEffect(() => {
     dispatch(fetchOrderStatuses())
   }, [dispatch])
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this status?')) {
-      try {
-        await dispatch(deleteOrderStatus(id)).unwrap()
-        toast.success('Status deleted successfully')
-      } catch (error) {
-        toast.error(error.message || 'Failed to delete status')
-      }
-    }
+  const handleDeleteClick = (id) => {
+    setSelectedStatusId(id)
+    setShowDeleteModal(true)
   }
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!selectedStatusId) return
+
+    setIsDeleting(true)
+    try {
+      await dispatch(deleteOrderStatus(selectedStatusId)).unwrap()
+      toast.success('Status deleted successfully')
+      setShowDeleteModal(false)
+    } catch (error) {
+      toast.error(error.message || 'Failed to delete status')
+    } finally {
+      setIsDeleting(false)
+      setSelectedStatusId(null)
+    }
+  }, [selectedStatusId, dispatch])
 
   const handleSetDefault = async (id) => {
     try {
@@ -102,7 +116,7 @@ const OrderStatusTable = () => {
             <FaEdit className="w-4 h-4" />
           </button>
           <button
-            onClick={() => handleDelete(row.original._id)}
+            onClick={() => handleDeleteClick(row.original._id)}
             className="p-1.5 text-red-600 hover:bg-red-50 rounded-full hover:text-red-700 transition-colors"
             title="Delete Status"
             disabled={row.original.isDefault}
@@ -139,6 +153,21 @@ const OrderStatusTable = () => {
           mode="client"
         />
       </div>
+
+      <ConfirmationModal
+        open={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false)
+          setSelectedStatusId(null)
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Delete Order Status"
+        description="Are you sure you want to delete this status? This action cannot be undone."
+        confirmText={isDeleting ? 'Deleting...' : 'Delete'}
+        cancelText="Cancel"
+        theme="error"
+        isLoading={isDeleting}
+      />
     </div>
   )
 }
