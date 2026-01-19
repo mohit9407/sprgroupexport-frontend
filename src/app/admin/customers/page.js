@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, Suspense } from 'react'
 import { createColumnHelper } from '@tanstack/react-table'
 import { RowActionsMenu } from '@/components/admin/RowActionMenu'
 import { getAddressString } from '@/utils/stringUtils'
@@ -72,7 +72,8 @@ const getColumns = (onDelete) => [
   }),
 ]
 
-export default function CustomersPage() {
+// This component is wrapped in Suspense to handle search params
+function CustomersPageContent() {
   const router = useRouter()
   const dispatch = useDispatch()
   const { params } = useTableQueryParams()
@@ -169,5 +170,22 @@ export default function CustomersPage() {
         theme="error"
       />
     </>
+  )
+}
+
+export default function CustomersPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-6">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
+            <div className="h-64 bg-gray-100 rounded-lg"></div>
+          </div>
+        </div>
+      }
+    >
+      <CustomersPageContent />
+    </Suspense>
   )
 }

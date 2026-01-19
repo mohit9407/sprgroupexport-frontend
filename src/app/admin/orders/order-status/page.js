@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, Suspense } from 'react'
 import { createColumnHelper } from '@tanstack/react-table'
 import { useRouter } from 'next/navigation'
 import { FaEdit, FaTrash, FaPlus, FaCheck } from 'react-icons/fa'
@@ -16,7 +16,8 @@ import ConfirmationModal from '@/components/admin/ConfirmationModal'
 
 const columnHelper = createColumnHelper()
 
-const OrderStatusTable = () => {
+// This component is wrapped in Suspense to handle search params
+const OrderStatusTableContent = () => {
   const router = useRouter()
   const dispatch = useDispatch()
 
@@ -169,6 +170,23 @@ const OrderStatusTable = () => {
         isLoading={isDeleting}
       />
     </div>
+  )
+}
+
+function OrderStatusTable() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-6">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
+            <div className="h-64 bg-gray-100 rounded-lg"></div>
+          </div>
+        </div>
+      }
+    >
+      <OrderStatusTableContent />
+    </Suspense>
   )
 }
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, Suspense } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { createColumnHelper } from '@tanstack/react-table'
 import { TanstackTable } from '@/components/admin/TanStackTable/TanstackTable'
@@ -124,7 +124,8 @@ const getColumns = (router) => [
   }),
 ]
 
-export default function CategoriesDisplayPage() {
+// This component is wrapped in Suspense to handle search params
+function CategoriesDisplayContent() {
   const router = useRouter()
   const dispatch = useDispatch()
   const [pagination, setPagination] = useState({
@@ -256,5 +257,22 @@ export default function CategoriesDisplayPage() {
         }
       />
     </div>
+  )
+}
+
+export default function CategoriesDisplayPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-6">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
+            <div className="h-64 bg-gray-100 rounded-lg"></div>
+          </div>
+        </div>
+      }
+    >
+      <CategoriesDisplayContent />
+    </Suspense>
   )
 }
