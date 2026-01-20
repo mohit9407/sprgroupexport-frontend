@@ -19,6 +19,37 @@ export function AuthProvider({ children }) {
   const [loading] = useState(false)
   const router = useRouter()
 
+  // Sync user state with localStorage changes
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'user') {
+        try {
+          const newUser = e.newValue ? JSON.parse(e.newValue) : null
+ 
+          setUser(newUser)
+        } catch (error) {
+          console.error('Error parsing user from localStorage:', error)
+          setUser(null)
+        }
+      }
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', handleStorageChange)
+      return () => window.removeEventListener('storage', handleStorageChange)
+    }
+  }, [])
+
+  // Force re-render when user state changes to ensure UI updates
+  useEffect(() => {
+    if (user) {
+      const forceUpdate = setTimeout(() => {
+        console.log('AuthContext - Force update completed')
+      }, 0)
+      return () => clearTimeout(forceUpdate)
+    }
+  }, [user])
+
   const login = (userData, token) => {
     const accessToken = token?.accessToken || token
     const refreshToken = token?.refreshToken
@@ -38,6 +69,9 @@ export function AuthProvider({ children }) {
 
     setUser(userInfo)
     if (typeof window !== 'undefined') {
+      // Get old value before updating
+      const oldValue = localStorage.getItem('user')
+      
       localStorage.setItem('user', JSON.stringify(userInfo))
       localStorage.setItem('accessToken', accessToken)
       if (refreshToken) {
@@ -47,11 +81,17 @@ export function AuthProvider({ children }) {
       if (refreshToken) {
         document.cookie = `refreshToken=${refreshToken}; path=/; max-age=604800; SameSite=Lax`
       }
+      // Dispatch custom event for same-tab updates
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'user',
+        newValue: JSON.stringify(userInfo),
+        oldValue: oldValue,
+        storageArea: localStorage
+      }))
+      
     }
-
-    // Redirect based on role
-    const redirectPath = isAdmin ? '/admin' : '/'
-    router.push(redirectPath)
+    // Update React state
+    setUser(userInfo)
   }
 
   const logout = () => {

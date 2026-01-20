@@ -1,11 +1,12 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import ProductCard from '@/components/ProductCard'
 import { fetchProducts } from '@/features/products/productsSlice'
 import { fetchAllCategories } from '@/features/categories/categoriesSlice'
+import AuthModal from '@/components/Auth/AuthModal'
 
 // Import components with dynamic imports to avoid SSR issues
 const CategoryFilter = dynamic(() => import('./components/CategoryFilter'), {
@@ -110,6 +111,8 @@ const mapProducts = (products = [], allCategories = []) => {
 }
 
 function ShopPageContent() {
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [switchToEmail, setSwitchToEmail] = useState(false)
   const dispatch = useDispatch()
   const {
     items: products = [],
@@ -225,6 +228,12 @@ function ShopPageContent() {
   }
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)}
+        switchToEmail={switchToEmail}
+      />
       <h1 className="text-2xl font-bold mb-6">Shop</h1>
       <div className="flex flex-col md:flex-row gap-8">
         {/* Sidebar */}

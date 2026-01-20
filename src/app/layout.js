@@ -21,10 +21,8 @@ export default function RootLayout({ children }) {
     <html lang="en" className={`${montserrat.variable} font-sans`}>
       <body className="min-h-screen bg-gray-50">
         <Providers>
-          <AuthProvider>
             {children}
             <Toaster />
-          </AuthProvider>
         </Providers>
       </body>
     </html>

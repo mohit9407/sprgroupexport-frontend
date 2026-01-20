@@ -12,17 +12,20 @@ import { useDispatch, useSelector } from 'react-redux'
 import { api } from '@/lib/axios'
 import { useAuth } from './AuthContext'
 import { getUserById } from '@/features/user/userSlice'
+import AuthModal from '@/components/Auth/AuthModal'
 
-const WishlistContext = createContext({})
+const WishlistContext = createContext()
 
 export function WishlistProvider({ children }) {
   const dispatch = useDispatch()
-  const { user } = useSelector((state) => state.user)
-  const { items: allProducts } = useSelector((state) => state.products)
+  const { user } = useSelector((state) => state.user || {})
+  const { items: allProducts } = useSelector(
+    (state) => state.products || { items: [] },
+  )
   const { isAuthenticated } = useAuth()
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const [authModalMode, setAuthModalMode] = useState('email') // 'email' or 'otp'
   const [pendingProduct, setPendingProduct] = useState(null)
-  const [authMode, setAuthMode] = useState('phone') // 'phone' or 'email'
 
   // Initialize local wishlist from localStorage or empty array
   const [localWishlist, setLocalWishlist] = useState(() => {
@@ -148,7 +151,7 @@ export function WishlistProvider({ children }) {
       const updatedWishlist = [...localWishlist, product]
       setLocalWishlist(updatedWishlist)
       setPendingProduct(product)
-      setShowAuthModal(true)
+      openAuthModal()
       return false
     }
 
@@ -215,10 +218,26 @@ export function WishlistProvider({ children }) {
     [wishlist],
   )
 
-  const handleAuthSuccess = async () => {
+  const openAuthModal = useCallback((mode = 'email') => {
+    setAuthModalMode(mode)
+    setShowAuthModal(true)
+  }, [])
+
+  const closeAuthModal = useCallback(() => {
+    setShowAuthModal(false)
+    // Small delay before resetting to prevent UI flicker
+    const timer = setTimeout(() => {
+      setAuthModalMode('email')
+      setPendingProduct(null)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [])
+
+  const handleAuthSuccess = useCallback(async () => {
+    console.log('WishlistContext - handleAuthSuccess called')
     if (pendingProduct) {
       // First, close the auth modal
-      setShowAuthModal(false)
+      closeAuthModal()
 
       // Then add the product to wishlist with authenticated flag
       const success = await addToWishlist(pendingProduct, true)
@@ -235,40 +254,54 @@ export function WishlistProvider({ children }) {
         }
       }
     } else {
-      setShowAuthModal(false)
+      closeAuthModal()
     }
-  }
+  }, [pendingProduct, closeAuthModal, addToWishlist, dispatch])
 
   const switchToEmail = () => {
-    setAuthMode('email')
+    setAuthModalMode('email')
   }
 
   const switchToPhone = () => {
-    setAuthMode('phone')
+    setAuthModalMode('phone')
   }
 
   // Calculate wishlist count
   const wishlistCount = wishlist.length
 
-  const value = {
-    wishlist,
-    wishlistCount, // Add wishlistCount to context value
-    addToWishlist,
-    removeFromWishlist,
-    showAuthModal,
-    setShowAuthModal,
-    pendingProduct,
-    authMode,
-    setAuthMode,
-    isInWishlist,
-    handleAuthSuccess,
-    switchToEmail,
-    switchToPhone,
-  }
+  const value = useMemo(
+    () => ({
+      wishlist,
+      wishlistCount,
+      addToWishlist,
+      removeFromWishlist,
+      isInWishlist: (productId) =>
+        localWishlist.some((item) => item.id === productId),
+      showAuthModal,
+      setShowAuthModal,
+      openAuthModal,
+      closeAuthModal,
+      authModalMode,
+      setAuthModalMode,
+    }),
+    [
+      wishlist,
+      localWishlist,
+      showAuthModal,
+      authModalMode,
+      openAuthModal,
+      closeAuthModal,
+    ],
+  )
 
   return (
     <WishlistContext.Provider value={value}>
       {children}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={closeAuthModal}
+        switchToEmail={authModalMode === 'email'}
+      />
     </WishlistContext.Provider>
   )
 }
