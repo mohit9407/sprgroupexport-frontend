@@ -24,7 +24,7 @@ export default function CheckoutPage() {
   const [formData, setFormData] = useState({
     shippingAddress: {},
     shippingMethod: {},
-    paymentMethod: 'cod',
+    paymentMethod: '695cae5421d3f5118b0c8c91',
     orderNotes: '',
   })
   const [outOfStockError, setOutOfStockError] = useState(null)
@@ -107,8 +107,7 @@ export default function CheckoutPage() {
             quantity: item.quantity,
           })),
           paymentMethod: formData.paymentMethod,
-          paymentStatus:
-            formData.paymentMethod === 'cod' ? 'pending' : 'completed',
+          paymentStatus: '695e0471c424c92fee37713b', // Default payment status ID
           orderStatus: pendingStatus._id, // Use the found status ID
           subtotal: cart.reduce(
             (sum, item) => sum + item.price * item.quantity,

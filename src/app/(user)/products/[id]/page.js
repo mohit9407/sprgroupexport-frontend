@@ -272,9 +272,13 @@ export default function ProductDetails() {
                   Color
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {product?.colors?.length > 0 ? (
+                  {product?.colors?.length > 0 &&
+                  Array.isArray(attributes?.colors) ? (
                     attributes.colors
-                      .filter((color) => product.colors.includes(color._id))
+                      .filter(
+                        (color) =>
+                          color?._id && product.colors.includes(color._id),
+                      )
                       .map((color) => (
                         <button
                           key={color._id}
@@ -298,9 +302,12 @@ export default function ProductDetails() {
               <div>
                 <h3 className="text-sm font-medium text-gray-900 mb-2">Size</h3>
                 <div className="flex flex-wrap gap-2">
-                  {product?.sizes?.length > 0 ? (
+                  {product?.sizes?.length > 0 &&
+                  Array.isArray(attributes?.sizes) ? (
                     attributes.sizes
-                      .filter((size) => product.sizes.includes(size._id))
+                      .filter(
+                        (size) => size?._id && product.sizes.includes(size._id),
+                      )
                       .map((size) => (
                         <button
                           key={size._id}

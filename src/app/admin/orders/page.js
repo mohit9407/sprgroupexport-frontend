@@ -1,6 +1,13 @@
 'use client'
 
-import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
+import {
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+  useRef,
+  Suspense,
+} from 'react'
 import { createColumnHelper } from '@tanstack/react-table'
 import { useRouter } from 'next/navigation'
 import { FaEdit, FaTrash } from 'react-icons/fa'
@@ -15,7 +22,8 @@ import {
 
 const columnHelper = createColumnHelper()
 
-export default function OrdersPage() {
+// This component is wrapped in Suspense to handle search params
+function OrdersPageContent() {
   const router = useRouter()
   const { params } = useTableQueryParams()
   const dispatch = useDispatch()
@@ -253,5 +261,22 @@ export default function OrdersPage() {
         isLoading={isDeleting}
       />
     </div>
+  )
+}
+
+export default function OrdersPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-6">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
+            <div className="h-64 bg-gray-100 rounded-lg"></div>
+          </div>
+        </div>
+      }
+    >
+      <OrdersPageContent />
+    </Suspense>
   )
 }
