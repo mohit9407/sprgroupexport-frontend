@@ -22,7 +22,6 @@ import {
 
 const columnHelper = createColumnHelper()
 
-// This component is wrapped in Suspense to handle search params
 function OrdersPageContent() {
   const router = useRouter()
   const { params } = useTableQueryParams()
