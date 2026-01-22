@@ -3,13 +3,13 @@
 import { useState, useEffect, useMemo, useCallback, Suspense } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { createColumnHelper } from '@tanstack/react-table'
-import { TanstackTable } from '@/components/admin/TanStackTable/TanstackTable'
 import { FaEdit, FaTrash } from 'react-icons/fa'
 import {
   fetchAllCategories,
   selectAllCategories,
 } from '@/features/categories/categoriesSlice'
 import { useRouter } from 'next/navigation'
+import { TanstackTable } from '@/components/admin/TanStackTable'
 
 const columnHelper = createColumnHelper()
 

@@ -17,17 +17,24 @@ export default function OrderSummary({
   }, 0)
 
   // Calculate shipping cost based on selected method
-  const shippingCost = shippingMethod?.price || 0
-  const total = subtotal + shippingCost
+  const shippingCost = Number(shippingMethod?.price) || 0
+
+  // Calculate total numerically
+  const total = Number(subtotal) + Number(shippingCost)
 
   const summaryItems = [
-    { label: 'Sub Total', value: `₹${subtotal.toLocaleString('en-IN')}` },
+    {
+      label: 'Sub Total',
+      value: `₹${Number(subtotal).toLocaleString('en-IN')}`,
+    },
     { label: 'Discount', value: '₹0' },
     { label: 'Tax', value: '₹0' },
     {
       label: 'Shipping Cost',
       value:
-        shippingCost > 0 ? `₹${shippingCost.toLocaleString('en-IN')}` : 'FREE',
+        shippingCost > 0
+          ? `₹${Number(shippingCost).toLocaleString('en-IN')}`
+          : 'FREE',
     },
   ]
 

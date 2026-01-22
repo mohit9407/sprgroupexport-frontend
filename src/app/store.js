@@ -13,6 +13,7 @@ import attributesReducer from '../features/attributes/attributesSlice'
 import couponsReducer from '../features/coupons/couponsSlice'
 import customersReducer from '../features/customers/customersSlice'
 import orderStatusReducer from '../features/orderStatus/orderStatusSlice'
+import reviewsReducer from '../features/reviews/reviewsSlice'
 
 export const store = configureStore({
   reducer: {
@@ -30,5 +31,6 @@ export const store = configureStore({
     coupons: couponsReducer,
     customers: customersReducer,
     orderStatus: orderStatusReducer,
+    reviews: reviewsReducer,
   },
 })

@@ -40,7 +40,9 @@ const getColumns = (onDelete) => [
     ),
   }),
   columnHelper.accessor('address', {
+    id: 'shippingAddress',
     header: 'Address',
+    enableSorting: true,
   }),
   columnHelper.display({
     id: 'action',
@@ -95,7 +97,7 @@ function CustomersPageContent() {
         getAllCustomers({
           search: params?.search ?? undefined,
           sortBy: params?.sortBy,
-          direction: params?.sortBy ? params.direction : undefined,
+          sortOrder: params?.sortBy ? params.direction : undefined,
           page: params?.pageIndex + 1,
           limit: params?.pageSize ?? 10,
           filterBy: params?.filterBy || undefined,
