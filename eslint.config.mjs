@@ -1,20 +1,26 @@
-// eslint.config.mjs
-import { defineConfig, globalIgnores } from "eslint/config"
-import next from "eslint-config-next"
+import next from "@next/eslint-plugin-next"
 import prettier from "eslint-config-prettier"
 
-export default defineConfig([
-  // Next.js ESLint config (DO NOT CALL IT AS A FUNCTION)
-  next,
-
-  // Disable ESLint rules that conflict with Prettier
-  prettier,
-
-  // Your ignores
-  globalIgnores([
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts"
-  ]),
-])
+export default [
+  // Next.js ESLint config
+  {
+    plugins: {
+      "@next/next": next
+    },
+    rules: {
+      ...next.configs.recommended.rules,
+      ...next.configs["core-web-vitals"].rules
+    }
+  },
+  
+  // Prettier config (must be last)
+  {
+    ...prettier,
+    ignores: [
+      ".next/**",
+      "out/**",
+      "build/**",
+      "next-env.d.ts"
+    ]
+  }
+]

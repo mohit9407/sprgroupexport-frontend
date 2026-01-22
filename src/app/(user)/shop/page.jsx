@@ -1,7 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import ProductCard from '@/components/ProductCard'
 import { fetchProducts } from '@/features/products/productsSlice'
@@ -229,8 +229,8 @@ function ShopPageContent() {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Auth Modal */}
-      <AuthModal 
-        isOpen={showAuthModal} 
+      <AuthModal
+        isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         switchToEmail={switchToEmail}
       />
