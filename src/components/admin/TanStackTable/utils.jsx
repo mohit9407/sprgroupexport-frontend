@@ -8,7 +8,7 @@ export function useTableQueryParams() {
   const searchParams = useSearchParams()
 
   const params = useMemo(() => {
-    const page = Number(searchParams.get('page') ?? 1)
+    const page = Number(searchParams.get('pageIndex') ?? 1)
     const pageSize = Number(searchParams.get('pageSize') ?? 10)
 
     return {

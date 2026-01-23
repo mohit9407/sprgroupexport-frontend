@@ -24,7 +24,7 @@ export default function AdminSidebar({ collapsed = false, menu = [] }) {
         setOpen(next)
       }
     })()
-  }, [pathname, menu, activePaths])
+  }, [pathname, menu])
 
   const toggle = (key) => setOpen((s) => ({ ...s, [key]: !s[key] }))
 
