@@ -40,9 +40,9 @@ export const TanstackTable = memo(function TanstackTable({
     const next =
       typeof updater === 'function'
         ? updater({
-            pageIndex: params.pageIndex,
-            pageSize: params.pageSize,
-          })
+          pageIndex: params.pageIndex,
+          pageSize: params.pageSize,
+        })
         : updater
 
     startTransition(() => setParams({ page: next.pageIndex + 1 }))
@@ -52,10 +52,10 @@ export const TanstackTable = memo(function TanstackTable({
     const nextSorting =
       typeof updater === 'function'
         ? updater(
-            params.sortBy
-              ? [{ id: params.sortBy, desc: params.direction === 'desc' }]
-              : [],
-          )
+          params.sortBy
+            ? [{ id: params.sortBy, desc: params.direction === 'desc' }]
+            : [],
+        )
         : updater
 
     if (!nextSorting.length) {
@@ -216,9 +216,8 @@ export const TanstackTable = memo(function TanstackTable({
                           ? header.column.getToggleSortingHandler()
                           : undefined
                       }
-                      className={`p-2 text-left font-semibold text-gray-700 border border-gray-200 ${
-                        canSort ? 'cursor-pointer select-none text-sky-600' : ''
-                      }`}
+                      className={`p-2 text-left font-semibold text-gray-700 border border-gray-200 ${canSort ? 'cursor-pointer select-none text-sky-600' : ''
+                        }`}
                     >
                       <div className="flex items-center gap-1">
                         {flexRender(

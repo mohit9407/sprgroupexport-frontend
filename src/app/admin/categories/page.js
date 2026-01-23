@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback, Suspense } from 'react'
+import { useEffect, useMemo, Suspense } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { createColumnHelper } from '@tanstack/react-table'
 import { FaEdit, FaTrash } from 'react-icons/fa'
@@ -10,6 +10,8 @@ import {
 } from '@/features/categories/categoriesSlice'
 import { useRouter } from 'next/navigation'
 import { TanstackTable } from '@/components/admin/TanStackTable'
+import ConfirmationModal from '@/components/admin/ConfirmationModal'
+import { useTableQueryParams } from '@/components/admin/TanStackTable'
 
 const columnHelper = createColumnHelper()
 
@@ -31,19 +33,23 @@ const getColumns = (router) => [
   columnHelper.accessor('image', {
     header: 'Image',
     enableSorting: false,
-    cell: (info) => (
-      <div className="w-20 h-20 bg-gray-100 grid place-items-center overflow-hidden">
-        {info.getValue() ? (
-          <img
-            src={info.getValue()}
-            alt={info.row.original.name}
-            className="object-cover w-full h-full"
-          />
-        ) : (
-          <span className="text-gray-400 text-sm">No Image</span>
-        )}
-      </div>
-    ),
+    cell: (info) => {
+      const value = info.getValue();
+      const name = info.row.original.name;
+      return (
+        <div className="w-20 h-20 bg-gray-100 grid place-items-center overflow-hidden">
+          {value ? (
+            <img
+              src={value}
+              alt={name}
+              className="object-cover w-full h-full"
+            />
+          ) : (
+            <span className="text-gray-400 text-sm">No Image</span>
+          )}
+        </div>
+      );
+    }
   }),
   columnHelper.accessor('createdAt', {
     header: 'Added/Last Modified',
@@ -128,18 +134,10 @@ const getColumns = (router) => [
 function CategoriesDisplayContent() {
   const router = useRouter()
   const dispatch = useDispatch()
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 10,
-  })
-  const [sorting, setSorting] = useState([])
-  const [searchTerm, setSearchTerm] = useState('')
-  const [filterBy, setFilterBy] = useState('')
-
+  const { params } = useTableQueryParams()
+  
   // Create columns with router
-  const columns = useMemo(() => {
-    return getColumns(router)
-  }, [router])
+  const columns = useMemo(() => getColumns(router), [router])
 
   const {
     data: categoriesData,
@@ -163,40 +161,47 @@ function CategoriesDisplayContent() {
     )
   }, [categoriesData])
 
-  const getCategories = async (search = '', page) => {
-    try {
-      const sort = sorting[0]
-      const sortType = sort?.desc ? 'desc' : 'asc'
-      const pageNumber = page !== undefined ? page : pagination.pageIndex + 1
-
-      const params = {
-        search: search || undefined,
-        sortBy: sort?.id,
-        direction: sort?.id ? sortType : undefined,
-        page: pageNumber,
-        limit: pagination.pageSize,
-        filterBy: filterBy || undefined,
-      }
-
-      // Ensure we're sending valid page numbers
-      if (isNaN(pageNumber) || pageNumber < 1) {
-        params.page = 1
-      }
-
-      dispatch(fetchAllCategories(params))
-    } catch (error) {
-      console.error('Error fetching categories:', error)
-    }
-  }
-
-  // Fetch categories when sorting, pagination, or filters change
+  // Fetch categories when URL params change
   useEffect(() => {
+    const getCategories = async () => {
+      try {
+        dispatch(
+          fetchAllCategories({
+            search: params?.search || undefined,
+            sortBy: params?.sortBy,
+            direction: params?.sortBy ? params.direction : undefined,
+            page: params?.pageIndex + 1,
+            limit: params?.pageSize || 10,
+            filterBy: params?.filterBy || undefined,
+          })
+        )
+      } catch (error) {
+        console.error('Error fetching categories:', error)
+      }
+    }
+
     getCategories()
-  }, [sorting, pagination.pageIndex, pagination.pageSize])
+  }, [dispatch, params])
 
   if (error) {
     return <div className="p-6 text-red-500">Error: {error}</div>
   }
+
+  const filterByOptions = useMemo(
+    () => [
+      { label: 'Name', value: 'name' },
+      { 
+        label: 'Status', 
+        value: 'status',
+        type: 'select',
+        options: [
+          { label: 'Active', value: 'active' },
+          { label: 'Inactive', value: 'inactive' },
+        ]
+      },
+    ],
+    []
+  )
 
   return (
     <div className="p-6">
@@ -207,46 +212,8 @@ function CategoriesDisplayContent() {
         data={categories}
         isLoading={isLoading}
         mode="server"
-        pageCount={apiPagination?.totalPages || 1}
-        pagination={{
-          ...pagination,
-          pageCount: apiPagination?.totalPages || 1,
-          total: apiPagination?.totalItems || 0,
-        }}
-        sorting={sorting}
-        onPaginationChange={(newPagination) => {
-          setPagination(newPagination)
-          getCategories(searchTerm, newPagination.pageIndex + 1)
-        }}
-        onSortingChange={(newSorting) => {
-          setSorting(newSorting)
-          setPagination((prev) => ({ ...prev, pageIndex: 0 }))
-        }}
-        onSearch={(value) => {
-          setSearchTerm(value)
-          setPagination((prev) => ({ ...prev, pageIndex: 0 }))
-          getCategories(value, 1)
-        }}
-        filterByValue={filterBy}
-        filterByOptions={[
-          {
-            label: 'Name',
-            value: 'name',
-            type: 'text',
-          },
-          {
-            label: 'Status',
-            value: 'status',
-            type: 'select',
-            options: [
-              { label: 'Active', value: 'active' },
-              { label: 'Inactive', value: 'inactive' },
-            ],
-          },
-        ]}
-        onFilterChange={(value) => {
-          setFilterBy(value)
-        }}
+        pageCount={apiPagination?.totalPages}
+        filterByOptions={filterByOptions}
         actions={
           <button
             className="bg-sky-600 text-white px-4 py-2 rounded text-sm hover:bg-sky-700 transition-colors"

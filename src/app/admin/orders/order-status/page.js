@@ -78,23 +78,26 @@ const OrderStatusTableContent = () => {
     }),
     columnHelper.accessor('isDefault', {
       header: 'Default',
-      cell: (info) =>
-        info.getValue() ? (
+      cell: (info) => {
+        const isDefault = info.getValue();
+        return isDefault ? (
           <span className="text-green-600">
             <FaCheck className="inline mr-1" /> Yes
           </span>
         ) : (
           <button
+            type="button"
             onClick={(e) => {
-              e.stopPropagation()
-              handleSetDefault(info.row.original._id)
+              e.stopPropagation();
+              handleSetDefault(info.row.original._id);
             }}
             className="text-blue-600 hover:text-blue-800 text-sm"
           >
             Set Default
           </button>
-        ),
-      enableSorting: false,
+        );
+      },
+      enableSorting: false
     }),
     columnHelper.display({
       id: 'actions',
@@ -151,7 +154,6 @@ const OrderStatusTableContent = () => {
           columns={columns}
           data={statuses || []}
           isLoading={loading}
-          mode="client"
         />
       </div>
 
