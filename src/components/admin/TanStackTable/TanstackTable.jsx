@@ -40,22 +40,22 @@ export const TanstackTable = memo(function TanstackTable({
     const next =
       typeof updater === 'function'
         ? updater({
-          pageIndex: params.pageIndex,
-          pageSize: params.pageSize,
-        })
+            pageIndex: params.pageIndex,
+            pageSize: params.pageSize,
+          })
         : updater
 
-    startTransition(() => setParams({ page: next.pageIndex + 1 }))
+    startTransition(() => setParams({ pageIndex: next.pageIndex + 1 }))
   }
 
   const handleSortingChange = (updater) => {
     const nextSorting =
       typeof updater === 'function'
         ? updater(
-          params.sortBy
-            ? [{ id: params.sortBy, desc: params.direction === 'desc' }]
-            : [],
-        )
+            params.sortBy
+              ? [{ id: params.sortBy, desc: params.direction === 'desc' }]
+              : [],
+          )
         : updater
 
     if (!nextSorting.length) {
@@ -63,7 +63,7 @@ export const TanstackTable = memo(function TanstackTable({
         setParams({
           sortBy: null,
           direction: null,
-          page: 1,
+          pageIndex: 1,
         }),
       )
     } else {
@@ -71,7 +71,7 @@ export const TanstackTable = memo(function TanstackTable({
         setParams({
           sortBy: nextSorting[0].id,
           direction: nextSorting[0].desc ? 'desc' : 'asc',
-          page: 1,
+          pageIndex: 1,
         }),
       )
     }
@@ -100,12 +100,12 @@ export const TanstackTable = memo(function TanstackTable({
   })
 
   const handleSetFilterSearchParams = () => {
-    setParams({ ...filterSearchDraft, page: 1 })
+    setParams({ ...filterSearchDraft, pageIndex: 1 })
   }
   const resetFilterSearchParams = () => {
     const defaultFilter = { filterBy: '', search: '' }
     setFilterSearchDraft(defaultFilter)
-    setParams({ ...defaultFilter, page: 1 })
+    setParams({ ...defaultFilter, pageIndex: 1 })
   }
 
   const selectedFilter = filterByOptions.find(
@@ -216,8 +216,9 @@ export const TanstackTable = memo(function TanstackTable({
                           ? header.column.getToggleSortingHandler()
                           : undefined
                       }
-                      className={`p-2 text-left font-semibold text-gray-700 border border-gray-200 ${canSort ? 'cursor-pointer select-none text-sky-600' : ''
-                        }`}
+                      className={`p-2 text-left font-semibold text-gray-700 border border-gray-200 ${
+                        canSort ? 'cursor-pointer select-none text-sky-600' : ''
+                      }`}
                     >
                       <div className="flex items-center gap-1">
                         {flexRender(
@@ -286,11 +287,11 @@ export const TanstackTable = memo(function TanstackTable({
           <TablePagination
             pageIndex={params?.pageIndex}
             pageCount={pageCount}
-            onPageChange={(newIndex) =>
+            onPageChange={(newIndex) => {
               setParams({
                 pageIndex: newIndex + 1,
               })
-            }
+            }}
           />
         </div>
       )}
