@@ -49,7 +49,6 @@ export const fetchReviews = createAsyncThunk(
           let aValue = a[params.sortBy]
           let bValue = b[params.sortBy]
 
-          // Handle different data types
           if (params.sortBy === 'createdAt') {
             aValue = new Date(aValue)
             bValue = new Date(bValue)

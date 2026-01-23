@@ -294,7 +294,7 @@ export default function OrderDetailsPage() {
                       Shipping Method
                     </h3>
                     <p className="mt-2 text-sm text-gray-900">
-                      {order.shippingMethod.name || 'Standard Shipping'}
+                      {order.shippingMethod?.name || 'Standard Shipping'}
                     </p>
                     {order.trackingNumber && (
                       <div className="mt-4">
