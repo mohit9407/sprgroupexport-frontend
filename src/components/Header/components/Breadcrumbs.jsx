@@ -1,10 +1,12 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
 const Breadcrumbs = () => {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const productName = searchParams.get('name')
 
   const generateBreadcrumbs = () => {
     const pathSegments = pathname.split('?')[0].split('/').filter(Boolean)
@@ -23,18 +25,31 @@ const Breadcrumbs = () => {
     }
 
     pathSegments.forEach((segment, index) => {
-      if (!segment || /^\d+$/.test(segment)) return
-
-      url += `/${segment}`
       const isLast = index === pathSegments.length - 1
+      
+      // Skip empty segments
+      if (!segment) return
+      
+      url += `/${segment}`
 
-      const formattedLabel = segment
-        .split('-')
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ')
+      let label = segment
+      
+      // If this is a product ID and we have a product name from URL params, use that
+      if (isLast && productName && /^[0-9a-fA-F]{24}$/.test(segment)) {
+        label = decodeURIComponent(productName)
+      } else if (!/^\d+$/.test(segment)) {
+        // Only format non-numeric segments
+        label = segment
+          .split('-')
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ')
+      } else {
+        // Skip numeric segments that aren't product IDs
+        return
+      }
 
       breadcrumbs.push({
-        label: formattedLabel,
+        label,
         href: url,
         isLast,
       })

@@ -1,18 +1,24 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { useCart } from '@/context/CartContext'
+import ConfirmationModal from '@/components/admin/ConfirmationModal'
 
 export default function OrderDetail({
   onContinue,
   paymentMethod: initialPaymentMethod = 'cod',
+  directCheckoutItem = null
 }) {
   const { cart, removeFromCart, updateQuantity } = useCart()
   const [paymentMethod, setPaymentMethod] = useState(initialPaymentMethod)
   const [orderNotes, setOrderNotes] = useState('')
+  const [itemToDelete, setItemToDelete] = useState(null)
+
+  // Use directCheckoutItem if available, otherwise use cart
+  const displayItems = directCheckoutItem ? [directCheckoutItem] : cart
 
   // Calculate order total
-  const orderTotal = cart.reduce((total, item) => {
-    return total + item.price * item.quantity
+  const orderTotal = displayItems.reduce((total, item) => {
+    return total + (item.price * (item.quantity || 1))
   }, 0)
 
   const handleEditItem = (productId) => {
@@ -22,12 +28,13 @@ export default function OrderDetail({
   }
 
   const handleDeleteItem = (productId) => {
-    if (
-      window.confirm(
-        'Are you sure you want to remove this item from your cart?',
-      )
-    ) {
-      removeFromCart(productId)
+    setItemToDelete(productId)
+  }
+
+  const confirmDeleteItem = () => {
+    if (itemToDelete) {
+      removeFromCart(itemToDelete)
+      setItemToDelete(null)
     }
   }
 
@@ -53,9 +60,9 @@ export default function OrderDetail({
       <div>
         <h2 className="text-lg font-bold uppercase mb-6">Order Detail</h2>
 
-        {/* Cart Items */}
+        {/* Order Items */}
         <div className="space-y-4 mb-8">
-          {cart.map((item) => (
+          {displayItems.map((item) => (
             <div
               key={item.id}
               className="border border-gray-200 rounded-lg p-4"
@@ -78,65 +85,77 @@ export default function OrderDetail({
                   <h3 className="text-sm font-medium text-gray-900">
                     {item.name}
                   </h3>
+                  {item.color && (
+                    <div className="text-sm text-gray-600">
+                      Color: {item.color}
+                    </div>
+                  )}
+                  {item.size && (
+                    <div className="text-sm text-gray-600">
+                      Size: {item.size}
+                    </div>
+                  )}
                   <div className="flex items-center mt-1">
                     <span className="text-sm font-medium text-gray-900">
-                      ₹{item.price.toLocaleString('en-IN')}
+                      ₹{item.price?.toLocaleString('en-IN')}
                     </span>
                     <span className="mx-2 text-gray-300">|</span>
                     <div className="flex items-center">
                       <span className="text-sm text-gray-600">
-                        Qty: {item.quantity}
+                        Qty: {item.quantity || 1}
                       </span>
                       <span className="mx-2 text-gray-300">|</span>
                       <span className="text-sm font-medium text-gray-900">
-                        ₹{(item.price * item.quantity).toLocaleString('en-IN')}
+                        ₹{((item.price || 0) * (item.quantity || 1)).toLocaleString('en-IN')}
                       </span>
                     </div>
                   </div>
 
                   {/* Edit/Delete Buttons */}
-                  <div className="mt-2 flex space-x-4">
-                    <button
-                      type="button"
-                      onClick={() => handleEditItem(item.id)}
-                      className="text-xs text-[#c89b5a] hover:underline flex items-center"
-                    >
-                      <svg
-                        className="h-4 w-4 mr-1"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                  {!directCheckoutItem && (
+                    <div className="mt-2 flex space-x-4">
+                      <button
+                        type="button"
+                        onClick={() => handleEditItem(item.id)}
+                        className="text-xs text-[#c89b5a] hover:underline flex items-center"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                        />
-                      </svg>
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteItem(item.id)}
-                      className="text-xs text-red-600 hover:underline flex items-center"
-                    >
-                      <svg
-                        className="h-4 w-4 mr-1"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                        <svg
+                          className="h-4 w-4 mr-1"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                          />
+                        </svg>
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteItem(item.id)}
+                        className="text-xs text-red-600 hover:underline flex items-center"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        />
-                      </svg>
-                      Delete
-                    </button>
-                  </div>
+                        <svg
+                          className="h-4 w-4 mr-1"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                        Delete
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -225,6 +244,16 @@ export default function OrderDetail({
           </button>
         </div>
       </div>
+      
+      <ConfirmationModal
+        open={!!itemToDelete}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={confirmDeleteItem}
+        title="Remove Item"
+        description="Are you sure you want to remove this item from your cart?"
+        confirmText="Remove Item"
+        theme="error"
+      />
     </form>
   )
 }

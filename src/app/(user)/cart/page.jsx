@@ -5,6 +5,7 @@ import { useCart } from '@/context/CartContext'
 import { FiShoppingBag, FiPlus, FiMinus, FiTrash2 } from 'react-icons/fi'
 import Image from 'next/image'
 import Link from 'next/link'
+import ConfirmationModal from '@/components/admin/ConfirmationModal'
 
 export default function CartPage() {
   const {
@@ -15,6 +16,7 @@ export default function CartPage() {
     removeAllFromCart,
   } = useCart()
   const [coupon, setCoupon] = useState('')
+  const [showClearCartModal, setShowClearCartModal] = useState(false)
 
   const handleQuantityChange = (productId, newQuantity) => {
     if (newQuantity >= 1) {
@@ -56,6 +58,26 @@ export default function CartPage() {
 
   return (
     <div className="container mx-auto px-4 py-12">
+      <button 
+        onClick={() => window.history.back()}
+        className="flex items-center text-gray-600 hover:text-[#BA8B4E] mb-6 transition-colors"
+      >
+        <svg 
+          className="w-5 h-5 mr-1" 
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24" 
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path 
+            strokeLinecap="round" 
+            strokeLinejoin="round" 
+            strokeWidth={2} 
+            d="M10 19l-7-7m0 0l7-7m-7 7h18" 
+          />
+        </svg>
+        Back
+      </button>
       <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">
         SHOPPING CART
       </h1>
@@ -166,18 +188,25 @@ export default function CartPage() {
               ← Continue Shopping
             </Link>
             <button
-              onClick={async () => {
-                if (
-                  window.confirm('Are you sure you want to clear your cart?')
-                ) {
-                  await removeAllFromCart()
-                }
-              }}
+              onClick={() => setShowClearCartModal(true)}
               className="px-6 py-2 border border-gray-300 rounded-full text-gray-700 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors flex items-center"
               disabled={cart.length === 0}
             >
               <FiTrash2 className="mr-2" /> Clear Cart
             </button>
+            
+            <ConfirmationModal
+              open={showClearCartModal}
+              onClose={() => setShowClearCartModal(false)}
+              onConfirm={async () => {
+                await removeAllFromCart()
+                setShowClearCartModal(false)
+              }}
+              title="Clear Cart"
+              description="Are you sure you want to clear your cart? This action cannot be undone."
+              confirmText="Clear Cart"
+              theme="error"
+            />
           </div>
         </div>
 

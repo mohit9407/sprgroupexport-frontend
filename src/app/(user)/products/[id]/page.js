@@ -1,7 +1,7 @@
 'use client'
 
 import { useParams, useRouter } from 'next/navigation'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { FaHeart, FaCheck, FaShoppingBag } from 'react-icons/fa'
 import OffersModal from '@/components/OffersModal'
@@ -22,6 +22,8 @@ import {
 } from '@/features/coupons/couponsSlice'
 import { useCart } from '@/context/CartContext'
 import { useWishlist } from '@/context/WishlistContext'
+import { useAuth } from '@/context/AuthContext'
+import AuthModal from '@/components/Auth/AuthModal'
 import RelatedProducts from '@/components/RelatedProducts'
 
 export default function ProductDetails() {
@@ -31,8 +33,11 @@ export default function ProductDetails() {
   const productId = params?.id
   const { addToCart } = useCart()
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
+  const { user } = useAuth()
 
   const [quantity, setQuantity] = useState(1)
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [pendingAction, setPendingAction] = useState(null) // 'addToCart' or 'buyNow'
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [selectedSize, setSelectedSize] = useState(null)
   const [selectedColor, setSelectedColor] = useState(null)
@@ -114,46 +119,104 @@ export default function ProductDetails() {
     return () => timers.forEach(clearTimeout)
   }, [product, attributes])
 
-  const handleAddToCart = () => {
-    if (!product || !selectedColor || !selectedSize) {
-      toast.error('Please select color and size')
+  const handleAddToCart = async (skipAuthCheck = false) => {
+    // Check authentication first if not skipping
+    if (!user) {
+      setPendingAction('addToCart')
+      setShowAuthModal(true)
       return
     }
 
-    setIsAddingToCart(true)
+    if (!product || !product._id) {
+      toast.error('Product information is not available');
+      return false;
+    }
+    
+    try {
+      setIsAddingToCart(true);
 
-    // Find the selected color and size details
-    const color = attributes.colors.find((c) => c._id === selectedColor)
-    const size = attributes.sizes.find((s) => s._id === selectedSize)
+      // Find the selected color and size details with null checks
+      const color = attributes?.colors?.find((c) => c._id === selectedColor);
+      const size = attributes?.sizes?.find((s) => s._id === selectedSize);
 
-    addToCart(
-      {
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.image,
-        color: color?.value || '',
-        colorId: selectedColor,
-        size: size?.value || '',
-        sizeId: selectedSize,
-      },
-      quantity,
-    )
+      await addToCart(
+        {
+          id: product._id,
+          name: product.name,
+          price: product.price,
+          image: product.image,
+          color: color?.value || '',
+          colorId: selectedColor,
+          size: size?.value || '',
+          sizeId: selectedSize,
+        },
+        quantity,
+      )
 
-    toast.success('Added to cart!')
-    setTimeout(() => setIsAddingToCart(false), 1000)
+      toast.success('Added to cart!');
+      return true;
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast.error(error.response?.data?.message || 'Failed to add item to cart');
+      return false;
+    } finally {
+      setIsAddingToCart(false);
+    }
   }
 
-  const handleBuyNow = () => {
-    handleAddToCart()
-    // Small delay to ensure cart is updated
-    setTimeout(() => {
-      router.push('/cart')
-    }, 500)
+  const handleBuyNow = async () => {
+    if (!user) {
+      setPendingAction('buyNow')
+      setShowAuthModal(true)
+      return
+    }
+
+    if (!product || !product._id) {
+      toast.error('Product information is not available')
+      return
+    }
+
+    // Create a temporary cart item
+    const color = attributes?.colors?.find((c) => c._id === selectedColor)
+    const size = attributes?.sizes?.find((s) => s._id === selectedSize)
+
+    const cartItem = {
+      id: product._id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+      color: color?.value || '',
+      colorId: selectedColor,
+      size: size?.value || '',
+      sizeId: selectedSize,
+      quantity: quantity,
+      inStock: true,
+      // Add a flag to indicate this is a direct checkout item
+      isDirectCheckout: true
+    }
+
+    // Clear any existing direct checkout items first
+    sessionStorage.removeItem('directCheckoutItem')
+    
+    // Store the item in session storage for checkout
+    sessionStorage.setItem('directCheckoutItem', JSON.stringify(cartItem))
+    
+    // Clear the cart from localStorage to prevent any conflicts
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('cart')
+    }
+    
+    // Redirect to checkout page
+    router.push('/checkout')
   }
 
   const handleWishlistToggle = () => {
     if (!product) return
+
+    if (!user) {
+      setShowAuthModal(true)
+      return
+    }
 
     if (isWishlisted) {
       removeFromWishlist(product.id)
@@ -201,7 +264,25 @@ export default function ProductDetails() {
 
   return (
     <div className="bg-white min-h-screen">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
+        {/* Auth Modal */}
+        <AuthModal 
+          isOpen={showAuthModal} 
+          onClose={() => {
+            setShowAuthModal(false)
+            setPendingAction(null)
+          }}
+          onLoginSuccess={async () => {
+            if (pendingAction === 'addToCart') {
+              await handleAddToCart(true)
+            } else if (pendingAction === 'buyNow') {
+              // For Buy Now, we don't need to add to cart
+              // Just redirect to checkout which will handle the direct checkout item
+              router.push('/checkout')
+            }
+            setPendingAction(null)
+          }}
+        />
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Product Images - Sticky */}
           <div className="lg:w-1/2 lg:sticky lg:top-8 lg:self-start">

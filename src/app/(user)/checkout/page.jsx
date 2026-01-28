@@ -18,9 +18,11 @@ export default function CheckoutPage() {
   const router = useRouter()
   const dispatch = useDispatch()
   const { user } = useAuth()
-  const { cart, clearCart } = useCart()
+  const { cart, clearCart, addToCart } = useCart()
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const [isCheckingDirectCheckout, setIsCheckingDirectCheckout] = useState(true)
   const [currentStep, setCurrentStep] = useState(1)
+  const [directCheckoutItem, setDirectCheckoutItem] = useState(null)
   const [formData, setFormData] = useState({
     shippingAddress: {},
     shippingMethod: {},
@@ -33,15 +35,48 @@ export default function CheckoutPage() {
   const { order, loading, error, success } = useSelector((state) => state.order)
   const { statuses } = useSelector((state) => state.orderStatus)
 
-  // Check authentication on component mount and when user changes
+  // Handle direct checkout and authentication
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('token')
-      if (!user || !token) {
-        const timer = setTimeout(() => setShowAuthModal(true), 0)
-        return () => clearTimeout(timer)
+    const checkAuthAndDirectCheckout = async () => {
+      // Check for direct checkout item first
+      if (typeof window !== 'undefined') {
+        const directCheckoutItem = sessionStorage.getItem('directCheckoutItem')
+        
+        if (directCheckoutItem) {
+          try {
+            const item = JSON.parse(directCheckoutItem)
+            // Clear the direct checkout item from storage
+            sessionStorage.removeItem('directCheckoutItem')
+            
+            // Set the direct checkout item in state
+            setDirectCheckoutItem({
+              id: item.id,
+              name: item.name,
+              price: item.price,
+              image: item.image,
+              color: item.color,
+              colorId: item.colorId,
+              size: item.size,
+              sizeId: item.sizeId,
+              quantity: item.quantity || 1,
+              inStock: true
+            })
+          } catch (error) {
+            console.error('Error processing direct checkout:', error)
+          }
+        }
+        
+        // Check authentication
+        const token = localStorage.getItem('token')
+        if (!user || !token) {
+          setShowAuthModal(true)
+        }
       }
+      
+      setIsCheckingDirectCheckout(false)
     }
+    
+    checkAuthAndDirectCheckout()
   }, [user])
 
   // Fetch order statuses on component mount
@@ -96,27 +131,40 @@ export default function CheckoutPage() {
           return
         }
 
+        // Prepare products array based on direct checkout or cart
+        const products = directCheckoutItem 
+          ? [{
+              productId: directCheckoutItem.id,
+              quantity: directCheckoutItem.quantity,
+              color: directCheckoutItem.colorId,
+              size: directCheckoutItem.sizeId
+            }]
+          : cart.map((item) => ({
+              productId: item.id,
+              quantity: item.quantity,
+              color: item.colorId,
+              size: item.sizeId
+            }));
+
+        // Calculate subtotal based on displayItems
+        const subtotal = displayItems.reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0,
+        )
+
         // Prepare order data
         const orderData = {
           user: user?._id,
           shippingMethod: formData.shippingMethod?._id,
           shippingCost: formData.shippingMethod?.price || 0,
           shippingAddressId: formData.shippingAddress._id,
-          products: cart.map((item) => ({
-            productId: item.id,
-            quantity: item.quantity,
-          })),
+          products: products,
           paymentMethod: formData.paymentMethod,
-          paymentStatus: '695e0471c424c92fee37713b', // Default payment status ID
-          orderStatus: pendingStatus._id, // Use the found status ID
-          subtotal: cart.reduce(
-            (sum, item) => sum + item.price * item.quantity,
-            0,
-          ),
+          paymentStatus: '695e0471c424c92fee37713b',
+          orderStatus: pendingStatus._id,
+          subtotal: subtotal,
           tax: 0,
-          total:
-            cart.reduce((sum, item) => sum + item.price * item.quantity, 0) +
-            (formData.shippingMethod?.price || 0),
+          total: subtotal + (formData.shippingMethod?.price || 0),
           comments: stepData.orderNotes || '',
         }
 
@@ -191,6 +239,7 @@ export default function CheckoutPage() {
               handleContinue(data, step)
             }}
             paymentMethod={formData.paymentMethod}
+            directCheckoutItem={directCheckoutItem}
           />
         )
       default:
@@ -198,16 +247,22 @@ export default function CheckoutPage() {
     }
   }
 
-  // Redirect to home if cart is empty
-  if (cart.length === 0) {
+  // Don't render anything while checking for direct checkout
+  if (isCheckingDirectCheckout) {
+    return null
+  }
+  
+  // Redirect to home if cart is empty and no direct checkout item
+  if (cart.length === 0 && !directCheckoutItem) {
     router.push('/')
     return null
   }
 
   // Calculate order total
-  const orderTotal = cart.reduce((total, item) => {
+  const displayItems = directCheckoutItem ? [directCheckoutItem] : cart
+  const orderTotal = displayItems.reduce((total, item) => {
     return total + item.price * item.quantity
-  }, 0)
+  }, 0) + (formData.shippingMethod?.price || 0)
 
   return (
     <div className="min-h-screen bg-white">
@@ -249,7 +304,7 @@ export default function CheckoutPage() {
 
           <div className="lg:w-1/3">
             <OrderSummary
-              cartItems={cart}
+              cartItems={displayItems}
               shippingMethod={formData.shippingMethod}
               orderTotal={orderTotal}
               currentStep={currentStep}

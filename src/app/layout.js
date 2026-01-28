@@ -7,6 +7,9 @@ import { Providers } from './providers'
 export const metadata = {
   title: 'SPR GROUP EXPORT',
   description: 'spr group export ecommerce platform',
+  icons: {
+    icon: '/spr_logo.png',
+  },
 }
 
 const montserrat = Montserrat({
@@ -21,8 +24,8 @@ export default function RootLayout({ children }) {
     <html lang="en" className={`${montserrat.variable} font-sans`}>
       <body className="min-h-screen bg-gray-50">
         <Providers>
-            {children}
-            <Toaster />
+          {children}
+          <Toaster />
         </Providers>
       </body>
     </html>

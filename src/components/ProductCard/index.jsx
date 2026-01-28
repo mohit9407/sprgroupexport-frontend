@@ -108,7 +108,9 @@ const ProductCard = ({
   const handleNavigate = (e) => {
     e.preventDefault()
     e.stopPropagation()
-    router.push(`/products/${id}`)
+    // Include product name in URL for better breadcrumbs
+    const productSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    router.push(`/products/${id}?name=${encodeURIComponent(name)}`)
   }
 
   const stopPropagation = (e) => {
