@@ -10,7 +10,7 @@ import AccountDropdown from './components/AccountDropdown'
 import SearchBar from './components/SearchBar'
 import HeaderIcons from './components/HeaderIcons'
 import Navigation from './components/Navigation'
-import Breadcrumbs from './components/Breadcrumbs'
+import BreadcrumbsWrapper from './components/BreadcrumbsWrapper'
 import StickyHeader from './components/StickyHeader'
 
 const Header = () => {
@@ -116,7 +116,7 @@ const Header = () => {
           />
 
           {/* Breadcrumbs */}
-          <Breadcrumbs />
+          <BreadcrumbsWrapper />
         </div>
       </header>
     </>

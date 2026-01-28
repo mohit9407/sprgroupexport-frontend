@@ -111,6 +111,20 @@ export const updateCategory = createAsyncThunk(
   },
 )
 
+export const deleteCategory = createAsyncThunk(
+  'categories/deleteCategory',
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await api.delete(`/category/delete/${id}`)
+      return response.data
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to delete category',
+      )
+    }
+  },
+)
+
 const categoriesSlice = createSlice({
   name: 'categories',
   initialState,
@@ -169,6 +183,20 @@ const categoriesSlice = createSlice({
         )
       })
       .addCase(updateCategory.rejected, (state, action) => {
+        state.status = 'failed'
+        state.error = action.payload
+      })
+      .addCase(deleteCategory.pending, (state) => {
+        state.status = 'loading'
+        state.error = null
+      })
+      .addCase(deleteCategory.fulfilled, (state, action) => {
+        state.status = 'succeeded'
+        state.allCategories.data = state.allCategories.data.filter(
+          (category) => category._id !== action.payload._id,
+        )
+      })
+      .addCase(deleteCategory.rejected, (state, action) => {
         state.status = 'failed'
         state.error = action.payload
       })

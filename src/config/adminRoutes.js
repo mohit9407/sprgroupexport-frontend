@@ -238,6 +238,23 @@ export const routeMeta = [
     parent: '/admin',
     sidebar: true,
     icon: FaRegFileAlt,
+    sidebarChildrens: ['/admin/low-stock', '/admin/out-of-stock'],
+  },
+  {
+    key: 'low-stock',
+    path: '/admin/low-stock',
+    label: 'Low Stock Products',
+    parent: '/admin',
+    sidebar: true,
+    icon: FaRegFileAlt,
+  },
+  {
+    key: 'out-of-stock',
+    path: '/admin/out-of-stock',
+    label: 'Out of Stock Products',
+    parent: '/admin',
+    sidebar: true,
+    icon: FaRegFileAlt,
   },
 
   // ===== Coupons =====

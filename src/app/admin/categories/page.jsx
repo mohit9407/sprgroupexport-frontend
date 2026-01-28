@@ -1,22 +1,23 @@
 'use client'
 
-import { useEffect, useMemo, Suspense } from 'react'
+import { useEffect, useMemo, Suspense, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { createColumnHelper } from '@tanstack/react-table'
 import { FaEdit, FaTrash } from 'react-icons/fa'
 import {
   fetchAllCategories,
   selectAllCategories,
+  deleteCategory,
 } from '@/features/categories/categoriesSlice'
 import { useRouter } from 'next/navigation'
 import { TanstackTable } from '@/components/admin/TanStackTable'
 import ConfirmationModal from '@/components/admin/ConfirmationModal'
 import { useTableQueryParams } from '@/components/admin/TanStackTable'
+import { toast } from '@/utils/toastConfig'
 
 const columnHelper = createColumnHelper()
 
-// Define columns inside the component to access router
-const getColumns = (router) => [
+const getColumns = (router, handleDeleteClick) => [
   columnHelper.accessor('_id', {
     header: 'ID',
     cell: (info) => info.getValue(),
@@ -26,16 +27,16 @@ const getColumns = (router) => [
     header: 'Name',
     enableSorting: true,
     cell: (info) => {
-      const { name, parent, parentName } = info.row.original
-      return parent ? `${name} / ${parentName || ''}` : name
+      const { name, parentName } = info.row.original
+      return parentName ? `${name} / ${parentName}` : name
     },
   }),
   columnHelper.accessor('image', {
     header: 'Image',
     enableSorting: false,
     cell: (info) => {
-      const value = info.getValue();
-      const name = info.row.original.name;
+      const value = info.getValue()
+      const name = info.row.original.name
       return (
         <div className="w-20 h-20 bg-gray-100 grid place-items-center overflow-hidden">
           {value ? (
@@ -48,8 +49,8 @@ const getColumns = (router) => [
             <span className="text-gray-400 text-sm">No Image</span>
           )}
         </div>
-      );
-    }
+      )
+    },
   }),
   columnHelper.accessor('createdAt', {
     header: 'Added/Last Modified',
@@ -102,26 +103,16 @@ const getColumns = (router) => [
       <div className="flex items-center gap-2 justify-center">
         <button
           className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-full hover:text-blue-700 transition-colors"
-          onClick={(e) => {
-            e.stopPropagation()
+          onClick={() =>
             router.push(`/admin/categories/edit/${row.original._id}`)
-          }}
+          }
           title="Edit"
         >
           <FaEdit className="w-4 h-4" />
         </button>
         <button
           className="p-1.5 text-red-600 hover:bg-red-50 rounded-full hover:text-red-700 transition-colors"
-          onClick={(e) => {
-            e.stopPropagation()
-            if (
-              confirm(`Are you sure you want to delete ${row.original.name}?`)
-            ) {
-              // Handle delete logic here
-              alert(`Deleting ${row.original.name}`)
-            }
-          }}
-          title="Delete"
+          onClick={() => handleDeleteClick(row.original)}
         >
           <FaTrash className="w-4 h-4" />
         </button>
@@ -130,14 +121,30 @@ const getColumns = (router) => [
   }),
 ]
 
-// This component is wrapped in Suspense to handle search params
 function CategoriesDisplayContent() {
   const router = useRouter()
   const dispatch = useDispatch()
   const { params } = useTableQueryParams()
-  
-  // Create columns with router
-  const columns = useMemo(() => getColumns(router), [router])
+
+  const [deleteModal, setDeleteModal] = useState({
+    open: false,
+    category: null,
+  })
+
+  const handleDeleteClick = (category) => {
+    setDeleteModal({ open: true, category })
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!deleteModal.category) return
+    try {
+      await dispatch(deleteCategory(deleteModal.category._id)).unwrap()
+      toast.success('Category deleted successfully')
+      setDeleteModal({ open: false, category: null })
+    } catch (err) {
+      toast.error(err?.message || 'Failed to delete category')
+    }
+  }
 
   const {
     data: categoriesData,
@@ -161,47 +168,38 @@ function CategoriesDisplayContent() {
     )
   }, [categoriesData])
 
-  // Fetch categories when URL params change
+  const columns = useMemo(() => getColumns(router, handleDeleteClick), [router])
+
   useEffect(() => {
-    const getCategories = async () => {
-      try {
-        dispatch(
-          fetchAllCategories({
-            search: params?.search || undefined,
-            sortBy: params?.sortBy,
-            direction: params?.sortBy ? params.direction : undefined,
-            page: params?.pageIndex + 1,
-            limit: params?.pageSize || 10,
-            filterBy: params?.filterBy || undefined,
-          })
-        )
-      } catch (error) {
-        console.error('Error fetching categories:', error)
-      }
-    }
-
-    getCategories()
+    dispatch(
+      fetchAllCategories({
+        search: params?.search || undefined,
+        sortBy: params?.sortBy,
+        direction: params?.sortBy ? params.direction : undefined,
+        page: params?.pageIndex + 1,
+        limit: params?.pageSize || undefined,
+        filterBy: params?.filterBy || undefined,
+      }),
+    )
   }, [dispatch, params])
-
-  if (error) {
-    return <div className="p-6 text-red-500">Error: {error}</div>
-  }
 
   const filterByOptions = useMemo(
     () => [
       { label: 'Name', value: 'name' },
-      { 
-        label: 'Status', 
+      {
+        label: 'Status',
         value: 'status',
         type: 'select',
         options: [
           { label: 'Active', value: 'active' },
           { label: 'Inactive', value: 'inactive' },
-        ]
+        ],
       },
     ],
-    []
+    [],
   )
+
+  if (error) return <div className="p-6 text-red-500">Error: {error}</div>
 
   return (
     <div className="p-6">
@@ -222,6 +220,16 @@ function CategoriesDisplayContent() {
             Add New Category
           </button>
         }
+      />
+
+      <ConfirmationModal
+        open={deleteModal.open}
+        onClose={() => setDeleteModal({ open: false, category: null })}
+        onConfirm={handleConfirmDelete}
+        title="Delete category"
+        description="Are you sure you want to delete this category?"
+        confirmText="Delete"
+        theme="error"
       />
     </div>
   )

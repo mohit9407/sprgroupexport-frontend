@@ -1,12 +1,10 @@
 'use client'
 
-import { usePathname, useSearchParams } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 
-const Breadcrumbs = () => {
+const Breadcrumbs = ({ productName }) => {
   const pathname = usePathname()
-  const searchParams = useSearchParams()
-  const productName = searchParams.get('name')
 
   const generateBreadcrumbs = () => {
     const pathSegments = pathname.split('?')[0].split('/').filter(Boolean)
@@ -26,14 +24,14 @@ const Breadcrumbs = () => {
 
     pathSegments.forEach((segment, index) => {
       const isLast = index === pathSegments.length - 1
-      
+
       // Skip empty segments
       if (!segment) return
-      
+
       url += `/${segment}`
 
       let label = segment
-      
+
       // If this is a product ID and we have a product name from URL params, use that
       if (isLast && productName && /^[0-9a-fA-F]{24}$/.test(segment)) {
         label = decodeURIComponent(productName)
