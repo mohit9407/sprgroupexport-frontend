@@ -59,9 +59,89 @@ export const fetchProductById = async (productId) => {
   }
 }
 
+// Fetch all products with advanced filters
+export const fetchAllProductsWithFilters = async (filters = {}) => {
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      filterBy,
+      search,
+      sortBy,
+      sortOrder = 'asc',
+    } = filters
+
+    const params = new URLSearchParams()
+
+    params.append('page', page)
+    params.append('limit', limit)
+    if (filterBy) params.append('filterBy', filterBy)
+    if (search) params.append('search', search)
+    if (sortBy) params.append('sortBy', sortBy)
+    if (sortOrder) params.append('sortOrder', sortOrder)
+
+    const response = await api.get(
+      `/product/get-all-products-with-filters?${params.toString()}`,
+    )
+    return response
+  } catch (error) {
+    console.error('Error fetching products with filters:', error)
+    throw error // Re-throw to be caught by the thunk
+  }
+}
+
+// Create a new product
+export const createProduct = async (productData) => {
+  try {
+    const response = await api.post('/product/create', productData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return response.data
+  } catch (error) {
+    console.error('Error creating product:', error)
+    throw error
+  }
+}
+
+// Update an existing product
+export const updateProduct = async (productId, productData) => {
+  try {
+    const response = await api.put(
+      `/product/update/${productId}`,
+      productData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      },
+    )
+    return response.data
+  } catch (error) {
+    console.error('Error updating product:', error)
+    throw error
+  }
+}
+
+// Delete a product by ID
+export const deleteProduct = async (productId) => {
+  try {
+    const response = await api.delete(`/product/delete/${productId}`)
+    return response.data
+  } catch (error) {
+    console.error('Error deleting product:', error)
+    throw error
+  }
+}
+
 const productService = {
   fetchAllProducts,
+  fetchAllProductsWithFilters,
   fetchProductById,
+  createProduct,
+  updateProduct,
+  deleteProduct,
 }
 
 export default productService

@@ -8,6 +8,7 @@ export function AdminInputRow({
   id,
   placeholder,
   value = '',
+  defaultValue = '',
   onChange,
   helpText,
   error,
@@ -43,6 +44,7 @@ export function AdminInputRow({
                 : 'border-gray-300 focus:ring-blue-500'
             }`}
           value={value}
+          defaultValue={defaultValue}
           onChange={onChange}
           onBlur={onBlur}
         />
@@ -66,33 +68,44 @@ export function FormAdminInputRow({
   helpText,
   type = 'text',
   defaultValue = '',
+  value: externalValue,
   required,
   fullWidth,
+  readOnly = false,
   ...rest
 }) {
   const { control } = useFormContext()
+  const { field, formState } = useController({
+    name,
+    control,
+    defaultValue,
+  })
 
-  const { formState } = useController({ name, defaultValue, control })
   const { errors, touchedFields } = formState
-
   const errorMessage = touchedFields[name] && errors[name]?.message
 
+  // If externalValue is provided, use it, otherwise use the form field value
+  const inputValue = externalValue !== undefined ? externalValue : field.value
+
   return (
-    <Controller
-      name={name}
-      control={control}
-      render={({ field }) => (
-        <AdminInputRow
-          {...rest}
-          {...field}
-          label={label}
-          error={errorMessage}
-          helpText={helpText}
-          type={type}
-          required={required}
-          fullWidth={fullWidth}
-        />
-      )}
+    <AdminInputRow
+      {...field}
+      {...rest}
+      label={label}
+      error={errorMessage}
+      helpText={helpText}
+      type={type}
+      value={inputValue}
+      readOnly={readOnly}
+      required={required}
+      fullWidth={fullWidth}
+      onChange={(e) => {
+        // Only update if not readOnly
+        if (!readOnly) {
+          field.onChange(e)
+        }
+      }}
+      onBlur={field.onBlur}
     />
   )
 }
