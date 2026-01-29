@@ -122,7 +122,7 @@ export default function EditProductPage() {
     model: product.model || '',
     carat: product.carat || '',
     gram: product.gram || 0,
-    extraCost: product.extraCost || 0,
+    userExtra: product.userExtra || 0,
     color: product.color || '',
     size: product.size || '',
     image: product.image || '',

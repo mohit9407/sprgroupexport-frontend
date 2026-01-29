@@ -58,7 +58,7 @@ const productSchema = (isEdit = false) => {
           .min(0, 'Grams must be a positive number'),
       otherwise: (schema) => schema.min(0, 'Grams must be a positive number'),
     }),
-    extraCost: yup.number().min(0, 'Extra cost must be a positive number'),
+    userExtra: yup.number().min(0, 'Extra cost must be a positive number'),
     color: yup.string(),
     size: yup.string(),
     image: yup
@@ -459,7 +459,6 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
     }
   }
 
-  console.log('isLoading???', isLoading, 'status???', status)
   return (
     <div className="bg-white shadow rounded-lg p-6">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">{title}</h1>
@@ -702,7 +701,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
 
                 {/* Extra Cost */}
                 <FormAdminInputRow
-                  name="extraCost"
+                  name="userExtra"
                   label="Extra Cost"
                   type="number"
                   step="0.01"
@@ -711,11 +710,11 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                   fullWidth
                   startAdornment="$"
                   onChange={(e) => {
-                    const extraCost = parseFloat(e.target.value) || 0
-                    setValue('extraCost', extraCost, { shouldValidate: true })
+                    const userExtra = parseFloat(e.target.value) || 0
+                    setValue('userExtra', userExtra, { shouldValidate: true })
                     // Update total price (gold price + extra cost)
                     const goldPrice = calculatedPrice?.totalPrice || 0
-                    setValue('price', goldPrice + extraCost, {
+                    setValue('price', goldPrice + userExtra, {
                       shouldValidate: true,
                     })
                   }}
