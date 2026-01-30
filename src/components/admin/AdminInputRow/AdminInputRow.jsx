@@ -72,6 +72,7 @@ export function FormAdminInputRow({
   required,
   fullWidth,
   readOnly = false,
+  touchedField = false,
   ...rest
 }) {
   const { control } = useFormContext()
@@ -82,7 +83,10 @@ export function FormAdminInputRow({
   })
 
   const { errors, touchedFields } = formState
-  const errorMessage = touchedFields[name] && errors[name]?.message
+
+  const errorMessage = touchedField
+    ? touchedFields[name] && errors[name]?.message
+    : errors[name]?.message
 
   // If externalValue is provided, use it, otherwise use the form field value
   const inputValue = externalValue !== undefined ? externalValue : field.value

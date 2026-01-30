@@ -49,3 +49,10 @@ export const getUpdatedObjectFields = (values, defaultValues) => {
 
   return updated
 }
+
+export function getFileNameFromUrl(url = '') {
+  const fileWithPrefix = url.split('/').pop() || ''
+  const index = fileWithPrefix.indexOf('_')
+
+  return index !== -1 ? fileWithPrefix.slice(index + 1) : fileWithPrefix
+}
