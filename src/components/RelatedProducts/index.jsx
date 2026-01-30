@@ -174,8 +174,9 @@ const RelatedProducts = ({ category, excludeProductId }) => {
       // If the image path is relative, make sure it has the proper base URL
       const getImageUrl = (img) => {
         if (!img) return '/images/placeholder-product.png'
-        if (img.startsWith('http') || img.startsWith('/')) return img
-        return `/${img}` // Add leading slash if missing
+        const imgStr = String(img) // Convert to string to ensure startsWith is available
+        if (imgStr.startsWith('http') || imgStr.startsWith('/')) return imgStr
+        return `/${imgStr}` // Add leading slash if missing
       }
 
       const productId = product._id || product.id
