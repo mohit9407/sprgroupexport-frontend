@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useCart } from '@/context/CartContext'
 import { FiShoppingBag, FiPlus, FiMinus, FiTrash2 } from 'react-icons/fi'
 import Image from 'next/image'
 import Link from 'next/link'
 import ConfirmationModal from '@/components/admin/ConfirmationModal'
+import { toast, Toaster } from '@/utils/toastConfig'
 
 export default function CartPage() {
   const {
@@ -14,23 +15,88 @@ export default function CartPage() {
     updateQuantity,
     getCartTotal,
     removeAllFromCart,
+    isLoading,
+    error: cartError
   } = useCart()
   const [coupon, setCoupon] = useState('')
   const [showClearCartModal, setShowClearCartModal] = useState(false)
+  const [isClient, setIsClient] = useState(false)
+  const [updatingItemId, setUpdatingItemId] = useState(null)
 
-  const handleQuantityChange = (productId, newQuantity) => {
-    if (newQuantity >= 1) {
-      updateQuantity(productId, newQuantity)
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+  const handleQuantityChange = async (productId, newQuantity) => {
+    if (!updatingItemId) {
+      try {
+        const product = cart.find(item => item.id === productId);
+        
+        // Check min order limit
+        if (product?.product?.minOrderLimit && newQuantity < product.product.minOrderLimit) {
+          toast.error(`Minimum order quantity is ${product.product.minOrderLimit}`);
+          return;
+        }
+        
+        // Check max order limit
+        if (product?.product?.maxOrderLimit && newQuantity > product.product.maxOrderLimit) {
+          toast.error(`Maximum order quantity is ${product.product.maxOrderLimit}`);
+          return;
+        }
+        
+        // Check stock availability
+        if (product?.product?.stock !== undefined && newQuantity > product.product.stock) {
+          toast.error(`Only ${product.product.stock} items available in stock`);
+          return;
+        }
+        
+        const loadingToast = toast.loading('Updating cart...');
+        setUpdatingItemId(productId);
+        
+        try {
+          await updateQuantity(productId, newQuantity);
+          toast.success('Cart updated successfully');
+        } finally {
+          toast.dismiss(loadingToast);
+        }
+      } catch (error) {
+        console.error('Error updating quantity:', error);
+        toast.error(error.message || 'Failed to update quantity');
+      } finally {
+        setUpdatingItemId(null);
+      }
     }
-  }
+  };
 
-  const handleRemoveItem = (productId) => {
-    removeFromCart(productId)
+  const handleRemoveItem = async (productId) => {
+    if (!updatingItemId) {
+      try {
+        setUpdatingItemId(productId);
+        await removeFromCart(productId);
+      } catch (error) {
+        console.error('Error removing item:', error);
+      } finally {
+        setUpdatingItemId(null);
+      }
+    }
   }
 
   const subtotal = getCartTotal()
   const discount = 0 // You can implement coupon logic here
   const total = subtotal - discount
+
+  if (!isClient || isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#BA8B4E]"></div>
+      </div>
+    )
+  }
+
+  if (cartError) {
+    toast.error(cartError);
+    // Clear the error after showing it
+    setTimeout(() => setError(null), 100);
+  }
 
   if (cart.length === 0) {
     return (
@@ -57,23 +123,24 @@ export default function CartPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <button 
+    <div className="container mx-auto px-4 py-8">
+      <Toaster />
+      <button
         onClick={() => window.history.back()}
         className="flex items-center text-gray-600 hover:text-[#BA8B4E] mb-6 transition-colors"
       >
-        <svg 
-          className="w-5 h-5 mr-1" 
-          fill="none" 
-          stroke="currentColor" 
-          viewBox="0 0 24 24" 
+        <svg
+          className="w-5 h-5 mr-1"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <path 
-            strokeLinecap="round" 
-            strokeLinejoin="round" 
-            strokeWidth={2} 
-            d="M10 19l-7-7m0 0l7-7m-7 7h18" 
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M10 19l-7-7m0 0l7-7m-7 7h18"
           />
         </svg>
         Back
@@ -101,19 +168,26 @@ export default function CartPage() {
                 <div className="flex flex-col md:grid md:grid-cols-12 gap-4 items-center">
                   {/* Product Info */}
                   <div className="col-span-5 flex items-center">
-                    <div className="w-20 h-20 relative flex-shrink-0">
-                      <Image
-                        src={item.image}
-                        alt={item.name}
-                        fill
-                        className="object-cover rounded"
-                        unoptimized={true}
-                      />
-                    </div>
-                    <div className="ml-4">
-                      <h3 className="font-medium text-gray-900">{item.name}</h3>
-                      <p className="text-sm text-gray-500">{item.brand}</p>
-                    </div>
+                    <Link
+                      href={`/products/${item.slug || item.id}`}
+                      className="flex items-center w-full"
+                    >
+                      <div className="w-20 h-20 relative flex-shrink-0">
+                        <Image
+                          src={item.image || item.product?.image || '/placeholder-product.jpg'}
+                          alt={item.name || item.product?.productName || 'Product'}
+                          fill
+                          className="object-cover rounded hover:opacity-90 transition-opacity"
+                          unoptimized={true}
+                        />
+                      </div>
+                      <div className="ml-4">
+                        <h3 className="font-medium text-gray-900 hover:text-[#BA8B4E] transition-colors">
+                          {item.name || item.product?.productName}
+                        </h3>
+                        <p className="text-sm text-gray-500">{item.brand || item.product?.brand}</p>
+                      </div>
+                    </Link>
                   </div>
 
                   {/* Price */}
@@ -122,7 +196,7 @@ export default function CartPage() {
                       Price:
                     </span>
                     <span className="font-medium">
-                      ₹{item.price.toLocaleString()}
+                      ₹{(item.price || item.product?.price)?.toLocaleString()}
                     </span>
                   </div>
 
@@ -131,29 +205,35 @@ export default function CartPage() {
                     <div className="flex items-center justify-center">
                       <button
                         onClick={() =>
-                          handleQuantityChange(item.id, item.quantity - 1)
+                          handleQuantityChange(item.id, (item.quantity || 1) - 1)
                         }
-                        className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-l hover:bg-gray-100"
+                        disabled={updatingItemId === item.id}
+                        className={`w-8 h-8 flex items-center justify-center border border-gray-300 rounded-l hover:bg-gray-100 ${updatingItemId === item.id ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
                       >
                         <FiMinus size={14} />
                       </button>
                       <input
                         type="number"
                         min="1"
-                        value={item.quantity}
+                        value={item.quantity || 1}
                         onChange={(e) =>
                           handleQuantityChange(
                             item.id,
                             parseInt(e.target.value) || 1,
                           )
                         }
-                        className="w-12 h-8 border-t border-b border-gray-300 text-center"
+                        disabled={updatingItemId === item.id}
+                        className={`w-12 h-8 border-t border-b border-gray-300 text-center ${updatingItemId === item.id ? 'bg-gray-50' : ''
+                          }`}
                       />
                       <button
                         onClick={() =>
-                          handleQuantityChange(item.id, item.quantity + 1)
+                          handleQuantityChange(item.id, (item.quantity || 1) + 1)
                         }
-                        className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-r hover:bg-gray-100"
+                        disabled={updatingItemId === item.id}
+                        className={`w-8 h-8 flex items-center justify-center border border-gray-300 rounded-r hover:bg-gray-100 ${updatingItemId === item.id ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
                       >
                         <FiPlus size={14} />
                       </button>
@@ -161,17 +241,18 @@ export default function CartPage() {
                   </div>
 
                   {/* Total */}
-                  <div className="col-span-2 flex items-center justify-end">
-                    <div className="text-right">
-                      <div className="font-medium">
-                        ₹{(item.price * item.quantity).toLocaleString()}
+                  <div className="col-span-2">
+                    <div className="flex items-center justify-end gap-2">
+                      <div className="font-medium min-w-[100px] text-right">
+                        ₹{((item.price || item.product?.price) * (item.quantity || 1)).toLocaleString()}
                       </div>
                       <button
                         onClick={() => handleRemoveItem(item.id)}
-                        className="text-red-500 hover:text-red-700 text-sm flex items-center justify-end w-full mt-1"
+                        disabled={updatingItemId === item.id}
+                        className={`text-red-500 hover:text-red-700 text-sm flex-shrink-0 ${updatingItemId === item.id ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
                       >
-                        <FiTrash2 size={14} className="mr-1" />
-                        <span className="md:hidden">Remove</span>
+                        <FiTrash2 size={16} />
                       </button>
                     </div>
                   </div>
@@ -194,7 +275,7 @@ export default function CartPage() {
             >
               <FiTrash2 className="mr-2" /> Clear Cart
             </button>
-            
+
             <ConfirmationModal
               open={showClearCartModal}
               onClose={() => setShowClearCartModal(false)}
@@ -249,7 +330,7 @@ export default function CartPage() {
                   />
                   <button
                     className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-r transition-colors"
-                    onClick={() => {}}
+                    onClick={() => { }}
                   >
                     APPLY
                   </button>
