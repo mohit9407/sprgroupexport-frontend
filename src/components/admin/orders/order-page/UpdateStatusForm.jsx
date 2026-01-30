@@ -3,8 +3,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { fetchOrderStatuses } from '@/features/orderStatus/orderStatusSlice'
 
 const StatusUpdateForm = ({
-  status,
-  setStatus,
+  statusId,
+  setStatusId,
   comment,
   setComment,
   handleStatusUpdate,
@@ -33,8 +33,8 @@ const StatusUpdateForm = ({
           </label>
           <select
             id="status"
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
+            value={statusId}
+            onChange={(e) => setStatusId(e.target.value)}
             className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
           >
             {statuses.map((statusItem) => (

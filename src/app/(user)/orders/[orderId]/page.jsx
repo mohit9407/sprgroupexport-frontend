@@ -5,17 +5,20 @@ import { useParams, useRouter } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchOrderById } from '@/features/order/orderService'
 import { fetchProducts } from '@/features/products/productsSlice'
+import { fetchAllCategories } from '@/features/categories/categoriesSlice'
 import { getAddresses } from '@/features/shippingAddress/shippingAddressSlice'
 import {
   FiArrowLeft,
   FiPackage,
   FiTruck,
   FiCreditCard,
-  FiCalendar,
-  FiMapPin,
+  FiCopy,
+  FiCheckCircle,
+  FiShoppingBag,
 } from 'react-icons/fi'
 import Image from 'next/image'
 import Link from 'next/link'
+import { toast } from '@/utils/toastConfig'
 
 export default function OrderDetailsPage() {
   const { orderId } = useParams()
@@ -26,6 +29,9 @@ export default function OrderDetailsPage() {
   const { user } = useSelector((state) => state.auth)
   const { addresses } = useSelector((state) => state.shippingAddress)
   const { items: products = [] } = useSelector((state) => state.products)
+  const { data: categories = [] } = useSelector(
+    (state) => state.categories?.allCategories || { data: [] },
+  )
   const dispatch = useDispatch()
 
   // Find the shipping address from the order's shippingAddressId
@@ -42,19 +48,40 @@ export default function OrderDetailsPage() {
     return products.find((product) => product._id === productId) || null
   }
 
+  const getCategoryNameById = (categoryId) => {
+    if (!categoryId || !Array.isArray(categories)) return 'Uncategorized'
+    const category = categories.find((cat) => cat?._id === categoryId)
+    if (category) return category.name
+  }
+
   // Get order item details with complete product information
   const getOrderItemDetails = (item) => {
     const product = item.productId?.productName
       ? item.productId
       : getProductById(item.productId?._id || item.productId)
+    const categoryId = product?.category || item.productId?.category
+    const categoryName =
+      typeof categoryId === 'object'
+        ? categoryId?.name
+        : getCategoryNameById(categoryId)
+    const resolvedProductName =
+      product?.productName || item.productId?.productName || 'Product Not Found'
     return {
       ...item,
-      product: product || {
+      product: {
+        ...(product || {}),
         _id: item.productId?._id,
-        name: item.productId?.productName || 'Product Not Found',
+        name: resolvedProductName,
+        productName: resolvedProductName,
         image: item.productId?.image || null,
         price: item.productId?.price || 0,
-        sku: item.productId?.sku || 'N/A',
+        sku:
+          product?.sku ||
+          item.productId?.sku ||
+          item.productId?.productModel ||
+          item.sku ||
+          'N/A',
+        category: categoryName || 'Uncategorized',
       },
       quantity: item.quantity || 1,
       totalPrice:
@@ -75,6 +102,9 @@ export default function OrderDetailsPage() {
         if (products.length === 0) {
           await dispatch(fetchProducts({ limit: 1000 }))
         }
+        if (categories.length === 0) {
+          await dispatch(fetchAllCategories())
+        }
 
         // Fetch order details
         const response = await fetchOrderById(orderId)
@@ -90,7 +120,7 @@ export default function OrderDetailsPage() {
     if (orderId) {
       loadData()
     }
-  }, [orderId, dispatch, addresses.length, products.length])
+  }, [orderId, dispatch, addresses.length, products.length, categories.length])
 
   if (loading) {
     return (
@@ -128,7 +158,64 @@ export default function OrderDetailsPage() {
     })
   }
 
+  // Function to copy order ID to clipboard
+  const copyOrderId = async (orderId) => {
+    try {
+      await navigator.clipboard.writeText(orderId)
+      toast.success('Order ID copied to clipboard!')
+    } catch (err) {
+      toast.error('Failed to copy order ID')
+    }
+  }
+
+  // Order status tracker configuration
+  const getStatusTracker = (currentStatus) => {
+    // Handle both ObjectId object and string status
+    const statusKey =
+      typeof currentStatus === 'object'
+        ? currentStatus?.orderStatus
+        : currentStatus
+
+    const statusSteps = [
+      {
+        key: 'pending',
+        label: 'Order placed',
+        icon: FiShoppingBag,
+        description: 'Your order has been received',
+      },
+      {
+        key: 'ready_for_shipment',
+        label: 'Order ready for shipment',
+        icon: FiPackage,
+        description: 'Your order is being prepared',
+      },
+      {
+        key: 'in_shipment',
+        label: 'Order in shipment',
+        icon: FiTruck,
+        description: 'Your order is on the way',
+      },
+      {
+        key: 'completed',
+        label: 'Order Delivered',
+        icon: FiCheckCircle,
+        description: 'Your order has been delivered',
+      },
+    ]
+
+    const currentIndex = statusSteps.findIndex((step) => step.key === statusKey)
+
+    return statusSteps.map((step, index) => ({
+      ...step,
+      isActive: index <= currentIndex,
+      isCurrent: index === currentIndex,
+    }))
+  }
+
   const getStatusBadge = (status) => {
+    // Handle both ObjectId object and string status
+    const statusKey = typeof status === 'object' ? status?.orderStatus : status
+
     const statusMap = {
       pending: { bg: 'bg-yellow-100 text-yellow-800', label: 'Pending' },
       processing: { bg: 'bg-blue-100 text-blue-800', label: 'Processing' },
@@ -137,18 +224,10 @@ export default function OrderDetailsPage() {
       cancelled: { bg: 'bg-red-100 text-red-800', label: 'Cancelled' },
     }
 
-    const statusInfo = statusMap[status.toLowerCase()] || {
+    const statusInfo = statusMap[statusKey?.toLowerCase()] || {
       bg: 'bg-gray-100 text-gray-800',
-      label: status,
+      label: statusKey || status,
     }
-
-    return (
-      <span
-        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusInfo.bg}`}
-      >
-        {statusInfo.label}
-      </span>
-    )
   }
 
   return (
@@ -164,13 +243,24 @@ export default function OrderDetailsPage() {
           </button>
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-gray-900">
-              Order #
-              {order.orderNumber || order._id?.substring(0, 8).toUpperCase()}
+              Order Items ({order.products?.length || 0})
             </h1>
-            <div className="flex items-center">
-              <span className="text-sm text-gray-500 mr-2">
+            <div className="flex flex-col items-end gap-2 text-right">
+              <span className="text-sm text-gray-500">
                 Placed on {formatDate(order.createdAt)}
               </span>
+              <div className="flex items-center gap-1">
+                <span className="text-sm text-gray-600 font-mono">
+                  ID: {order._id}
+                </span>
+                <button
+                  onClick={() => copyOrderId(order._id)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  title="Copy order ID"
+                >
+                  <FiCopy size={14} />
+                </button>
+              </div>
               {getStatusBadge(order.orderStatus || 'pending')}
             </div>
           </div>
@@ -184,7 +274,7 @@ export default function OrderDetailsPage() {
               <div className="px-6 py-4 border-b border-gray-200">
                 <h2 className="text-lg font-medium text-gray-900 flex items-center">
                   <FiPackage className="mr-2 text-[#BA8B4E]" />
-                  Order Items ({order.products?.length || 0})
+                  Order
                 </h2>
               </div>
               <div className="divide-y divide-gray-200">
@@ -232,7 +322,8 @@ export default function OrderDetailsPage() {
                               </p>
                               {product.category && (
                                 <p className="text-sm text-gray-500">
-                                  Category: {product.category}
+                                  Category:{' '}
+                                  {product.category?.name || product.category}
                                 </p>
                               )}
                             </div>
@@ -326,10 +417,17 @@ export default function OrderDetailsPage() {
                       Payment Method
                     </h3>
                     <p className="mt-2 text-sm text-gray-900">
-                      {order.paymentMethod || 'Credit/Debit Card'}
+                      {order.paymentMethod?.name ||
+                        order.paymentMethod ||
+                        'Credit/Debit Card'}
                     </p>
+                    <h3 className="text-sm font-medium text-gray-500 mt-3">
+                      Payment Status
+                    </h3>
                     <p className="text-sm text-gray-500 mt-1">
-                      {order.paymentStatus || 'Paid'}
+                      {order.paymentStatus?.paymentStatus ||
+                        order.paymentStatus ||
+                        'Paid'}
                     </p>
                   </div>
                   <div>
@@ -352,7 +450,73 @@ export default function OrderDetailsPage() {
           </div>
 
           {/* Order Summary */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 space-y-6">
+            {/* Order Status Tracker */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h2 className="text-lg font-medium text-gray-900">
+                  Order Status
+                </h2>
+              </div>
+              <div className="p-6">
+                <div className="relative">
+                  {getStatusTracker(order.orderStatus || 'pending').map(
+                    (step, index) => {
+                      const Icon = step.icon
+                      return (
+                        <div
+                          key={step.key}
+                          className="flex items-start mb-6 last:mb-0"
+                        >
+                          <div className="flex flex-col items-center mr-3">
+                            <div
+                              className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                                step.isActive
+                                  ? 'bg-green-500 text-white'
+                                  : 'bg-gray-200 text-gray-400'
+                              }`}
+                            >
+                              <Icon size={14} />
+                            </div>
+                            {index <
+                              getStatusTracker(order.orderStatus || 'pending')
+                                .length -
+                                1 && (
+                              <div
+                                className={`w-0.5 h-12 mt-2 ${
+                                  step.isActive ? 'bg-green-500' : 'bg-gray-200'
+                                }`}
+                              />
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <h3
+                              className={`text-sm font-medium ${
+                                step.isActive
+                                  ? 'text-gray-900'
+                                  : 'text-gray-400'
+                              }`}
+                            >
+                              {step.label}
+                            </h3>
+                            <p
+                              className={`text-xs mt-1 ${
+                                step.isActive
+                                  ? 'text-gray-600'
+                                  : 'text-gray-400'
+                              }`}
+                            >
+                              {step.description}
+                            </p>
+                          </div>
+                        </div>
+                      )
+                    },
+                  )}
+                </div>
+              </div>
+            </div>
+
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200">
                 <h2 className="text-lg font-medium text-gray-900">
@@ -364,7 +528,7 @@ export default function OrderDetailsPage() {
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-500">Subtotal</span>
                     <span className="text-sm font-medium text-gray-900">
-                      ₹{order.subtotal?.toFixed(2) || '0.00'}
+                      ₹{order.total?.toFixed(2) || '0.00'}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -396,7 +560,7 @@ export default function OrderDetailsPage() {
                 </div>
 
                 {/* Order Timeline */}
-                <div className="mt-8">
+                {/* <div className="mt-8">
                   <h3 className="text-sm font-medium text-gray-500 mb-4">
                     Order Status
                   </h3>
@@ -479,42 +643,41 @@ export default function OrderDetailsPage() {
                       </div>
                     )}
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* Help Section */}
-            <div className="mt-6 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="p-6">
-                <h3 className="text-sm font-medium text-gray-900 mb-2">
-                  Need Help?
-                </h3>
-                <p className="text-sm text-gray-500 mb-4">
-                  If you have any questions about your order, please contact our
-                  customer service.
-                </p>
-                <a
-                  href="/contact"
-                  className="inline-flex items-center text-sm font-medium text-[#BA8B4E] hover:text-[#a87d45]"
-                >
-                  Contact Us
-                  <svg
-                    className="ml-1 w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M14 5l7 7m0 0l-7 7m7-7H3"
-                    />
-                  </svg>
-                </a>
-              </div>
-            </div>
+        <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-6">
+            <h3 className="text-sm font-medium text-gray-900 mb-2">
+              Need Help?
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">
+              If you have any questions about your order, please contact our
+              customer service.
+            </p>
+            <a
+              href="/contact"
+              className="inline-flex items-center text-sm font-medium text-[#BA8B4E] hover:text-[#a87d45]"
+            >
+              Contact Us
+              <svg
+                className="ml-1 w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M14 5l7 7m0 0l-7 7m7-7H3"
+                />
+              </svg>
+            </a>
           </div>
         </div>
       </div>

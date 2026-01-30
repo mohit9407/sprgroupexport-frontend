@@ -179,6 +179,7 @@ export function CustomerFormPage({
           <hr className="my-4 border-gray-300" />
 
           <FormAdminInputRow
+            required
             name="email"
             label="Email Address"
             placeholder=""

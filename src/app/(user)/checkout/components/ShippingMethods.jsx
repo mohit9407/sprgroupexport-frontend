@@ -62,9 +62,15 @@ export default function ShippingMethods({ onContinue, initialMethod = null }) {
 
       <form onSubmit={handleSubmit}>
         <div className="border border-gray-200 rounded-md overflow-hidden mb-6">
-          <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-            <h3 className="text-sm font-medium text-gray-700">FLAT RATE</h3>
-          </div>
+          {status === 'succeeded' &&
+            shippingMethods &&
+            shippingMethods.length > 0 && (
+              <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                <h3 className="text-sm font-medium text-gray-700">
+                  {shippingMethods[0]?.name || 'SHIPPING METHODS'}
+                </h3>
+              </div>
+            )}
 
           <div className="p-4">
             {status === 'loading' && (

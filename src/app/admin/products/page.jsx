@@ -25,7 +25,9 @@ const getColumns = (router, dispatch, setDeleteModal) => [
     accessorKey: 'image',
     header: 'Image',
     cell: (info) => {
-      const imageUrl = info.getValue()
+      const imageData = info.getValue()
+      const imageUrl = typeof imageData === 'object' ? (imageData?.thumbnailUrl || imageData?.originalUrl) : imageData
+
       return (
         <div className="w-16 h-16 relative bg-gray-100 flex items-center justify-center rounded">
           {imageUrl ? (
@@ -35,7 +37,7 @@ const getColumns = (router, dispatch, setDeleteModal) => [
               fill
               className="object-cover rounded"
               sizes="(max-width: 768px) 100vw, 50vw"
-              unoptimized={!imageUrl.startsWith('/')}
+              unoptimized={!imageUrl?.startsWith('/') && !imageUrl?.startsWith('http://localhost')}
             />
           ) : (
             <span className="text-gray-400 text-xs">No image</span>

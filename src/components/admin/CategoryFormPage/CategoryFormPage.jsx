@@ -16,6 +16,7 @@ import {
   fetchAllCategories,
   selectAllCategories,
 } from '@/features/categories/categoriesSlice'
+import { getFileNameFromUrl } from '@/utils/stringUtils'
 
 const createCategorySchema = (isEdit = false) => {
   return yup.object({
@@ -57,6 +58,8 @@ export function CategoryFormPage({
 
   const [imageFile, setImageFile] = useState(null)
   const [iconFile, setIconFile] = useState(null)
+  const [selectedImage, setSelectedImage] = useState(null)
+  const [selectedIcon, setSelectedIcon] = useState(null)
   const [existingImage, setExistingImage] = useState(defaultValues?.image || '')
   const [existingIcon, setExistingIcon] = useState(defaultValues?.icon || '')
   const [parentCategories, setParentCategories] = useState([
@@ -118,10 +121,12 @@ export function CategoryFormPage({
     if (file) {
       if (field === 'image') {
         setImageFile(file)
+        setSelectedImage(null)
         setExistingImage(URL.createObjectURL(file))
         formProviders.setValue('image', file, { shouldValidate: true })
       } else {
         setIconFile(file)
+        setSelectedIcon(null)
         setExistingIcon(URL.createObjectURL(file))
         formProviders.setValue('icon', file, { shouldValidate: true })
       }
@@ -129,6 +134,7 @@ export function CategoryFormPage({
       // Handle file removal
       if (field === 'image') {
         setImageFile(null)
+        setSelectedImage(null)
         setExistingImage('')
         // Only set to null if we're in edit mode and have an existing image
         formProviders.setValue(
@@ -138,6 +144,7 @@ export function CategoryFormPage({
         )
       } else {
         setIconFile(null)
+        setSelectedIcon(null)
         setExistingIcon('')
         // Only set to null if we're in edit mode and have an existing icon
         formProviders.setValue(
@@ -147,6 +154,18 @@ export function CategoryFormPage({
         )
       }
     }
+  }
+
+  const handleImageSelect = (image) => {
+    setSelectedImage(image)
+    setImageFile(null)
+    formProviders.setValue('image', image, { shouldValidate: true })
+  }
+
+  const handleIconSelect = (icon) => {
+    setSelectedIcon(icon)
+    setIconFile(null)
+    formProviders.setValue('icon', icon, { shouldValidate: true })
   }
 
   const onSubmit = async (values) => {
@@ -171,6 +190,8 @@ export function CategoryFormPage({
       // Handle image - only if changed
       if (imageFile instanceof File) {
         formData.append('image', imageFile)
+      } else if (selectedImage) {
+        formData.append('image', JSON.stringify(selectedImage))
       } else if (!existingImage && values.image === null) {
         // If existing image is being removed
         formData.append('removeImage', 'true')
@@ -179,6 +200,8 @@ export function CategoryFormPage({
       // Handle icon - only if changed
       if (iconFile instanceof File) {
         formData.append('icon', iconFile)
+      } else if (selectedIcon) {
+        formData.append('icon', JSON.stringify(selectedIcon))
       } else if (!existingIcon && values.icon === null) {
         // If existing icon is being removed
         formData.append('removeIcon', 'true')
@@ -201,9 +224,13 @@ export function CategoryFormPage({
       // Only append files if they are actual File objects
       if (imageFile instanceof File) {
         formData.append('image', imageFile)
+      } else if (selectedImage) {
+        formData.append('image', JSON.stringify(selectedImage))
       }
       if (iconFile instanceof File) {
         formData.append('icon', iconFile)
+      } else if (selectedIcon) {
+        formData.append('icon', JSON.stringify(selectedIcon))
       }
     }
 
@@ -239,7 +266,7 @@ export function CategoryFormPage({
       })
     }
   }, [addNewCategoryData?.isError, updateCategoryData?.isError])
-
+  console.log('formProviders?????', formProviders.formState.errors)
   return (
     <div className="space-y-6">
       <div className="border-b-2 pb-3 border-cyan-400">
@@ -268,6 +295,7 @@ export function CategoryFormPage({
               placeholder="Enter category name in English"
               helpText="Please enter the category name in English"
               fullWidth
+              touchedField={false}
             />
 
             <div className="grid grid-cols-12 gap-4 items-start">
@@ -275,23 +303,20 @@ export function CategoryFormPage({
                 Image <span className="text-red-500">*</span>
               </label>
               <div className="col-span-12 md:col-span-9">
-                {existingImage && !imageFile && (
-                  <div className="mb-4">
-                    <p className="text-sm text-gray-500 mb-2">Current Image:</p>
-                    <img
-                      src={existingImage}
-                      alt="Current category"
-                      className="h-20 w-20 object-cover rounded"
-                    />
-                  </div>
-                )}
+                {/* <input
+                  type="hidden"
+                  {...formProviders.register('image')}
+                  value={selectedImage ? selectedImage._id : (imageFile ? 'file' : '')}
+                /> */}
                 <FileUploadButton
                   id="image-upload"
                   label={existingImage ? 'Change Image' : 'Upload Image'}
                   onChange={(e) =>
                     handleFileChange('image', e.target.files?.[0])
                   }
-                  value={formProviders.watch('image')?.name || ''}
+                  selectedItem={selectedImage}
+                  onImageSelect={handleImageSelect}
+                  value={getFileNameFromUrl(selectedImage?.largeUrl) || ''}
                   error={formProviders.formState.errors.image}
                   ref={imageInputRef}
                   className="w-full"
@@ -304,23 +329,20 @@ export function CategoryFormPage({
                 Icon <span className="text-red-500">*</span>
               </label>
               <div className="col-span-12 md:col-span-9">
-                {existingIcon && !iconFile && (
-                  <div className="mb-4">
-                    <p className="text-sm text-gray-500 mb-2">Current Icon:</p>
-                    <img
-                      src={existingIcon}
-                      alt="Current icon"
-                      className="h-10 w-10 object-contain"
-                    />
-                  </div>
-                )}
+                {/* <input
+                  type="hidden"
+                  {...formProviders.register('icon')}
+                  value={selectedIcon ? selectedIcon._id : (iconFile ? 'file' : '')}
+                /> */}
                 <FileUploadButton
                   id="icon-upload"
                   label={existingIcon ? 'Change Icon' : 'Upload Icon'}
                   onChange={(e) =>
                     handleFileChange('icon', e.target.files?.[0])
                   }
-                  value={formProviders.watch('icon')?.name || ''}
+                  selectedItem={selectedIcon}
+                  onImageSelect={handleIconSelect}
+                  value={getFileNameFromUrl(selectedIcon?.largeUrl) || ''}
                   error={formProviders.formState.errors.icon}
                   ref={iconInputRef}
                   className="w-full"

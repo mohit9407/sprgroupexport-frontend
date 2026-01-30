@@ -26,10 +26,11 @@ export default function CheckoutPage() {
   const [formData, setFormData] = useState({
     shippingAddress: {},
     shippingMethod: {},
-    paymentMethod: '695cae5421d3f5118b0c8c91',
+    paymentMethod: '',
     orderNotes: '',
   })
   const [outOfStockError, setOutOfStockError] = useState(null)
+  const [addressError, setAddressError] = useState('')
 
   // Get order and order status state from Redux
   const { order, loading, error, success } = useSelector((state) => state.order)
@@ -41,13 +42,13 @@ export default function CheckoutPage() {
       // Check for direct checkout item first
       if (typeof window !== 'undefined') {
         const directCheckoutItem = sessionStorage.getItem('directCheckoutItem')
-        
+
         if (directCheckoutItem) {
           try {
             const item = JSON.parse(directCheckoutItem)
             // Clear the direct checkout item from storage
             sessionStorage.removeItem('directCheckoutItem')
-            
+
             // Set the direct checkout item in state
             setDirectCheckoutItem({
               id: item.id,
@@ -59,23 +60,23 @@ export default function CheckoutPage() {
               size: item.size,
               sizeId: item.sizeId,
               quantity: item.quantity || 1,
-              inStock: true
+              inStock: true,
             })
           } catch (error) {
             console.error('Error processing direct checkout:', error)
           }
         }
-        
+
         // Check authentication
-        const token = localStorage.getItem('token')
+        const token = localStorage.getItem('accessToken')
         if (!user || !token) {
           setShowAuthModal(true)
         }
       }
-      
+
       setIsCheckingDirectCheckout(false)
     }
-    
+
     checkAuthAndDirectCheckout()
   }, [user])
 
@@ -98,6 +99,14 @@ export default function CheckoutPage() {
   const handleContinue = async (stepData, nextStep) => {
     // If this is the final step (place order)
     if (nextStep === 'placeOrder') {
+      // Validate address is selected
+      if (!formData.shippingAddress?._id) {
+        setAddressError('Please select a shipping address before placing your order')
+        setCurrentStep(1) // Go back to address selection step
+        return
+      }
+      setAddressError('') // Clear any previous address errors
+
       // Check if statuses are loaded
       if (!statuses || statuses.length === 0) {
         try {
@@ -117,11 +126,6 @@ export default function CheckoutPage() {
           return
         }
 
-        if (!formData.shippingAddress?._id) {
-          console.error('Shipping address is required')
-          return
-        }
-
         // Get the pending status ID
         const pendingStatus = statuses.find(
           (status) => status.orderStatus?.toLowerCase() === 'pending',
@@ -132,19 +136,19 @@ export default function CheckoutPage() {
         }
 
         // Prepare products array based on direct checkout or cart
-        const products = directCheckoutItem 
+        const products = directCheckoutItem
           ? [{
-              productId: directCheckoutItem.id,
-              quantity: directCheckoutItem.quantity,
-              color: directCheckoutItem.colorId,
-              size: directCheckoutItem.sizeId
-            }]
+            productId: directCheckoutItem.id,
+            quantity: directCheckoutItem.quantity,
+            color: directCheckoutItem.colorId,
+            size: directCheckoutItem.sizeId
+          }]
           : cart.map((item) => ({
-              productId: item.id,
-              quantity: item.quantity,
-              color: item.colorId,
-              size: item.sizeId
-            }));
+            productId: item.id,
+            quantity: item.quantity,
+            color: item.colorId,
+            size: item.sizeId
+          }));
 
         // Calculate subtotal based on displayItems
         const subtotal = displayItems.reduce(
@@ -159,7 +163,7 @@ export default function CheckoutPage() {
           shippingCost: formData.shippingMethod?.price || 0,
           shippingAddressId: formData.shippingAddress._id,
           products: products,
-          paymentMethod: formData.paymentMethod,
+          paymentMethod: stepData.paymentMethod, // Use payment method from OrderDetail instead of formData
           paymentStatus: '695e0471c424c92fee37713b',
           orderStatus: pendingStatus._id,
           subtotal: subtotal,
@@ -195,10 +199,38 @@ export default function CheckoutPage() {
     }
 
     // For non-final steps
-    setFormData((prev) => ({
-      ...prev,
-      ...stepData,
-    }))
+    setFormData((prev) => {
+      const updatedFormData = {
+        ...prev,
+        ...stepData,
+      }
+
+      // Store shipping address in localStorage if it's being set
+      if (stepData.shippingAddress && stepData.shippingAddress._id) {
+        localStorage.setItem(
+          'selectedShippingAddress',
+          JSON.stringify(stepData.shippingAddress._id),
+        )
+        console.log(
+          'Shipping address stored in localStorage:',
+          stepData.shippingAddress._id,
+        )
+      }
+
+      // Store shipping method in localStorage if it's being set
+      if (stepData.shippingMethod && stepData.shippingMethod._id) {
+        localStorage.setItem(
+          'selectedShippingMethod',
+          JSON.stringify(stepData.shippingMethod),
+        )
+        console.log(
+          'Shipping method stored in localStorage:',
+          stepData.shippingMethod,
+        )
+      }
+
+      return updatedFormData
+    })
 
     const targetStep = nextStep || currentStep + 1
     setCurrentStep(targetStep)
@@ -216,12 +248,20 @@ export default function CheckoutPage() {
     switch (currentStep) {
       case 1:
         return (
-          <ShippingAddress
-            onContinue={(data, step) => {
-              handleContinue(data, step)
-            }}
-            initialData={formData.shippingAddress}
-          />
+          <div>
+            {addressError && (
+              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
+                {addressError}
+              </div>
+            )}
+            <ShippingAddress 
+              onContinue={(data) => {
+                setAddressError('')
+                handleContinue(data, 2)
+              }} 
+              initialData={formData.shippingAddress} 
+            />
+          </div>
         )
       case 2:
         return (
@@ -251,7 +291,7 @@ export default function CheckoutPage() {
   if (isCheckingDirectCheckout) {
     return null
   }
-  
+
   // Redirect to home if cart is empty and no direct checkout item
   if (cart.length === 0 && !directCheckoutItem) {
     router.push('/')
@@ -260,16 +300,20 @@ export default function CheckoutPage() {
 
   // Calculate order total
   const displayItems = directCheckoutItem ? [directCheckoutItem] : cart
-  const orderTotal = displayItems.reduce((total, item) => {
-    return total + item.price * item.quantity
-  }, 0) + (formData.shippingMethod?.price || 0)
+  const orderTotal =
+    displayItems.reduce((total, item) => {
+      return total + item.price * item.quantity
+    }, 0) + (formData.shippingMethod?.price || 0)
 
   return (
     <div className="min-h-screen bg-white">
       {/* Auth Modal */}
       <AuthModal
         isOpen={showAuthModal}
-        onClose={() => !user && router.push('/')} // Redirect to home if user closes without logging in
+        onClose={() => {
+          setShowAuthModal(false)
+          !user && router.push('/')
+        }} // Redirect to home if user closes without logging in
       />
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold uppercase mb-8">CHECKOUT</h1>

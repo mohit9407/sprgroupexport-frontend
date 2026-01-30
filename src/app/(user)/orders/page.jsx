@@ -6,9 +6,10 @@ import { useDispatch, useSelector } from 'react-redux'
 import { fetchUserOrders, resetOrderState } from '@/features/order/orderSlice'
 import { toast } from '@/utils/toastConfig'
 import Link from 'next/link'
-import { FiShoppingBag, FiExternalLink } from 'react-icons/fi'
+import { FiShoppingBag, FiExternalLink, FiCopy } from 'react-icons/fi'
 import Image from 'next/image'
 import { fetchProducts } from '@/features/products/productsSlice'
+import { fetchAllCategories } from '@/features/categories/categoriesSlice'
 
 export default function OrdersPage() {
   const [isClient, setIsClient] = useState(false)
@@ -21,12 +22,18 @@ export default function OrdersPage() {
     error,
   } = useSelector((state) => state.order)
   const { items: products = [] } = useSelector((state) => state.products)
+  const { data: categories = [] } = useSelector(
+    (state) => state.categories?.allCategories || { data: [] },
+  )
 
   useEffect(() => {
     const id = setTimeout(() => setIsClient(true), 0)
     dispatch(fetchUserOrders())
     if (products.length === 0) {
       dispatch(fetchProducts({ limit: 1000 }))
+    }
+    if (categories.length === 0) {
+      dispatch(fetchAllCategories())
     }
 
     return () => {
@@ -38,6 +45,12 @@ export default function OrdersPage() {
   // Function to get product details by ID
   const getProductById = (productId) => {
     return products.find((product) => product._id === productId) || null
+  }
+
+  const getCategoryNameById = (categoryId) => {
+    if (!categoryId || !Array.isArray(categories)) return 'Uncategorized'
+    const category = categories.find((cat) => cat?._id === categoryId)
+    if (category) return category.name
   }
 
   if (loading) {
@@ -69,22 +82,61 @@ export default function OrdersPage() {
       : date.toISOString().split('T')[0] // Fallback for SSR
   }
 
+  const copyOrderId = async (orderId) => {
+    try {
+      await navigator.clipboard.writeText(orderId)
+      toast.success('Order ID copied to clipboard!')
+    } catch (err) {
+      toast.error('Failed to copy order ID')
+    }
+  }
+
   // Get product details for an order item
   const getOrderItemDetails = (item) => {
+    if (!item) {
+      return {
+        product: {
+          name: 'Product Not Found',
+          image: null,
+          price: 0,
+          category: 'Uncategorized',
+          sku: 'N/A',
+          description: '',
+        },
+        quantity: 1,
+        totalPrice: 0,
+      }
+    }
+
     const product = getProductById(item.productId?._id || item.productId)
+    const categoryId = product?.category || item.productId?.category
+    const categoryName =
+      typeof categoryId === 'object'
+        ? categoryId?.name
+        : getCategoryNameById(categoryId)
+    const resolvedProductName =
+      product?.productName || item.productId?.productName || 'Product Not Found'
     return {
       ...item,
-      product: product || {
+      product: {
+        ...(product || {}),
         _id: item.productId?._id,
-        name: item.productId?.productName || 'Product Not Found',
+        name: resolvedProductName,
+        productName: resolvedProductName,
         image: item.productId?.image || null,
-        price: item.productId.price || 0,
-        category: item.productId?.category || 'Uncategorized',
-        sku: item.productId?.sku || 'N/A',
+        price: item.productId?.price || 0,
+        category: categoryName || 'Uncategorized',
+        sku:
+          product?.sku ||
+          item.productId?.sku ||
+          item.productId?.productModel ||
+          item.sku ||
+          'N/A',
         description: item.productId?.description || '',
       },
       quantity: item.quantity || 1,
-      totalPrice: (item.quantity || 1) * (item.price || 0),
+      totalPrice:
+        (item.quantity || 1) * (item.price || item.productId?.price || 0),
     }
   }
 
@@ -115,15 +167,25 @@ export default function OrdersPage() {
                 <div className="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between">
                   <div className="mb-2 sm:mb-0">
                     <h3 className="text-lg font-medium text-gray-900">
-                      Order #
-                      {order.orderId ||
-                        order._id?.substring(0, 8).toUpperCase()}
+                      Order{' '}
+                      <span className="text-sm text-gray-600 font-mono">
+                        ID: {order._id}
+                      </span>
+                      <button
+                        onClick={() => copyOrderId(order._id)}
+                        className="text-gray-400 hover:text-gray-600 transition-colors"
+                        title="Copy order ID"
+                      >
+                        <FiCopy size={14} />
+                      </button>
                     </h3>
-                    <p className="text-sm text-gray-500">
-                      Placed on {formatDate(order.createdAt)}
-                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <p className="text-sm text-gray-500">
+                        Placed on {formatDate(order.createdAt)}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex items-center">
+                  {/* <div className="flex items-center">
                     <span
                       className={`px-3 py-1 rounded-full text-sm font-medium ${
                         order.orderStatus === 'completed'
@@ -138,7 +200,7 @@ export default function OrdersPage() {
                           order.orderStatus.slice(1)
                         : 'Pending'}
                     </span>
-                  </div>
+                  </div> */}
                 </div>
 
                 {/* Order Items */}

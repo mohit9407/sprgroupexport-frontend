@@ -32,8 +32,16 @@ const Breadcrumbs = ({ productName }) => {
 
       let label = segment
 
+      // If this is an order ID, show "Product Details" instead
+      if (
+        isLast &&
+        pathname.includes('/orders/') &&
+        /^[0-9a-fA-F]{24}$/.test(segment)
+      ) {
+        label = 'Order Details'
+      }
       // If this is a product ID and we have a product name from URL params, use that
-      if (isLast && productName && /^[0-9a-fA-F]{24}$/.test(segment)) {
+      else if (isLast && productName && /^[0-9a-fA-F]{24}$/.test(segment)) {
         label = decodeURIComponent(productName)
       } else if (!/^\d+$/.test(segment)) {
         // Only format non-numeric segments

@@ -148,7 +148,7 @@ function OrdersPageContent() {
           searchValue: params?.search || undefined,
           sortBy: params?.sortBy,
           direction: params?.sortBy ? params?.direction : undefined,
-          page: params?.pageIndex ?? 1,
+          page: (params?.pageIndex ?? 0) + 1,
           limit: params?.pageSize,
           filterBy: params?.filterBy || undefined,
         }),
@@ -231,6 +231,11 @@ function OrdersPageContent() {
           {
             label: 'Name',
             value: 'name',
+            type: 'text',
+          },
+          {
+            label: 'Order ID',
+            value: 'id',
             type: 'text',
           },
           {

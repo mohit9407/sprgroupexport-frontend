@@ -1,25 +1,51 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { useCart } from '@/context/CartContext'
 import ConfirmationModal from '@/components/admin/ConfirmationModal'
+import { paymentService } from '@/services/paymentService'
+import { api } from '@/lib/axios'
 
 export default function OrderDetail({
   onContinue,
   paymentMethod: initialPaymentMethod = 'cod',
-  directCheckoutItem = null
+  directCheckoutItem = null,
 }) {
   const { cart, removeFromCart, updateQuantity } = useCart()
   const [paymentMethod, setPaymentMethod] = useState(initialPaymentMethod)
   const [orderNotes, setOrderNotes] = useState('')
   const [itemToDelete, setItemToDelete] = useState(null)
+  const [paymentMethods, setPaymentMethods] = useState([])
+  const [loadingPaymentMethods, setLoadingPaymentMethods] = useState(true)
 
   // Use directCheckoutItem if available, otherwise use cart
   const displayItems = directCheckoutItem ? [directCheckoutItem] : cart
 
   // Calculate order total
   const orderTotal = displayItems.reduce((total, item) => {
-    return total + (item.price * (item.quantity || 1))
+    return total + item.price * (item.quantity || 1)
   }, 0)
+
+  // Fetch payment methods from API
+  useEffect(() => {
+    const fetchPaymentMethods = async () => {
+      try {
+        const response = await paymentService.getAllPaymentMethods()
+        // API returns array directly, not nested under status/data
+        if (Array.isArray(response)) {
+          setPaymentMethods(response)
+        } else {
+          console.log('Response is not an array:', response)
+        }
+      } catch (error) {
+        console.error('Failed to fetch payment methods:', error)
+        console.error('Error details:', error.response?.data || error.message)
+      } finally {
+        setLoadingPaymentMethods(false)
+      }
+    }
+
+    fetchPaymentMethods()
+  }, [])
 
   const handleEditItem = (productId) => {
     // Navigate to product detail page or open edit modal
@@ -44,11 +70,120 @@ export default function OrderDetail({
     }
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e?.preventDefault?.() // Safely call preventDefault if e exists
+
+    // If PayPal is selected, process payment and redirect
+    if (paymentMethod === 'paypal') {
+      try {
+        // Calculate total amount
+        const totalAmount = displayItems.reduce((total, item) => {
+          return total + item.price * (item.quantity || 1)
+        }, 0)
+
+        // Find PayPal payment method ID
+        const paypalMethodId = paymentMethods.find(
+          (m) => m.type?.toUpperCase() === 'PAYPAL',
+        )?._id
+
+        if (!paypalMethodId) {
+          alert(
+            'PayPal payment method not found. Please select a different payment method.',
+          )
+          return
+        }
+
+        console.log('🚀 Making PayPal API call...')
+        // For PayPal, we need to create the order first through normal flow, then process payment
+        // But since we're bypassing normal flow, we need to create a temporary order ID
+        const tempOrderId = 'temp_' + Date.now()
+        const user = JSON.parse(localStorage.getItem('user'))
+
+        // Prepare order data to be stored for later creation after PayPal success
+        const shippingAddressId = JSON.parse(
+          localStorage.getItem('selectedShippingAddress') || 'null',
+        )
+        const shippingMethod = JSON.parse(
+          localStorage.getItem('selectedShippingMethod') || '{}',
+        )
+
+        console.log('Retrieved from localStorage:', {
+          shippingAddressId,
+          shippingMethod,
+        })
+
+        if (!shippingAddressId) {
+          console.error('❌ Shipping address ID not found in localStorage!')
+          alert(
+            'Shipping address not found. Please go back and select a shipping address.',
+          )
+          return
+        }
+
+        const orderData = {
+          user: user._id,
+          shippingMethod: shippingMethod._id,
+          shippingCost: shippingMethod.price || 0,
+          shippingAddressId: shippingAddressId,
+          products: displayItems.map((item) => ({
+            productId: item.id,
+            quantity: item.quantity || 1,
+          })),
+          paymentMethod: paypalMethodId, // PayPal payment method ID
+          paymentStatus: '695e0471c424c92fee37713b', // Pending status
+          orderStatus: '693fea47bb389dcda0118800', // Pending order status
+          subtotal: totalAmount,
+          tax: 0,
+          total: totalAmount,
+          comments: orderNotes || '',
+        }
+
+        // Store order data in localStorage for PayPal success page
+        localStorage.setItem('pendingPayPalOrder', JSON.stringify(orderData))
+
+        // Call PayPal payment processing API - use uppercase 'PAYPAL' to match backend enum
+        const response = await api.post('/payments/process/PAYPAL', {
+          orderId: tempOrderId, // Temporary order ID
+          amount: totalAmount,
+          currency: 'USD',
+          userId: user._id,
+          paymentMethodId: paypalMethodId,
+          products: displayItems,
+          total: totalAmount,
+        })
+
+        // The URL is directly in the response object, not in response.data
+        const paypalUrl = response.url
+
+        if (paypalUrl) {
+          console.log('🔗 Redirecting to PayPal:', paypalUrl)
+          window.location.href = paypalUrl
+          return // Don't proceed to onContinue for PayPal
+        } else {
+          console.error('Full response:', response)
+          alert('PayPal redirect URL not received. Please try again.')
+        }
+      } catch (error) {
+        console.error('Error details:', error.response?.data || error.message)
+        // Show error message to user
+        alert(
+          'Failed to process PayPal payment: ' +
+            (error.response?.data?.message || error.message),
+        )
+        return // Don't proceed to onContinue on error
+      }
+    } else {
+      console.log('❌ PayPal not selected, current method:', paymentMethod)
+    }
+
+    // Find the payment method ID based on the selected payment method type
+    const selectedPaymentMethodId = paymentMethods.find(
+      (m) => m.type?.toLowerCase() === paymentMethod.toLowerCase(),
+    )?._id
+
     onContinue(
       {
-        paymentMethod,
+        paymentMethod: selectedPaymentMethodId, // Send the ID instead of string
         orderNotes,
       },
       'placeOrder',
@@ -106,7 +241,10 @@ export default function OrderDetail({
                       </span>
                       <span className="mx-2 text-gray-300">|</span>
                       <span className="text-sm font-medium text-gray-900">
-                        ₹{((item.price || 0) * (item.quantity || 1)).toLocaleString('en-IN')}
+                        ₹
+                        {(
+                          (item.price || 0) * (item.quantity || 1)
+                        ).toLocaleString('en-IN')}
                       </span>
                     </div>
                   </div>
@@ -197,41 +335,44 @@ export default function OrderDetail({
             Please select a preferred payment method to use on this order.
           </p>
 
-          <div className="space-y-3">
-            <div className="flex items-center">
-              <input
-                id="cod"
-                name="payment-method"
-                type="radio"
-                className="h-4 w-4 text-[#c89b5a] focus:ring-[#c89b5a] border-gray-300"
-                checked={paymentMethod === 'cod'}
-                onChange={() => setPaymentMethod('cod')}
-              />
-              <label
-                htmlFor="cod"
-                className="ml-3 block text-sm font-medium text-gray-700"
-              >
-                Cash on Delivery
-              </label>
+          {loadingPaymentMethods ? (
+            <div className="text-sm text-gray-600">
+              Loading payment methods...
             </div>
+          ) : (
+            <div className="space-y-3">
+              {paymentMethods.map((method) => (
+                <div key={method._id} className="flex items-center">
+                  <input
+                    id={method.type?.toLowerCase()}
+                    name="payment-method"
+                    type="radio"
+                    className="h-4 w-4 text-[#c89b5a] focus:ring-[#c89b5a] border-gray-300"
+                    checked={paymentMethod === method.type?.toLowerCase()}
+                    onChange={() => {
+                      console.log(
+                        'Payment method selected:',
+                        method.type?.toLowerCase(),
+                      )
+                      setPaymentMethod(method.type?.toLowerCase())
+                    }}
+                  />
+                  <label
+                    htmlFor={method.type?.toLowerCase()}
+                    className="ml-3 block text-sm font-medium text-gray-700"
+                  >
+                    {method.name}
+                  </label>
+                </div>
+              ))}
 
-            <div className="flex items-center">
-              <input
-                id="razorpay"
-                name="payment-method"
-                type="radio"
-                className="h-4 w-4 text-[#c89b5a] focus:ring-[#c89b5a] border-gray-300"
-                checked={paymentMethod === 'razorpay'}
-                onChange={() => setPaymentMethod('razorpay')}
-              />
-              <label
-                htmlFor="razorpay"
-                className="ml-3 block text-sm font-medium text-gray-700"
-              >
-                Razor Pay
-              </label>
+              {paymentMethods.length === 0 && (
+                <div className="text-sm text-gray-600">
+                  No payment methods available
+                </div>
+              )}
             </div>
-          </div>
+          )}
         </div>
 
         <div className="mt-8">
@@ -244,7 +385,7 @@ export default function OrderDetail({
           </button>
         </div>
       </div>
-      
+
       <ConfirmationModal
         open={!!itemToDelete}
         onClose={() => setItemToDelete(null)}

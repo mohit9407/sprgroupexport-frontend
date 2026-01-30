@@ -8,6 +8,7 @@ import {
 import AddressForm from '@/components/address/AddressForm'
 
 export default function ShippingAddress({ onContinue, initialData = {} }) {
+  const [error, setError] = useState('')
   const dispatch = useDispatch()
   const { addresses, isLoading, isError, message } = useSelector(
     (state) => state.shippingAddress,
@@ -124,22 +125,17 @@ export default function ShippingAddress({ onContinue, initialData = {} }) {
     })
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    if (!selectedAddressId && !showNewAddressForm) {
-      alert('Please select an address or add a new one')
+  const handleSubmit = () => {
+    if (!selectedAddressId) {
+      setError('Please select a shipping address before continuing')
       return
     }
-
-    const selectedAddress = addresses.find(
-      (addr) => addr._id === selectedAddressId,
-    )
-    onContinue(
-      {
-        shippingAddress: selectedAddress || { isNew: true, ...formData },
-      },
-      2,
-    )
+    
+    const selectedAddress = addresses.find(addr => addr._id === selectedAddressId)
+    if (selectedAddress) {
+      setError('')
+      onContinue({ shippingAddress: selectedAddress })
+    }
   }
 
   return (
@@ -270,9 +266,14 @@ export default function ShippingAddress({ onContinue, initialData = {} }) {
       )}
 
       <div className="mt-8">
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
+            {error}
+          </div>
+        )}
         <button
           onClick={handleSubmit}
-          disabled={isLoading}
+          disabled={isLoading || !selectedAddressId}
           className="bg-[#c89b5a] text-white px-8 py-3 rounded-md uppercase text-sm font-medium hover:bg-[#b38950] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? 'Loading...' : 'CONTINUE'}

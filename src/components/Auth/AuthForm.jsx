@@ -25,7 +25,6 @@ const AuthForm = ({ isLogin = false }) => {
     email: '',
     password: '',
   })
-
   const [signupData, setSignupData] = useState({
     firstName: '',
     lastName: '',
@@ -155,7 +154,6 @@ const AuthForm = ({ isLogin = false }) => {
         }
       } catch (error) {
         console.error('Login failed:', error)
-        toast.error(error.message || 'Login failed. Please try again.')
       }
     }
   }
@@ -177,6 +175,7 @@ const AuthForm = ({ isLogin = false }) => {
       const { confirmPassword, agreeTerms, ...registrationData } = signupData
       try {
         await dispatch(registerUser(registrationData)).unwrap()
+        toast.success('Account created successfull!')
       } catch (error) {
         console.error('Registration failed:', error)
       }

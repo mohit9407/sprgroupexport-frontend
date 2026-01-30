@@ -44,8 +44,8 @@ const removeAllFromCart = async () => {
 // Get cart items
 const getCart = async () => {
   try {
-    const response = await api.get('/cart')
-    return response.data
+    const response = await api.get('/product/getCart')
+    return response.data || []
   } catch (error) {
     console.error('Error fetching cart:', error)
     throw new Error(error.response?.data?.message || 'Failed to fetch cart')
