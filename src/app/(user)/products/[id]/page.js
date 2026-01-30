@@ -131,7 +131,13 @@ export default function ProductDetails() {
       toast.error('Product information is not available');
       return false;
     }
-    
+
+    // Check max order limit
+    if (product.maxOrderLimit && quantity > product.maxOrderLimit) {
+      toast.error(`Maximum order limit is ${product.maxOrderLimit} items`);
+      return false;
+    }
+
     try {
       setIsAddingToCart(true);
 
@@ -197,15 +203,15 @@ export default function ProductDetails() {
 
     // Clear any existing direct checkout items first
     sessionStorage.removeItem('directCheckoutItem')
-    
+
     // Store the item in session storage for checkout
     sessionStorage.setItem('directCheckoutItem', JSON.stringify(cartItem))
-    
+
     // Clear the cart from localStorage to prevent any conflicts
     if (typeof window !== 'undefined') {
       localStorage.removeItem('cart')
     }
-    
+
     // Redirect to checkout page
     router.push('/checkout')
   }
@@ -266,8 +272,8 @@ export default function ProductDetails() {
     <div className="bg-white min-h-screen">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
         {/* Auth Modal */}
-        <AuthModal 
-          isOpen={showAuthModal} 
+        <AuthModal
+          isOpen={showAuthModal}
           onClose={() => {
             setShowAuthModal(false)
             setPendingAction(null)
@@ -353,29 +359,7 @@ export default function ProductDetails() {
                   Color
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {product?.colors?.length > 0 &&
-                  Array.isArray(attributes?.colors) ? (
-                    attributes.colors
-                      .filter(
-                        (color) =>
-                          color?._id && product.colors.includes(color._id),
-                      )
-                      .map((color) => (
-                        <button
-                          key={color._id}
-                          onClick={() => setSelectedColor(color._id)}
-                          className={`px-3 py-1.5 border rounded-md text-sm ${
-                            selectedColor === color._id
-                              ? 'border-black text-black'
-                              : 'border-gray-300 text-gray-700 hover:border-gray-400'
-                          }`}
-                        >
-                          {color.value}
-                        </button>
-                      ))
-                  ) : (
-                    <p className="text-sm text-gray-600">No colors available</p>
-                  )}
+                  <p className="text-sm text-gray-600">{product?.color}</p>
                 </div>
               </div>
 
@@ -383,28 +367,7 @@ export default function ProductDetails() {
               <div>
                 <h3 className="text-sm font-medium text-gray-900 mb-2">Size</h3>
                 <div className="flex flex-wrap gap-2">
-                  {product?.sizes?.length > 0 &&
-                  Array.isArray(attributes?.sizes) ? (
-                    attributes.sizes
-                      .filter(
-                        (size) => size?._id && product.sizes.includes(size._id),
-                      )
-                      .map((size) => (
-                        <button
-                          key={size._id}
-                          onClick={() => setSelectedSize(size._id)}
-                          className={`px-4 py-2 border rounded-md text-sm ${
-                            selectedSize === size._id
-                              ? 'border-black text-black'
-                              : 'border-gray-300 text-gray-700 hover:border-gray-400'
-                          }`}
-                        >
-                          {size.value}
-                        </button>
-                      ))
-                  ) : (
-                    <p className="text-sm text-gray-600">No sizes available</p>
-                  )}
+                  <p className="text-sm text-gray-600">{product?.size}</p>
                 </div>
               </div>
             </div>
@@ -421,10 +384,22 @@ export default function ProductDetails() {
                 </button>
                 <span className="px-6 py-1 bg-gray-100 border-x border-gray-300">
                   {quantity}
+                  {product.maxOrderLimit && (
+                    <span className="text-xs block text-gray-500">
+                      Max: {product.maxOrderLimit}
+                    </span>
+                  )}
                 </span>
                 <button
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 cursor-pointer"
+                  onClick={() => {
+                    if (product.maxOrderLimit && quantity >= product.maxOrderLimit) {
+                      toast.error(`Maximum order limit is ${product.maxOrderLimit} items`);
+                      return;
+                    }
+                    setQuantity(quantity + 1);
+                  }}
+                  className={`px-4 py-2 text-sm font-medium ${product.maxOrderLimit && quantity >= product.maxOrderLimit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100 cursor-pointer'}`}
+                  disabled={product.maxOrderLimit && quantity >= product.maxOrderLimit}
                 >
                   +
                 </button>
@@ -471,21 +446,19 @@ export default function ProductDetails() {
               <div className="flex space-x-1">
                 <button
                   onClick={() => setActiveTab('details')}
-                  className={`px-6 py-2 rounded-t font-medium cursor-pointer ${
-                    activeTab === 'details'
+                  className={`px-6 py-2 rounded-t font-medium cursor-pointer ${activeTab === 'details'
                       ? 'bg-[#b7853f] text-white'
                       : 'bg-gray-100 text-gray-600'
-                  }`}
+                    }`}
                 >
                   Details
                 </button>
                 <button
                   onClick={() => setActiveTab('reviews')}
-                  className={`px-6 py-2 rounded-t font-medium cursor-pointer ${
-                    activeTab === 'reviews'
+                  className={`px-6 py-2 rounded-t font-medium cursor-pointer ${activeTab === 'reviews'
                       ? 'bg-[#b7853f] text-white'
                       : 'bg-gray-100 text-gray-600'
-                  }`}
+                    }`}
                 >
                   Reviews ({product?.reviews?.length || 0})
                 </button>

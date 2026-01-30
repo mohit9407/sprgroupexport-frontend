@@ -69,7 +69,7 @@ export const loginUser = createAsyncThunk(
       const response = await authService.login(credentials)
       return response
     } catch (error) {
-      return rejectWithValue(error.message || 'Login failed')
+      return rejectWithValue(error.response.data.message || 'Login failed')
     }
   },
 )
@@ -82,7 +82,7 @@ export const registerUser = createAsyncThunk(
       const response = await authService.register(userData)
       return response
     } catch (error) {
-      return rejectWithValue(error.message || 'Registration failed')
+      return rejectWithValue(error.response.data.message || 'Registration failed')
     }
   },
 )

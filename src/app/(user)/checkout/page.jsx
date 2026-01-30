@@ -30,6 +30,7 @@ export default function CheckoutPage() {
     orderNotes: '',
   })
   const [outOfStockError, setOutOfStockError] = useState(null)
+  const [addressError, setAddressError] = useState('')
 
   // Get order and order status state from Redux
   const { order, loading, error, success } = useSelector((state) => state.order)
@@ -67,7 +68,7 @@ export default function CheckoutPage() {
         }
 
         // Check authentication
-        const token = localStorage.getItem('token')
+        const token = localStorage.getItem('accessToken')
         if (!user || !token) {
           setShowAuthModal(true)
         }
@@ -98,6 +99,14 @@ export default function CheckoutPage() {
   const handleContinue = async (stepData, nextStep) => {
     // If this is the final step (place order)
     if (nextStep === 'placeOrder') {
+      // Validate address is selected
+      if (!formData.shippingAddress?._id) {
+        setAddressError('Please select a shipping address before placing your order')
+        setCurrentStep(1) // Go back to address selection step
+        return
+      }
+      setAddressError('') // Clear any previous address errors
+
       // Check if statuses are loaded
       if (!statuses || statuses.length === 0) {
         try {
@@ -117,11 +126,6 @@ export default function CheckoutPage() {
           return
         }
 
-        if (!formData.shippingAddress?._id) {
-          console.error('Shipping address is required')
-          return
-        }
-
         // Get the pending status ID
         const pendingStatus = statuses.find(
           (status) => status.orderStatus?.toLowerCase() === 'pending',
@@ -133,20 +137,18 @@ export default function CheckoutPage() {
 
         // Prepare products array based on direct checkout or cart
         const products = directCheckoutItem
-          ? [
-              {
-                productId: directCheckoutItem.id,
-                quantity: directCheckoutItem.quantity,
-                color: directCheckoutItem.colorId,
-                size: directCheckoutItem.sizeId,
-              },
-            ]
+          ? [{
+            productId: directCheckoutItem.id,
+            quantity: directCheckoutItem.quantity,
+            color: directCheckoutItem.colorId,
+            size: directCheckoutItem.sizeId
+          }]
           : cart.map((item) => ({
-              productId: item.id,
-              quantity: item.quantity,
-              color: item.colorId,
-              size: item.sizeId,
-            }))
+            productId: item.id,
+            quantity: item.quantity,
+            color: item.colorId,
+            size: item.sizeId
+          }));
 
         // Calculate subtotal based on displayItems
         const subtotal = displayItems.reduce(
@@ -246,12 +248,20 @@ export default function CheckoutPage() {
     switch (currentStep) {
       case 1:
         return (
-          <ShippingAddress
-            onContinue={(data, step) => {
-              handleContinue(data, step)
-            }}
-            initialData={formData.shippingAddress}
-          />
+          <div>
+            {addressError && (
+              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
+                {addressError}
+              </div>
+            )}
+            <ShippingAddress 
+              onContinue={(data) => {
+                setAddressError('')
+                handleContinue(data, 2)
+              }} 
+              initialData={formData.shippingAddress} 
+            />
+          </div>
         )
       case 2:
         return (
@@ -300,7 +310,10 @@ export default function CheckoutPage() {
       {/* Auth Modal */}
       <AuthModal
         isOpen={showAuthModal}
-        onClose={() => !user && router.push('/')} // Redirect to home if user closes without logging in
+        onClose={() => {
+          setShowAuthModal(false)
+          !user && router.push('/')
+        }} // Redirect to home if user closes without logging in
       />
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold uppercase mb-8">CHECKOUT</h1>
