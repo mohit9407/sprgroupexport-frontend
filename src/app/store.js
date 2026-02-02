@@ -16,6 +16,7 @@ import orderStatusReducer from '../features/orderStatus/orderStatusSlice'
 import reviewsReducer from '../features/reviews/reviewsSlice'
 import stockReducer from '../features/stock/stockSlice'
 import caratReducer from '../features/carat/caratSlice'
+import settingsReducer from '../features/setting/settingSlice'
 
 export const store = configureStore({
   reducer: {
@@ -25,6 +26,7 @@ export const store = configureStore({
     productDetails: productDetailsReducer,
     categoryDetails: categoryDetailsReducer,
     categories: categoriesReducer,
+    settings: settingsReducer,
     user: userReducer,
     shippingAddress: shippingAddressReducer,
     shipping: shippingReducer,

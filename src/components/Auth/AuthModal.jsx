@@ -125,11 +125,11 @@ export default function AuthModal({ isOpen, onClose, switchToEmail = false }) {
       const result = await dispatch(verifyGuestOTP({ email, otp: otpValue }))
       if (verifyGuestOTP.fulfilled.match(result)) {
         const { user, accessToken, refreshToken } = result.payload || {}
-    
+
         if (user && accessToken) {
           if (typeof login === 'function') {
             login(user, { accessToken, refreshToken })
-   
+
 
             onClose()
           } else {
@@ -206,18 +206,21 @@ export default function AuthModal({ isOpen, onClose, switchToEmail = false }) {
     try {
       setIsVerifying(true)
       const result = await dispatch(guestLogin(email))
-      
+
       if (guestLogin.fulfilled.match(result)) {
-        toast.success('OTP sent successfully! Please check your email.')
+        const { message } = result.payload
+        toast.success(message || 'OTP sent successfully! Please check your email.')
         setShowOtpInput(true)
       } else if (guestLogin.rejected.match(result)) {
-        // Handle rejected case from Redux thunk
-        const errorMessage = result.payload || 'Failed to send OTP. Please try again.'
+        const errorMessage = result?.payload || 'Failed to send OTP. Please try again.'
         toast.error(errorMessage)
       }
     } catch (error) {
       console.error('Failed to send OTP:', error)
-      toast.error(error.message || 'Failed to send OTP. Please try again.')
+      const errorMessage = error.response?.data?.message ||
+        error.message ||
+        'Failed to send OTP. Please try again.'
+      toast.error(errorMessage)
     } finally {
       setIsVerifying(false)
     }

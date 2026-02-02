@@ -1,8 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import {
-  getShippingMethods,
-  getShippingMethodById,
-} from './shippingMethodService'
+import { getShippingMethods } from './shippingMethodService'
+import api from '@/lib/axios'
 
 // Async thunks
 export const fetchShippingMethods = createAsyncThunk(
@@ -50,8 +48,44 @@ const shippingSlice = createSlice({
         state.status = 'failed'
         state.error = action.payload
       })
+      .addCase(updateShippingMethods.fulfilled, (state, action) => {
+        const updated = action.payload
+
+        state.methods = state.methods.map((method) => ({
+          ...method,
+          isDefault: method._id === updated._id,
+        }))
+      })
   },
 })
+
+export const updateShippingMethods = createAsyncThunk(
+  'shipping/updateShippingMethods',
+  async ({ id, data }, { rejectWithValue }) => {
+    try {
+      const response = await api.put(`/shipping/update/${id}`, data)
+      return response.data
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to update shipping method',
+      )
+    }
+  },
+)
+
+export const deleteShippingMethods = createAsyncThunk(
+  'ShippingMethods/deleteShippingMethods',
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await api.delete(`/shipping/delete/${id}`)
+      return id // Return the deleted ID to update the state
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to delete order status',
+      )
+    }
+  },
+)
 
 export const { selectShippingMethod, clearShippingMethod } =
   shippingSlice.actions

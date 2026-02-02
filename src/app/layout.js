@@ -1,15 +1,40 @@
 import './globals.css'
 import { Montserrat } from 'next/font/google'
-import { AuthProvider } from '@/context/AuthContext'
 import { Toaster } from '@/utils/toastConfig'
 import { Providers } from './providers'
+import api from '@/lib/axios'
 
-export const metadata = {
-  title: 'SPR GROUP EXPORT',
-  description: 'spr group export ecommerce platform',
-  icons: {
-    icon: '/spr_logo.png',
-  },
+export async function generateMetadata() {
+  try {
+    const resp = await api.get('/seo-content/get-all')
+    const seo = resp.data?.[0]
+
+    if (!seo) {
+      return {
+        title: 'SPR GROUP EXPORT',
+        description: 'spr group export ecommerce platform',
+      }
+    }
+
+    return {
+      title: seo.title,
+      description: seo.description || '',
+      keywords: seo.keywords || '',
+      icons: {
+        icon: '/spr_logo.png',
+      },
+    }
+  } catch (err) {
+    console.error('SEO metadata error:', err)
+
+    return {
+      title: 'SPR GROUP EXPORT',
+      description: 'spr group export ecommerce platform',
+      icons: {
+        icon: '/spr_logo.png',
+      },
+    }
+  }
 }
 
 const montserrat = Montserrat({

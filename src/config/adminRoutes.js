@@ -19,6 +19,7 @@ import {
   FaBoxes,
   FaUserEdit,
   FaUpload,
+  FaImages,
   FaRegGrinStars,
   FaEye,
 } from 'react-icons/fa'
@@ -294,6 +295,15 @@ export const routeMeta = [
     sidebar: true,
     icon: FaTruck,
   },
+  {
+    key: 'edit-shipping-method',
+    path: '/admin/shipping-methods/edit/:_id',
+    label: 'Edit shipping',
+    description: 'shipping Order...',
+    parent: '/admin/shipping-methods',
+    sidebar: false,
+    icon: FaEye,
+  },
 
   // ===== Payment =====
   {
@@ -316,10 +326,69 @@ export const routeMeta = [
   },
   {
     key: 'website-settings',
-    path: '/admin/settings/website',
     label: 'Settings (Website)',
-    parent: '/admin',
     sidebar: true,
     icon: FaLaptopCode,
+    sidebarChildrens: [
+      '/admin/settings/website/slider-images',
+      '/admin/settings/website/parallax-banners',
+      '/admin/settings/website/banners',
+      '/admin/settings/website/content-pages',
+      '/admin/settings/website/seo-content',
+      '/admin/settings/website/settings',
+    ],
+  },
+  {
+    key: 'slider-images',
+    path: '/admin/settings/website/slider-images',
+    label: 'Slider Images',
+    parent: '/admin/settings/website',
+    sidebar: true,
+    icon: FaRegImages,
+  },
+
+  {
+    key: 'parallax-banners',
+    path: '/admin/settings/website/parallax-banners',
+    label: 'Parallax Banners',
+    parent: '/admin/settings/website',
+    sidebar: true,
+    icon: FaImages,
+  },
+
+  {
+    key: 'banners',
+    path: '/admin/settings/website/banners',
+    label: 'Banners',
+    parent: '/admin/settings/website',
+    sidebar: true,
+    icon: FaImages,
+  },
+
+  {
+    key: 'content-pages',
+    path: '/admin/settings/website/content-pages',
+    label: 'Content Pages',
+    parent: '/admin/settings/website',
+    sidebar: true,
+    icon: FaFileAlt,
+  },
+
+  {
+    key: 'seo-content',
+    path: '/admin/settings/website/seo-content',
+    label: 'SEO Content',
+    parent: '/admin/settings/website',
+    sidebar: true,
+    icon: FaEye,
+  },
+
+  {
+    key: 'website-settings-config',
+    path: '/admin/settings/website/settings',
+    label: 'Website Settings',
+    parent: '/admin/settings/website',
+    sidebar: true,
+    icon: FaGears,
   },
 ]
