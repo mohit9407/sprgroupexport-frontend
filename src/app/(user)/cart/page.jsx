@@ -30,34 +30,30 @@ export default function CartPage() {
     if (!updatingItemId) {
       try {
         const product = cart.find(item => item.id === productId);
-        
+
         // Check min order limit
         if (product?.product?.minOrderLimit && newQuantity < product.product.minOrderLimit) {
           toast.error(`Minimum order quantity is ${product.product.minOrderLimit}`);
           return;
         }
-        
+
         // Check max order limit
         if (product?.product?.maxOrderLimit && newQuantity > product.product.maxOrderLimit) {
           toast.error(`Maximum order quantity is ${product.product.maxOrderLimit}`);
           return;
         }
-        
+
         // Check stock availability
         if (product?.product?.stock !== undefined && newQuantity > product.product.stock) {
           toast.error(`Only ${product.product.stock} items available in stock`);
           return;
         }
-        
-        const loadingToast = toast.loading('Updating cart...');
         setUpdatingItemId(productId);
-        
+
         try {
           await updateQuantity(productId, newQuantity);
           toast.success('Cart updated successfully');
-        } finally {
-          toast.dismiss(loadingToast);
-        }
+        } catch { }
       } catch (error) {
         console.error('Error updating quantity:', error);
         toast.error(error.message || 'Failed to update quantity');
@@ -83,7 +79,6 @@ export default function CartPage() {
   const subtotal = getCartTotal()
   const discount = 0 // You can implement coupon logic here
   const total = subtotal - discount
-
   if (!isClient || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
