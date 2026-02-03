@@ -130,11 +130,13 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
   }, [dispatch, allCategories])
 
   const [isLoading, setIsLoading] = useState(false)
+  const [imageFile, setImageFile] = useState(null)
   const [selectedImage, setSelectedImage] = useState(null)
   const [existingImage, setExistingImage] = useState(defaultValues?.image || '')
   const [goldPrice, setGoldPrice] = useState(0)
   const isEditMode = mode === 'edit'
   const isInitialMount = useRef(true)
+  const imageInputRef = useRef(null)
 
   // Get carat data from Redux store
   const {
@@ -351,26 +353,41 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
     }
   }, [error])
 
-  const handleImageChange = (file) => {
-    if (file) {
-      setSelectedImage(file)
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setExistingImage(reader.result)
+  const handleFileChange = (field, file) => {
+    if (field === 'image') {
+      if (file) {
+        // Create a preview URL for the file
+        const previewUrl = URL.createObjectURL(file)
+        setImageFile(file)
+        setSelectedImage({
+          name: file.name,
+          url: previewUrl,
+          type: file.type,
+          size: file.size,
+        })
+        setExistingImage(previewUrl)
+        setValue('image', file, { shouldValidate: true })
+      } else {
+        // Clean up the object URL to avoid memory leaks
+        if (existingImage && existingImage.startsWith('blob:')) {
+          URL.revokeObjectURL(existingImage)
+        }
+        setImageFile(null)
+        setSelectedImage(null)
+        setExistingImage('')
+        setValue(
+          'image',
+          isEditMode && defaultValues?.image ? defaultValues.image : null,
+          { shouldValidate: true },
+        )
       }
-      reader.readAsDataURL(file)
-      setValue('image', file, { shouldValidate: true })
-    } else {
-      setSelectedImage(null)
-      setExistingImage('')
-      setValue(
-        'image',
-        isEditMode && defaultValues?.image ? defaultValues.image : null,
-        {
-          shouldValidate: true,
-        },
-      )
     }
+  }
+
+  const handleImageSelect = (image) => {
+    setSelectedImage(image)
+    setImageFile(null)
+    setValue('image', image, { shouldValidate: true })
   }
 
   const onSubmit = async (data) => {
@@ -410,8 +427,11 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
       })
 
       // Handle image separately
-      if (selectedImage instanceof File) {
-        formData.append('image', selectedImage)
+      if (imageFile instanceof File) {
+        formData.append('image', imageFile)
+      } else if (selectedImage) {
+        // If an image was selected from the media library
+        formData.append('image', JSON.stringify(selectedImage))
       } else if (!existingImage && data.image === null) {
         formData.append('removeImage', 'true')
       }
@@ -429,8 +449,12 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
         }
       })
 
-      if (selectedImage instanceof File) {
-        formData.append('image', selectedImage)
+      // Handle image for new product
+      if (imageFile instanceof File) {
+        formData.append('image', imageFile)
+      } else if (selectedImage) {
+        // If an image was selected from the media library
+        formData.append('image', JSON.stringify(selectedImage))
       }
     }
 
@@ -451,9 +475,6 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
       }
     } catch (error) {
       console.error('Error saving product:', error)
-      toast.error(
-        error.message || 'Something went wrong while saving the product',
-      )
     } finally {
       setIsLoading(false)
     }
@@ -749,7 +770,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                   <div className="mb-4">
                     <p className="text-sm text-gray-500 mb-2">Current Image:</p>
                     <img
-                      src={existingImage}
+                      src={existingImage.thumbnailUrl}
                       alt="Current product"
                       className="h-32 w-32 object-cover rounded"
                     />
@@ -758,10 +779,16 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                 <FileUploadButton
                   id="image-upload"
                   label={existingImage ? 'Change Image' : 'Upload Image'}
-                  onChange={(e) => handleImageChange(e.target.files?.[0])}
-                  accept="image/*"
+                  onChange={(e) =>
+                    handleFileChange('image', e.target.files?.[0])
+                  }
+                  selectedItem={selectedImage}
+                  onImageSelect={handleImageSelect}
+                  value={selectedImage?.name || ''}
                   error={formMethods.formState.errors.image}
+                  ref={imageInputRef}
                   className="w-full"
+                  accept="image/*"
                 />
               </div>
             </div>

@@ -232,11 +232,11 @@ const ProductCard = ({
           {/* Image */}
           <div className="w-full max-w-[280px] relative h-48 md:h-64">
             <div className="relative w-full h-full overflow-hidden rounded">
-              {!hasError && imageUrl ? (
+              {imageUrl !== null ? (
                 <>
                   <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-110">
                     <Image
-                      src={imageUrl}
+                      src={imageUrl.mediumUrl}
                       alt={name}
                       fill
                       unoptimized={true}
@@ -374,9 +374,9 @@ const ProductCard = ({
         {/* Image Container */}
         <div className="relative w-full pt-[100%] mb-4 overflow-hidden rounded">
           <div className="absolute inset-0 overflow-hidden">
-            {!hasError && imageUrl ? (
+            {imageUrl !== null ? (
               <Image
-                src={imageUrl}
+                src={imageUrl.mediumUrl}
                 alt={name}
                 fill
                 unoptimized={true}

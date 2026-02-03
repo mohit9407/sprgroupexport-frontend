@@ -185,7 +185,7 @@ const RelatedProducts = ({ category, excludeProductId }) => {
 
       return {
         id: productId,
-        name: product.productModel || product.name || 'Unnamed Product',
+        name: product.productName || 'Unnamed Product',
         price: product.price || 0,
         originalPrice: product.originalPrice || product.price || 0,
         isNew: product.isNew || false,

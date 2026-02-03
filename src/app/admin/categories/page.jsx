@@ -41,7 +41,7 @@ const getColumns = (router, handleDeleteClick) => [
         <div className="w-20 h-20 bg-gray-100 grid place-items-center overflow-hidden">
           {value ? (
             <img
-              src={value}
+              src={value.thumbnailUrl}
               alt={name}
               className="object-cover w-full h-full"
             />
