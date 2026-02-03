@@ -169,68 +169,64 @@ export function CategoryFormPage({
   }
 
   const onSubmit = async (values) => {
-    const formData = new FormData()
+    const requestData = {}
 
     // In edit mode, only send changed fields
     if (isEditMode) {
       // Always include the ID for updates
-      formData.append('_id', categoryId)
+      requestData._id = categoryId
 
       // Handle name and status
       if (values.name !== defaultValues.name) {
-        formData.append('name', values.name)
+        requestData.name = values.name
       }
       if (values.status !== defaultValues.status) {
-        formData.append('status', values.status)
+        requestData.status = values.status
       }
       if (values.parentId !== defaultValues.parentId) {
-        formData.append('parentId', values.parentId || '')
+        requestData.parentId = values.parentId || ''
       }
 
       // Handle image - only if changed
       if (imageFile instanceof File) {
-        formData.append('image', imageFile)
+        // For files, we'll need to handle them differently if needed
+        // You might need to convert to base64 or handle file uploads separately
+        requestData.image = imageFile
       } else if (selectedImage) {
-        formData.append('image', JSON.stringify(selectedImage))
+        requestData.image = selectedImage
       } else if (!existingImage && values.image === null) {
         // If existing image is being removed
-        formData.append('removeImage', 'true')
+        requestData.removeImage = true
       }
 
       // Handle icon - only if changed
       if (iconFile instanceof File) {
-        formData.append('icon', iconFile)
+        requestData.icon = iconFile
       } else if (selectedIcon) {
-        formData.append('icon', JSON.stringify(selectedIcon))
+        requestData.icon = selectedIcon
       } else if (!existingIcon && values.icon === null) {
         // If existing icon is being removed
-        formData.append('removeIcon', 'true')
+        requestData.removeIcon = true
       }
     } else {
-      // In add mode, include all fields except files
+      // In add mode, include all fields
       Object.entries(values).forEach(([key, value]) => {
-        // Skip isEditMode and file fields (we'll handle them separately)
-        if (
-          key !== 'isEditMode' &&
-          key !== 'image' &&
-          key !== 'icon' &&
-          value !== null &&
-          value !== undefined
-        ) {
-          formData.append(key, value)
+        // Skip isEditMode
+        if (key !== 'isEditMode' && value !== null && value !== undefined) {
+          requestData[key] = value
         }
       })
 
-      // Only append files if they are actual File objects
+      // Add files if they exist
       if (imageFile instanceof File) {
-        formData.append('image', imageFile)
+        requestData.image = imageFile
       } else if (selectedImage) {
-        formData.append('image', JSON.stringify(selectedImage))
+        requestData.image = selectedImage
       }
       if (iconFile instanceof File) {
-        formData.append('icon', iconFile)
+        requestData.icon = iconFile
       } else if (selectedIcon) {
-        formData.append('icon', JSON.stringify(selectedIcon))
+        requestData.icon = selectedIcon
       }
     }
 
@@ -238,11 +234,11 @@ export function CategoryFormPage({
       if (isEditMode) {
         // Make sure to pass both id and data to the updateCategory action
         await dispatch(
-          updateCategory({ id: categoryId, data: formData }),
+          updateCategory({ id: categoryId, data: requestData }),
         ).unwrap()
         toast.success('Category updated successfully!')
       } else {
-        await dispatch(createCategory(formData)).unwrap()
+        await dispatch(createCategory(requestData)).unwrap()
         toast.success('Category created successfully!')
         router.push('/admin/categories')
       }
@@ -266,7 +262,7 @@ export function CategoryFormPage({
       })
     }
   }, [addNewCategoryData?.isError, updateCategoryData?.isError])
-  console.log('formProviders?????', formProviders.formState.errors)
+
   return (
     <div className="space-y-6">
       <div className="border-b-2 pb-3 border-cyan-400">
