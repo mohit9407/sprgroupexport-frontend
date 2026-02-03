@@ -56,7 +56,7 @@ const NewArrivalSection = () => {
         id: product._id,
         image: product.image || '/images/placeholder-product.png',
         brand: product.brand || 'Unknown Brand',
-        name: product.productModel || product.name || 'Unnamed Product',
+        name: product.productModel || product.productName || 'Unnamed Product',
         price: product.price || 0,
         isNew: product.isNew || false,
         isVideo: product.isVideo || false,

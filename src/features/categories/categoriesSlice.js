@@ -81,7 +81,7 @@ export const createCategory = createAsyncThunk(
     try {
       const response = await api.post('/category/create', categoryData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Content-Type': 'application/json',
         },
       })
       return response.data
@@ -99,7 +99,7 @@ export const updateCategory = createAsyncThunk(
     try {
       const response = await api.put(`/category/update/${id}`, data, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Content-Type': 'application/json',
         },
       })
       return response.data
