@@ -133,10 +133,13 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
   const [imageFile, setImageFile] = useState(null)
   const [selectedImage, setSelectedImage] = useState(null)
   const [existingImage, setExistingImage] = useState(defaultValues?.image || '')
+  const [sideImages, setSideImages] = useState(defaultValues?.sideImages || [])
+  const [selectedSideImages, setSelectedSideImages] = useState([])
   const [goldPrice, setGoldPrice] = useState(0)
   const isEditMode = mode === 'edit'
   const isInitialMount = useRef(true)
   const imageInputRef = useRef(null)
+  const sideImagesInputRef = useRef(null)
 
   // Get carat data from Redux store
   const {
@@ -169,6 +172,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
       color: '',
       size: '',
       image: null,
+      sideImages: [],
       videoEmbedLink: '',
       flashSale: false,
       special: false,
@@ -320,8 +324,12 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
         ...defaultValues,
         isEditMode: true,
         image: defaultValues.image || null,
+        sideImages: defaultValues.sideImages || [],
       })
       if (defaultValues.image) setExistingImage(defaultValues.image)
+      if (defaultValues.sideImages) {
+        setSelectedSideImages(defaultValues.sideImages)
+      }
 
       // Set initial gold price if both carat and gram exist
       if (defaultValues.gram && defaultValues.carat) {
@@ -390,6 +398,29 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
     setValue('image', image, { shouldValidate: true })
   }
 
+  const handleSideImagesSelect = (newImages) => {
+    // If newImages is a single image, convert it to an array
+    const imagesArray = Array.isArray(newImages) ? newImages : [newImages];
+    
+    // Combine existing images with new ones, avoiding duplicates
+    const updatedImages = [...selectedSideImages];
+    imagesArray.forEach(img => {
+      if (!updatedImages.some(existingImg => existingImg._id === img._id)) {
+        updatedImages.push(img);
+      }
+    });
+    
+    setSelectedSideImages(updatedImages);
+    setValue('sideImages', updatedImages, { shouldValidate: true });
+  }
+
+  const removeSideImage = (index) => {
+    const updatedSideImages = [...selectedSideImages]
+    updatedSideImages.splice(index, 1)
+    setSelectedSideImages(updatedSideImages)
+    setValue('sideImages', updatedSideImages, { shouldValidate: true })
+  }
+
   const onSubmit = async (data) => {
     setIsLoading(true)
     const formData = new FormData()
@@ -400,8 +431,8 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
 
       // Include all fields that are present in the form data
       Object.entries(data).forEach(([key, value]) => {
-        // Skip image field as it's handled separately
-        if (key === 'image') return
+        // Skip image and sideImages fields as they're handled separately
+        if (key === 'image' || key === 'sideImages') return
 
         // Skip null or undefined values
         if (value === null || value === undefined) return
@@ -426,7 +457,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
         formData.append(key, value)
       })
 
-      // Handle image separately
+      // Handle main image separately
       if (imageFile instanceof File) {
         formData.append('image', imageFile)
       } else if (selectedImage) {
@@ -435,10 +466,17 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
       } else if (!existingImage && data.image === null) {
         formData.append('removeImage', 'true')
       }
+
+      // Handle side images
+      if (selectedSideImages.length > 0) {
+        formData.append('sideImages', JSON.stringify(selectedSideImages))
+      } else if (data.sideImages && data.sideImages.length === 0) {
+        formData.append('removeSideImages', 'true')
+      }
     } else {
       // For new product, include all fields
       Object.entries(data).forEach(([key, value]) => {
-        if (key !== 'image' && value !== null && value !== undefined) {
+        if (key !== 'image' && key !== 'sideImages' && value !== null && value !== undefined) {
           if (typeof value === 'object' && !(value instanceof File)) {
             formData.append(key, JSON.stringify(value))
           } else if (typeof value === 'boolean') {
@@ -449,12 +487,17 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
         }
       })
 
-      // Handle image for new product
+      // Handle main image for new product
       if (imageFile instanceof File) {
         formData.append('image', imageFile)
       } else if (selectedImage) {
         // If an image was selected from the media library
         formData.append('image', JSON.stringify(selectedImage))
+      }
+
+      // Handle side images for new product
+      if (selectedSideImages.length > 0) {
+        formData.append('sideImages', JSON.stringify(selectedSideImages))
       }
     }
 
@@ -793,6 +836,56 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
               </div>
             </div>
             {/* </div> */}
+
+            {/* Side Images */}
+            <div className="grid grid-cols-12 gap-4 items-start">
+              <label className="col-span-12 md:col-span-3 pt-2 text-sm text-right font-bold text-gray-700">
+                Side Images
+              </label>
+              <div className="col-span-12 md:col-span-9">
+                {selectedSideImages?.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-500 mb-2">Current Side Images:</p>
+                    <div className="flex flex-wrap gap-3">
+                      {selectedSideImages.map((img, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={img.thumbnailUrl || img.originalUrl || img}
+                            alt={`Side ${index + 1}`}
+                            className="h-24 w-24 object-cover rounded border"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = img.mediumUrl || img.largeUrl || img;
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeSideImage(index)}
+                            className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs transition-all duration-200"
+                            title="Remove image"
+                          >
+                            ×
+                          </button>
+                          <span className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs text-center py-0.5">
+                            {index + 1}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <FileUploadButton
+                  id="side-images-upload"
+                  label={selectedSideImages?.length > 0 ? 'Add More Images' : 'Add Side Images'}
+                  onImageSelect={handleSideImagesSelect}
+                  multiSelect={true}
+                  selectedItems={selectedSideImages}
+                  ref={sideImagesInputRef}
+                  className="w-full"
+                  accept="image/*"
+                />
+              </div>
+            </div>
 
             {/* Video Embed Code */}
             <div className="col-span-2">

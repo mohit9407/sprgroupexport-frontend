@@ -19,7 +19,7 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
         : []
     const additionalImages = Array.isArray(sideImages)
       ? sideImages
-          .map((img) => (typeof img === 'string' ? img : img.url || ''))
+          .map((img) => (typeof img === 'string' ? img : img.mediumUrl || img.url || ''))
           .filter(Boolean)
       : []
     return [...mainImages, ...additionalImages].filter(Boolean)
