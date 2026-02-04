@@ -352,6 +352,7 @@ export default function CheckoutPage() {
             paymentMethod={formData.paymentMethod}
             directCheckoutItem={directCheckoutItem}
             shippingMethod={formData.shippingMethod}
+            shippingAddress={formData.shippingAddress}
             isLoading={loading}
           />
         )

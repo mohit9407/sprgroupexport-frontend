@@ -11,6 +11,8 @@ export default function OrderDetail({
   paymentMethod: initialPaymentMethod = 'cod',
   directCheckoutItem = null,
   isLoading,
+  shippingAddress,
+  shippingMethod,
 }) {
   const { cart, removeFromCart, updateQuantity } = useCart()
   const [paymentMethod, setPaymentMethod] = useState(initialPaymentMethod)
@@ -23,11 +25,6 @@ export default function OrderDetail({
   // Use directCheckoutItem if available, otherwise use cart
   const displayItems = directCheckoutItem ? [directCheckoutItem] : cart
 
-  // Get shipping cost from localStorage
-  const shippingMethod =
-    typeof window !== 'undefined'
-      ? JSON.parse(localStorage.getItem('selectedShippingMethod') || '{}')
-      : {}
   const shippingCost = Number(shippingMethod?.price) || 0
 
   // Calculate order total
@@ -113,11 +110,6 @@ export default function OrderDetail({
     // If PayPal is selected, process payment and redirect
     if (paymentMethod === 'paypal') {
       try {
-        // Calculate total amount
-        const shippingMethod = JSON.parse(
-          localStorage.getItem('selectedShippingMethod') || '{}',
-        )
-
         const shippingCost = Number(shippingMethod?.price) || 0
 
         const totalAmount =
@@ -141,11 +133,8 @@ export default function OrderDetail({
         const user = JSON.parse(localStorage.getItem('user'))
 
         // Prepare order data to be stored for later creation after PayPal success
-        const shippingAddressId = JSON.parse(
-          localStorage.getItem('selectedShippingAddress') || 'null',
-        )
 
-        if (!shippingAddressId) {
+        if (!shippingAddress.shippingAddress) {
           alert(
             'Shipping address not found. Please go back and select a shipping address.',
           )
@@ -156,7 +145,7 @@ export default function OrderDetail({
           user: user._id,
           shippingMethod: shippingMethod._id,
           shippingCost: shippingMethod.price || 0,
-          shippingAddressId: shippingAddressId,
+          shippingAddressId: shippingAddress.shippingAddress._id,
           products: displayItems.map((item) => ({
             productId: item.id,
             quantity: item.quantity || 1,
@@ -212,10 +201,6 @@ export default function OrderDetail({
         await loadRazorpayScript()
 
         const user = JSON.parse(localStorage.getItem('user'))
-
-        const shippingMethod = JSON.parse(
-          localStorage.getItem('selectedShippingMethod') || '{}',
-        )
 
         const shippingCost = Number(shippingMethod?.price) || 0
 

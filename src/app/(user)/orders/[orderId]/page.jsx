@@ -527,7 +527,7 @@ export default function OrderDetailsPage() {
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-500">Subtotal</span>
                     <span className="text-sm font-medium text-gray-900">
-                      ₹{order.total?.toFixed(2) || '0.00'}
+                      ₹{(order.total - (order.shippingCost || 0)).toFixed(2)}
                     </span>
                   </div>
                   <div className="flex justify-between">
