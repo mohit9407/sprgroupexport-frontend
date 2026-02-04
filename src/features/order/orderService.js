@@ -161,3 +161,18 @@ export const updateOrderStatus = async (
     throw error.response?.data?.message || 'Failed to update order status'
   }
 }
+
+/**
+ * Deletes an order (admin only)
+ * @param {string} orderId - The ID of the order to delete
+ * @returns {Promise<Object>} The response from the server
+ */
+export const deleteOrder = async (orderId) => {
+  try {
+    const response = await api.delete(`/orders/delete/${orderId}`)
+    return response.data
+  } catch (error) {
+    console.error('Error deleting order:', error)
+    throw error.response?.data?.message || 'Failed to delete order'
+  }
+}

@@ -79,6 +79,7 @@ const ProductCard = ({
   const dispatch = useDispatch()
   const [isHovered, setIsHovered] = useState(false)
   const [hasError, setHasError] = useState(false)
+  const [pendingCartAdd, setPendingCartAdd] = useState(false)
   const { status: productDetailsStatus } = useSelector(
     (state) => state.productDetails,
   )
@@ -121,6 +122,14 @@ const ProductCard = ({
   const { addToCart, cart } = useCart()
   const [isAdding, setIsAdding] = useState(false)
 
+  // Handle pending cart addition after login
+  useEffect(() => {
+    if (user && pendingCartAdd) {
+      handleAddToCart()
+      setPendingCartAdd(false)
+    }
+  }, [user, pendingCartAdd])
+
   // Use the isLiked prop if provided, otherwise fall back to wishlist context
   const isWishlisted =
     isLikedProp !== undefined ? isLikedProp : isInWishlist(id)
@@ -130,15 +139,17 @@ const ProductCard = ({
   )
 
   const handleAddToCart = (e) => {
-    e.preventDefault()
-    e.stopPropagation()
+    e?.preventDefault?.()
+    e?.stopPropagation?.()
 
     // Check if user is authenticated
     if (!user) {
+      setPendingCartAdd(true)
       setShowAuthModal(true)
       return
     }
 
+    // If we get here, user is authenticated
     setIsAdding(true)
 
     // Add item to cart
@@ -361,7 +372,10 @@ const ProductCard = ({
       {showAuthModal && (
         <AuthModal
           isOpen={showAuthModal}
-          onClose={() => setShowAuthModal(false)}
+          onClose={() => {
+            setShowAuthModal(false)
+            setPendingCartAdd(false) // Reset the pending state when modal is closed
+          }}
           onSwitchToEmail={switchToEmail}
         />
       )}

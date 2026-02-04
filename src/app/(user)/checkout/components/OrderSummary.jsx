@@ -28,7 +28,6 @@ export default function OrderSummary({
       value: `₹${Number(subtotal).toLocaleString('en-IN')}`,
     },
     { label: 'Discount', value: '₹0' },
-    { label: 'Tax', value: '₹0' },
     {
       label: 'Shipping Cost',
       value:
@@ -54,7 +53,7 @@ export default function OrderSummary({
             <div className="relative w-16 h-16 bg-gray-100 rounded-md overflow-hidden mr-4">
               {item.image && (
                 <Image
-                  src={item.image}
+                  src={item.image.thumbnailUrl}
                   alt={item.name}
                   layout="fill"
                   objectFit="cover"
@@ -121,7 +120,8 @@ export default function OrderSummary({
           <button
             type="button"
             onClick={() => onContinue({}, 'placeOrder')}
-            className="w-full bg-[#2c3e50] text-white py-3 px-4 rounded-md hover:bg-[#1a252f] transition-colors font-medium uppercase text-sm tracking-wider disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            className="w-full bg-[#c89b5a] text-white py-3 px-4 rounded-md hover:bg-[#b38950]
+             transition-colors font-medium uppercase text-sm tracking-wider disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             disabled={isLoading}
           >
             {isLoading ? (

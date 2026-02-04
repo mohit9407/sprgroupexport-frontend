@@ -13,7 +13,16 @@ export default function ShippingMethods({ onContinue, initialMethod = null }) {
   const shippingMethods = useSelector(selectAllShippingMethods)
   const status = useSelector(selectShippingStatus)
   const error = useSelector(selectShippingError)
-  const [selectedMethod, setSelectedMethod] = useState(initialMethod)
+  const [selectedMethod, setSelectedMethod] = useState(
+    initialMethod?._id || null,
+  )
+
+  // Update selectedMethod when initialMethod changes
+  useEffect(() => {
+    if (initialMethod?._id && initialMethod._id !== selectedMethod) {
+      setSelectedMethod(initialMethod._id)
+    }
+  }, [initialMethod])
 
   // Fetch shipping methods on component mount
   useEffect(() => {
@@ -27,13 +36,16 @@ export default function ShippingMethods({ onContinue, initialMethod = null }) {
     let timer
     if (shippingMethods && shippingMethods.length > 0 && !selectedMethod) {
       const defaultMethod = shippingMethods[0]
-      timer = setTimeout(() => {
-        setSelectedMethod(defaultMethod._id)
-        // Also update the form data with the default shipping method
-        if (typeof onContinue === 'function') {
-          onContinue({ shippingMethod: defaultMethod }, 1, true)
-        }
-      }, 0)
+      if (!selectedMethod) {
+        // Only set default if no method is selected
+        timer = setTimeout(() => {
+          setSelectedMethod(defaultMethod._id)
+          // Update the form data with the default shipping method without changing the step
+          if (typeof onContinue === 'function') {
+            onContinue({ shippingMethod: defaultMethod }, null, true) // Changed 1 to null
+          }
+        }, 0)
+      }
     }
     return () => clearTimeout(timer)
   }, [shippingMethods, selectedMethod, onContinue])
