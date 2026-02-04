@@ -11,9 +11,12 @@ export default function ImageSelectionModal({
   onClose,
   onSelect,
   title = 'Select Image',
+  multiSelect = false,
+  selectedImages: externalSelectedImages = []
 }) {
   const [images, setImages] = useState([])
   const [loading, setLoading] = useState(false)
+  const [selectedImages, setSelectedImages] = useState([])
   const [selectedImage, setSelectedImage] = useState(null)
 
   useEffect(() => {
@@ -35,11 +38,14 @@ export default function ImageSelectionModal({
   }
 
   const handleSelect = () => {
-    if (selectedImage) {
+    if (multiSelect) {
+      onSelect(selectedImages)
+    } else if (selectedImage) {
       onSelect(selectedImage)
-      onClose()
-      setSelectedImage(null)
     }
+    onClose()
+    setSelectedImages([])
+    setSelectedImage(null)
   }
 
   const footer = (
@@ -52,10 +58,10 @@ export default function ImageSelectionModal({
       </button>
       <button
         onClick={handleSelect}
-        disabled={!selectedImage}
+        disabled={multiSelect ? selectedImages.length === 0 : !selectedImage}
         className="px-4 py-2 rounded text-white bg-cyan-600 hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Select Image
+        {multiSelect ? 'Select Images' : 'Select Image'}
       </button>
     </div>
   )
@@ -76,32 +82,51 @@ export default function ImageSelectionModal({
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {images.map((image) => (
-              <div
-                key={image._id}
-                className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all ${
-                  selectedImage?._id === image._id
-                    ? 'border-cyan-500 ring-2 ring-cyan-200'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-                onClick={() => setSelectedImage(image)}
-              >
-                <Image
-                  src={image.thumbnailUrl}
-                  alt=""
-                  width={200}
-                  height={100}
-                  className="max-h-28 object-contain"
-                />
-                {selectedImage?._id === image._id && (
-                  <div className="absolute inset-0 bg-cyan-500/20 flex items-center justify-center">
-                    <div className="w-6 h-6 bg-cyan-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm">✓</span>
+            {images.map((image) => {
+              const isSelected = multiSelect 
+                ? selectedImages.some(img => img._id === image._id)
+                : selectedImage?._id === image._id;
+                
+              return (
+                <div
+                  key={image._id}
+                  className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all ${
+                    isSelected
+                      ? 'border-cyan-500 ring-2 ring-cyan-200'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  onClick={() => {
+                    if (multiSelect) {
+                      setSelectedImages(prev => {
+                        const exists = prev.some(img => img._id === image._id);
+                        return exists 
+                          ? prev.filter(img => img._id !== image._id)
+                          : [...prev, image];
+                      });
+                    } else {
+                      setSelectedImage(image);
+                    }
+                  }}
+                >
+                  <Image
+                    src={image.thumbnailUrl}
+                    alt=""
+                    width={200}
+                    height={100}
+                    className="max-h-28 object-contain"
+                  />
+                  {isSelected && (
+                    <div className="absolute inset-0 bg-cyan-500/20 flex items-center justify-center">
+                      <div className="w-6 h-6 bg-cyan-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-sm">
+                          {multiSelect ? selectedImages.findIndex(img => img._id === image._id) + 1 : '✓'}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            ))}
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
 

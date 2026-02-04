@@ -87,8 +87,14 @@ const AuthForm = ({ isLogin = false }) => {
   }, [success])
 
   useEffect(() => {
-    if (error) {
+    if (!error) return
+
+    if (typeof error === 'string') {
       toast.error(error)
+    } else if (typeof error === 'object') {
+      Object.values(error).forEach((msg) => {
+        toast.error(msg)
+      })
     }
   }, [error])
 
@@ -152,8 +158,17 @@ const AuthForm = ({ isLogin = false }) => {
           )
           toast.success('Login successful!')
         }
-      } catch (error) {
-        console.error('Login failed:', error)
+      } catch (err) {
+        const backendErrors =
+          err?.response?.data?.errors || err?.response?.data?.message
+
+        if (backendErrors && typeof backendErrors === 'object') {
+          setFormErrors(backendErrors)
+        } else if (typeof backendErrors === 'string') {
+          toast.error(backendErrors)
+        } else {
+          toast.error('Registration failed')
+        }
       }
     }
   }

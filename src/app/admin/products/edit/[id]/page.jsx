@@ -131,6 +131,7 @@ export default function EditProductPage() {
     special: product.special || false,
     productName: product.productName || product.name || '',
     description: product.description || '',
+    sideImages: product.sideImages || ''
   }
 
   return (
