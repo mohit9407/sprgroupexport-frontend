@@ -123,7 +123,6 @@ export default function OrdersPage() {
         _id: item.productId?._id,
         name: resolvedProductName,
         productName: resolvedProductName,
-        image: item.productId?.image || null,
         price: item.productId?.price || 0,
         category: categoryName || 'Uncategorized',
         sku:
@@ -214,7 +213,7 @@ export default function OrdersPage() {
                           <div className="flex-shrink-0 w-full sm:w-32 h-32 bg-gray-100 rounded-md overflow-hidden mb-4 sm:mb-0 sm:mr-6">
                             {itemDetails.product?.image ? (
                               <Image
-                                src={itemDetails.product.image}
+                                src={itemDetails.product.image.thumbnailUrl}
                                 alt={
                                   itemDetails.product.name ||
                                   `Product ${index + 1}`

@@ -10,9 +10,11 @@ export default function OrderDetail({
   onContinue,
   paymentMethod: initialPaymentMethod = 'cod',
   directCheckoutItem = null,
+  isLoading,
 }) {
   const { cart, removeFromCart, updateQuantity } = useCart()
   const [paymentMethod, setPaymentMethod] = useState(initialPaymentMethod)
+  const [paymentError, setPaymentError] = useState('')
   const [orderNotes, setOrderNotes] = useState('')
   const [itemToDelete, setItemToDelete] = useState(null)
   const [paymentMethods, setPaymentMethods] = useState([])
@@ -56,12 +58,6 @@ export default function OrderDetail({
     fetchPaymentMethods()
   }, [])
 
-  const handleEditItem = (productId) => {
-    // Navigate to product detail page or open edit modal
-    // For now, we'll just log the action
-    console.log('Edit item:', productId)
-  }
-
   const handleDeleteItem = (productId) => {
     setItemToDelete(productId)
   }
@@ -77,6 +73,10 @@ export default function OrderDetail({
     if (newQuantity >= 1) {
       updateQuantity(productId, newQuantity)
     }
+  }
+  const handlePaymentMethodChange = (method) => {
+    setPaymentMethod(method)
+    if (paymentError) setPaymentError('')
   }
 
   function loadRazorpayScript() {
@@ -100,6 +100,15 @@ export default function OrderDetail({
 
   const handleSubmit = async (e) => {
     e?.preventDefault?.() // Safely call preventDefault if e exists
+
+    // Validate payment method is selected
+    if (!paymentMethod) {
+      setPaymentError(
+        'Please select a payment method before placing your order',
+      )
+      return
+    }
+    setPaymentError('')
 
     // If PayPal is selected, process payment and redirect
     if (paymentMethod === 'paypal') {
@@ -128,9 +137,6 @@ export default function OrderDetail({
           return
         }
 
-        console.log('🚀 Making PayPal API call...')
-        // For PayPal, we need to create the order first through normal flow, then process payment
-        // But since we're bypassing normal flow, we need to create a temporary order ID
         const tempOrderId = 'temp_' + Date.now()
         const user = JSON.parse(localStorage.getItem('user'))
 
@@ -139,13 +145,7 @@ export default function OrderDetail({
           localStorage.getItem('selectedShippingAddress') || 'null',
         )
 
-        console.log('Retrieved from localStorage:', {
-          shippingAddressId,
-          shippingMethod,
-        })
-
         if (!shippingAddressId) {
-          console.error('❌ Shipping address ID not found in localStorage!')
           alert(
             'Shipping address not found. Please go back and select a shipping address.',
           )
@@ -188,7 +188,6 @@ export default function OrderDetail({
         const paypalUrl = response.url
 
         if (paypalUrl) {
-          console.log('🔗 Redirecting to PayPal:', paypalUrl)
           window.location.href = paypalUrl
           return // Don't proceed to onContinue for PayPal
         } else {
@@ -316,7 +315,7 @@ export default function OrderDetail({
                 <div className="flex-shrink-0 h-24 w-24 relative">
                   {item.image && (
                     <Image
-                      src={item.image}
+                      src={item.image.thumbnailUrl}
                       alt={item.name}
                       fill
                       className="object-cover rounded-md"
@@ -362,26 +361,6 @@ export default function OrderDetail({
                   {/* Edit/Delete Buttons */}
                   {!directCheckoutItem && (
                     <div className="mt-2 flex space-x-4">
-                      <button
-                        type="button"
-                        onClick={() => handleEditItem(item.id)}
-                        className="text-xs text-[#c89b5a] hover:underline flex items-center"
-                      >
-                        <svg
-                          className="h-4 w-4 mr-1"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                          />
-                        </svg>
-                        Edit
-                      </button>
                       <button
                         type="button"
                         onClick={() => handleDeleteItem(item.id)}
@@ -460,11 +439,7 @@ export default function OrderDetail({
                     className="h-4 w-4 text-[#c89b5a] focus:ring-[#c89b5a] border-gray-300"
                     checked={paymentMethod === method.type?.toLowerCase()}
                     onChange={() => {
-                      console.log(
-                        'Payment method selected:',
-                        method.type?.toLowerCase(),
-                      )
-                      setPaymentMethod(method.type?.toLowerCase())
+                      handlePaymentMethodChange(method.type?.toLowerCase())
                     }}
                   />
                   <label
@@ -473,8 +448,18 @@ export default function OrderDetail({
                   >
                     {method.name}
                   </label>
+                  {paymentError &&
+                    paymentMethod === method.type?.toLowerCase() && (
+                      <p className="ml-3 text-sm text-red-500">
+                        {paymentError}
+                      </p>
+                    )}
                 </div>
               ))}
+
+              {paymentError && !paymentMethod && (
+                <p className="text-sm text-red-500">{paymentError}</p>
+              )}
 
               {paymentMethods.length === 0 && (
                 <div className="text-sm text-gray-600">
@@ -489,6 +474,7 @@ export default function OrderDetail({
           <button
             type="button"
             onClick={handleSubmit}
+            disabled={isLoading}
             className="bg-[#c89b5a] text-white px-8 py-3 rounded-md uppercase text-sm font-medium hover:bg-[#b38950] transition-colors"
           >
             PLACE ORDER

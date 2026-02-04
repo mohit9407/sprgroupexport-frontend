@@ -4,6 +4,7 @@ import {
   getUserOrders,
   getAdminOrders,
   updateOrderStatus as updateOrderStatusApi,
+  deleteOrder as deleteOrderApi,
 } from '@/features/order/orderService'
 
 // Helper to get auth token
@@ -105,6 +106,20 @@ export const updateOrderStatus = createAsyncThunk(
   },
 )
 
+// Async thunk for deleting an order
+export const deleteOrder = createAsyncThunk(
+  'order/deleteOrder',
+  async (orderId, { rejectWithValue }) => {
+    try {
+      const response = await deleteOrderApi(orderId)
+      return response
+    } catch (error) {
+      console.error('Error deleting order:', error)
+      return rejectWithValue(error.message || 'Failed to delete order')
+    }
+  },
+)
+
 const orderSlice = createSlice({
   name: 'order',
   initialState: {
@@ -139,6 +154,25 @@ const orderSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // Handle deleteOrder
+      .addCase(deleteOrder.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(deleteOrder.fulfilled, (state, action) => {
+        state.loading = false
+        state.success = true
+        // Remove the deleted order from the admin orders list
+        state.adminOrders.items = state.adminOrders.items.filter(
+          (order) => order._id !== action.meta.arg,
+        )
+        // Update pagination total
+        state.adminOrders.pagination.totalItems -= 1
+      })
+      .addCase(deleteOrder.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+      })
       // Handle createOrder
       .addCase(createOrder.pending, (state) => {
         state.loading = true
