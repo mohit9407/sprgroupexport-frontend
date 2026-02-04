@@ -74,9 +74,6 @@ export default function ShippingAddress({ onContinue, initialData = {} }) {
   const handleFormSubmit = async (e) => {
     e.preventDefault()
     try {
-      // Log the form data before sending
-      console.log('Form data before submission:', formData)
-
       const newAddress = {
         fullName: formData.name || '',
         name: formData.name || '', // Some APIs might expect 'name' instead of 'fullName'
@@ -91,10 +88,7 @@ export default function ShippingAddress({ onContinue, initialData = {} }) {
         country: 'India',
       }
 
-      console.log('Sending address data:', newAddress)
-
       const result = await dispatch(addAddress(newAddress)).unwrap()
-      console.log('Address saved successfully:', result)
 
       setShowNewAddressForm(false)
       await dispatch(getAddresses())
@@ -130,8 +124,10 @@ export default function ShippingAddress({ onContinue, initialData = {} }) {
       setError('Please select a shipping address before continuing')
       return
     }
-    
-    const selectedAddress = addresses.find(addr => addr._id === selectedAddressId)
+
+    const selectedAddress = addresses.find(
+      (addr) => addr._id === selectedAddressId,
+    )
     if (selectedAddress) {
       setError('')
       onContinue({ shippingAddress: selectedAddress })
@@ -152,7 +148,7 @@ export default function ShippingAddress({ onContinue, initialData = {} }) {
         </div>
       ) : (
         <div className="space-y-4 mb-6">
-          {addresses.length > 0 ? (
+          {addresses.length > 0 || showNewAddressForm ? (
             <div className="space-y-4">
               {addresses.map((address) => (
                 <div
@@ -273,8 +269,12 @@ export default function ShippingAddress({ onContinue, initialData = {} }) {
         )}
         <button
           onClick={handleSubmit}
-          disabled={isLoading || !selectedAddressId}
-          className="bg-[#c89b5a] text-white px-8 py-3 rounded-md uppercase text-sm font-medium hover:bg-[#b38950] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={isLoading || !selectedAddressId || showNewAddressForm}
+          className={`bg-[#c89b5a] text-white px-8 py-3 rounded-md uppercase text-sm font-medium transition-colors ${
+            isLoading || !selectedAddressId || showNewAddressForm
+              ? 'opacity-50 cursor-not-allowed'
+              : 'hover:bg-[#b38950]'
+          }`}
         >
           {isLoading ? 'Loading...' : 'CONTINUE'}
         </button>

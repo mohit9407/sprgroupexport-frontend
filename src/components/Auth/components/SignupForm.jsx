@@ -131,7 +131,7 @@ const SignupForm = ({
               disabled={loading}
             />
           </div>
-          <div className="ml-3 text-sm">
+          <div className="ml-3 text-sm mt-1">
             <label htmlFor="agreeTerms" className="font-medium text-gray-700">
               I agree to the{' '}
               <a href="#" className="text-[#b7853f] hover:text-[#a07637]">

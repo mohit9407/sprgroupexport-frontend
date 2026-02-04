@@ -16,7 +16,7 @@ export default function CartPage() {
     getCartTotal,
     removeAllFromCart,
     isLoading,
-    error: cartError
+    error: cartError,
   } = useCart()
   const [coupon, setCoupon] = useState('')
   const [showClearCartModal, setShowClearCartModal] = useState(false)
@@ -29,49 +29,62 @@ export default function CartPage() {
   const handleQuantityChange = async (productId, newQuantity) => {
     if (!updatingItemId) {
       try {
-        const product = cart.find(item => item.id === productId);
+        const product = cart.find((item) => item.id === productId)
 
         // Check min order limit
-        if (product?.product?.minOrderLimit && newQuantity < product.product.minOrderLimit) {
-          toast.error(`Minimum order quantity is ${product.product.minOrderLimit}`);
-          return;
+        if (
+          product?.product?.minOrderLimit &&
+          newQuantity < product.product.minOrderLimit
+        ) {
+          toast.error(
+            `Minimum order quantity is ${product.product.minOrderLimit}`,
+          )
+          return
         }
 
         // Check max order limit
-        if (product?.product?.maxOrderLimit && newQuantity > product.product.maxOrderLimit) {
-          toast.error(`Maximum order quantity is ${product.product.maxOrderLimit}`);
-          return;
+        if (
+          product?.product?.maxOrderLimit &&
+          newQuantity > product.product.maxOrderLimit
+        ) {
+          toast.error(
+            `Maximum order quantity is ${product.product.maxOrderLimit}`,
+          )
+          return
         }
 
         // Check stock availability
-        if (product?.product?.stock !== undefined && newQuantity > product.product.stock) {
-          toast.error(`Only ${product.product.stock} items available in stock`);
-          return;
+        if (
+          product?.product?.stock !== undefined &&
+          newQuantity > product.product.stock
+        ) {
+          toast.error(`Only ${product.product.stock} items available in stock`)
+          return
         }
-        setUpdatingItemId(productId);
+        setUpdatingItemId(productId)
 
         try {
-          await updateQuantity(productId, newQuantity);
-          toast.success('Cart updated successfully');
-        } catch { }
+          await updateQuantity(productId, newQuantity)
+          toast.success('Cart updated successfully')
+        } catch {}
       } catch (error) {
-        console.error('Error updating quantity:', error);
-        toast.error(error.message || 'Failed to update quantity');
+        console.error('Error updating quantity:', error)
+        toast.error(error.message || 'Failed to update quantity')
       } finally {
-        setUpdatingItemId(null);
+        setUpdatingItemId(null)
       }
     }
-  };
+  }
 
   const handleRemoveItem = async (productId) => {
     if (!updatingItemId) {
       try {
-        setUpdatingItemId(productId);
-        await removeFromCart(productId);
+        setUpdatingItemId(productId)
+        await removeFromCart(productId)
       } catch (error) {
-        console.error('Error removing item:', error);
+        console.error('Error removing item:', error)
       } finally {
-        setUpdatingItemId(null);
+        setUpdatingItemId(null)
       }
     }
   }
@@ -88,9 +101,9 @@ export default function CartPage() {
   }
 
   if (cartError) {
-    toast.error(cartError);
+    toast.error(cartError)
     // Clear the error after showing it
-    setTimeout(() => setError(null), 100);
+    setTimeout(() => setError(null), 100)
   }
 
   if (cart.length === 0) {
@@ -169,8 +182,13 @@ export default function CartPage() {
                     >
                       <div className="w-20 h-20 relative flex-shrink-0">
                         <Image
-                          src={item.image || item.product?.image || '/placeholder-product.jpg'}
-                          alt={item.name || item.product?.productName || 'Product'}
+                          src={
+                            item.product?.image?.thumbnailUrl ||
+                            '/placeholder-product.jpg'
+                          }
+                          alt={
+                            item.name || item.product?.productName || 'Product'
+                          }
                           fill
                           className="object-cover rounded hover:opacity-90 transition-opacity"
                           unoptimized={true}
@@ -180,7 +198,9 @@ export default function CartPage() {
                         <h3 className="font-medium text-gray-900 hover:text-[#BA8B4E] transition-colors">
                           {item.name || item.product?.productName}
                         </h3>
-                        <p className="text-sm text-gray-500">{item.brand || item.product?.brand}</p>
+                        <p className="text-sm text-gray-500">
+                          {item.brand || item.product?.brand}
+                        </p>
                       </div>
                     </Link>
                   </div>
@@ -200,11 +220,17 @@ export default function CartPage() {
                     <div className="flex items-center justify-center">
                       <button
                         onClick={() =>
-                          handleQuantityChange(item.id, (item.quantity || 1) - 1)
+                          handleQuantityChange(
+                            item.id,
+                            (item.quantity || 1) - 1,
+                          )
                         }
                         disabled={updatingItemId === item.id}
-                        className={`w-8 h-8 flex items-center justify-center border border-gray-300 rounded-l hover:bg-gray-100 ${updatingItemId === item.id ? 'opacity-50 cursor-not-allowed' : ''
-                          }`}
+                        className={`w-8 h-8 flex items-center justify-center border border-gray-300 rounded-l hover:bg-gray-100 ${
+                          updatingItemId === item.id
+                            ? 'opacity-50 cursor-not-allowed'
+                            : ''
+                        }`}
                       >
                         <FiMinus size={14} />
                       </button>
@@ -219,16 +245,23 @@ export default function CartPage() {
                           )
                         }
                         disabled={updatingItemId === item.id}
-                        className={`w-12 h-8 border-t border-b border-gray-300 text-center ${updatingItemId === item.id ? 'bg-gray-50' : ''
-                          }`}
+                        className={`w-12 h-8 border-t border-b border-gray-300 text-center ${
+                          updatingItemId === item.id ? 'bg-gray-50' : ''
+                        }`}
                       />
                       <button
                         onClick={() =>
-                          handleQuantityChange(item.id, (item.quantity || 1) + 1)
+                          handleQuantityChange(
+                            item.id,
+                            (item.quantity || 1) + 1,
+                          )
                         }
                         disabled={updatingItemId === item.id}
-                        className={`w-8 h-8 flex items-center justify-center border border-gray-300 rounded-r hover:bg-gray-100 ${updatingItemId === item.id ? 'opacity-50 cursor-not-allowed' : ''
-                          }`}
+                        className={`w-8 h-8 flex items-center justify-center border border-gray-300 rounded-r hover:bg-gray-100 ${
+                          updatingItemId === item.id
+                            ? 'opacity-50 cursor-not-allowed'
+                            : ''
+                        }`}
                       >
                         <FiPlus size={14} />
                       </button>
@@ -239,13 +272,20 @@ export default function CartPage() {
                   <div className="col-span-2">
                     <div className="flex items-center justify-end gap-2">
                       <div className="font-medium min-w-[100px] text-right">
-                        ₹{((item.price || item.product?.price) * (item.quantity || 1)).toLocaleString()}
+                        ₹
+                        {(
+                          (item.price || item.product?.price) *
+                          (item.quantity || 1)
+                        ).toLocaleString()}
                       </div>
                       <button
                         onClick={() => handleRemoveItem(item.id)}
                         disabled={updatingItemId === item.id}
-                        className={`text-red-500 hover:text-red-700 text-sm flex-shrink-0 ${updatingItemId === item.id ? 'opacity-50 cursor-not-allowed' : ''
-                          }`}
+                        className={`text-red-500 hover:text-red-700 text-sm flex-shrink-0 ${
+                          updatingItemId === item.id
+                            ? 'opacity-50 cursor-not-allowed'
+                            : ''
+                        }`}
                       >
                         <FiTrash2 size={16} />
                       </button>
@@ -325,7 +365,7 @@ export default function CartPage() {
                   />
                   <button
                     className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-r transition-colors"
-                    onClick={() => { }}
+                    onClick={() => {}}
                   >
                     APPLY
                   </button>

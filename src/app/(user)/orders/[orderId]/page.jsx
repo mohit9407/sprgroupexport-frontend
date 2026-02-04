@@ -73,7 +73,6 @@ export default function OrderDetailsPage() {
         _id: item.productId?._id,
         name: resolvedProductName,
         productName: resolvedProductName,
-        image: item.productId?.image || null,
         price: item.productId?.price || 0,
         sku:
           product?.sku ||
@@ -287,7 +286,7 @@ export default function OrderDetailsPage() {
                         <div className="flex-shrink-0 h-24 w-24 rounded-md overflow-hidden border border-gray-200">
                           {product.image ? (
                             <Image
-                              src={product.image}
+                              src={product.image.thumbnailUrl}
                               alt={product.name || 'Product image'}
                               width={96}
                               height={96}

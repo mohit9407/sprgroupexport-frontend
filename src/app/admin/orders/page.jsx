@@ -13,12 +13,13 @@ import { useRouter } from 'next/navigation'
 import { FaEdit, FaTrash } from 'react-icons/fa'
 import ConfirmationModal from '@/components/admin/ConfirmationModal'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchAdminOrders } from '@/features/order/orderSlice'
+import { fetchAdminOrders, deleteOrder } from '@/features/order/orderSlice'
 import { fetchOrderStatuses } from '@/features/orderStatus/orderStatusSlice'
 import {
   TanstackTable,
   useTableQueryParams,
 } from '@/components/admin/TanStackTable'
+import { toast } from '@/utils/toastConfig'
 
 const columnHelper = createColumnHelper()
 
@@ -173,8 +174,7 @@ function OrdersPageContent() {
     setIsDeleting(true)
     try {
       // Replace this with actual delete order dispatch when implemented
-      console.log('Deleting order:', selectedOrderId)
-      // await dispatch(deleteOrder(selectedOrderId)).unwrap()
+      await dispatch(deleteOrder(selectedOrderId)).unwrap()
       toast.success('Order deleted successfully')
       setShowDeleteModal(false)
     } catch (error) {
