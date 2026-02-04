@@ -4,6 +4,7 @@ import { useCart } from '@/context/CartContext'
 import ConfirmationModal from '@/components/admin/ConfirmationModal'
 import { paymentService } from '@/services/paymentService'
 import { api } from '@/lib/axios'
+import { toast } from '@/utils/toastConfig'
 
 export default function OrderDetail({
   onContinue,
@@ -20,10 +21,18 @@ export default function OrderDetail({
   // Use directCheckoutItem if available, otherwise use cart
   const displayItems = directCheckoutItem ? [directCheckoutItem] : cart
 
+  // Get shipping cost from localStorage
+  const shippingMethod =
+    typeof window !== 'undefined'
+      ? JSON.parse(localStorage.getItem('selectedShippingMethod') || '{}')
+      : {}
+  const shippingCost = Number(shippingMethod?.price) || 0
+
   // Calculate order total
-  const orderTotal = displayItems.reduce((total, item) => {
-    return total + item.price * (item.quantity || 1)
-  }, 0)
+  const orderTotal =
+    displayItems.reduce((total, item) => {
+      return total + item.price * (item.quantity || 1)
+    }, 0) + shippingCost
 
   // Fetch payment methods from API
   useEffect(() => {
@@ -70,6 +79,25 @@ export default function OrderDetail({
     }
   }
 
+  function loadRazorpayScript() {
+    return new Promise((resolve, reject) => {
+      if (typeof window === 'undefined') return reject('Window is undefined')
+
+      const existingScript = document.getElementById('razorpay-script')
+      if (existingScript) {
+        resolve(true)
+        return
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+      script.id = 'razorpay-script'
+      script.onload = () => resolve(true)
+      script.onerror = () => reject(false)
+      document.body.appendChild(script)
+    })
+  }
+
   const handleSubmit = async (e) => {
     e?.preventDefault?.() // Safely call preventDefault if e exists
 
@@ -77,9 +105,16 @@ export default function OrderDetail({
     if (paymentMethod === 'paypal') {
       try {
         // Calculate total amount
-        const totalAmount = displayItems.reduce((total, item) => {
-          return total + item.price * (item.quantity || 1)
-        }, 0)
+        const shippingMethod = JSON.parse(
+          localStorage.getItem('selectedShippingMethod') || '{}',
+        )
+
+        const shippingCost = Number(shippingMethod?.price) || 0
+
+        const totalAmount =
+          displayItems.reduce((total, item) => {
+            return total + item.price * (item.quantity || 1)
+          }, 0) + shippingCost
 
         // Find PayPal payment method ID
         const paypalMethodId = paymentMethods.find(
@@ -102,9 +137,6 @@ export default function OrderDetail({
         // Prepare order data to be stored for later creation after PayPal success
         const shippingAddressId = JSON.parse(
           localStorage.getItem('selectedShippingAddress') || 'null',
-        )
-        const shippingMethod = JSON.parse(
-          localStorage.getItem('selectedShippingMethod') || '{}',
         )
 
         console.log('Retrieved from localStorage:', {
@@ -132,9 +164,9 @@ export default function OrderDetail({
           paymentMethod: paypalMethodId, // PayPal payment method ID
           paymentStatus: '695e0471c424c92fee37713b', // Pending status
           orderStatus: '693fea47bb389dcda0118800', // Pending order status
-          subtotal: totalAmount,
-          tax: 0,
+          subtotal: totalAmount - shippingCost,
           total: totalAmount,
+          tax: 0,
           comments: orderNotes || '',
         }
 
@@ -173,7 +205,85 @@ export default function OrderDetail({
         return // Don't proceed to onContinue on error
       }
     } else {
-      console.log('❌ PayPal not selected, current method:', paymentMethod)
+      console.log('Selected current method:', paymentMethod)
+    }
+
+    if (paymentMethod === 'razorpay') {
+      try {
+        await loadRazorpayScript()
+
+        const user = JSON.parse(localStorage.getItem('user'))
+
+        const shippingMethod = JSON.parse(
+          localStorage.getItem('selectedShippingMethod') || '{}',
+        )
+
+        const shippingCost = Number(shippingMethod?.price) || 0
+
+        const totalAmount =
+          displayItems.reduce((total, item) => {
+            return total + item.price * (item.quantity || 1)
+          }, 0) + shippingCost
+
+        const response = await api.post('/payments/process/RAZORPAY', {
+          amount: totalAmount,
+          currency: 'INR',
+          userId: user._id,
+        })
+
+        const { orderId, currency, keyId } = response
+        const amountInPaise = Math.round(totalAmount * 100)
+
+        const options = {
+          key: keyId,
+          amount: amountInPaise,
+          currency,
+          order_id: orderId,
+          name: 'SPR Group Export',
+          description: 'Order Payment',
+          handler: async (razorpayResponse) => {
+            const verifyRes = await api.post('/payments/verify/razorpay', {
+              razorpay_order_id: razorpayResponse.razorpay_order_id,
+              razorpay_payment_id: razorpayResponse.razorpay_payment_id,
+              razorpay_signature: razorpayResponse.razorpay_signature,
+            })
+
+            if (verifyRes?.success) {
+              alert('Payment verification successful!')
+              toast.success('Payment successful! Order placed 🎉')
+              const selectedPaymentMethodId = paymentMethods.find(
+                (m) => m.type?.toLowerCase() === 'razorpay',
+              )?._id
+
+              onContinue(
+                {
+                  paymentMethod: selectedPaymentMethodId,
+                  paymentProviderOrderId: razorpayResponse.razorpay_payment_id,
+                  paymentStatus: '695e0495c424c92fee377141',
+                  orderNotes,
+                },
+                'placeOrder',
+              )
+            } else {
+              alert('Payment verification failed!')
+            }
+          },
+          prefill: {
+            name: user.name || '',
+            email: user.email || '',
+            contact: '8141529030',
+          },
+          theme: { color: '#c89b5a' },
+        }
+
+        const rzp = new window.Razorpay(options)
+        rzp.open()
+      } catch (error) {
+        console.error('Razorpay error:', error)
+        alert('Failed to initiate Razorpay payment.')
+      }
+
+      return
     }
 
     // Find the payment method ID based on the selected payment method type

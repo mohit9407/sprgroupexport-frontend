@@ -9,7 +9,7 @@ import {
 // Helper to get auth token
 const getAuthToken = () => {
   if (typeof window !== 'undefined') {
-    return localStorage.getItem('token')
+    return localStorage.getItem('accessToken') || localStorage.getItem('token')
   }
   return null
 }

@@ -13,6 +13,7 @@ import OrderSummary from './components/OrderSummary'
 import ShippingAddress from './components/ShippingAddress'
 import ShippingMethods from './components/ShippingMethods'
 import OrderDetail from './components/OrderDetail'
+import { toast } from '@/utils/toastConfig'
 
 export default function CheckoutPage() {
   const router = useRouter()
@@ -86,22 +87,24 @@ export default function CheckoutPage() {
   }, [dispatch])
 
   // Handle order submission
-  useEffect(() => {
-    if (success && order) {
-      clearCart()
-      dispatch(resetOrderState())
+  // useEffect(() => {
+  //   if (success && order) {
+  //     clearCart()
+  //     dispatch(resetOrderState())
 
-      // Force navigation to orders page
-      window.location.href = '/orders'
-    }
-  }, [success, order, clearCart, dispatch])
+  //     // Force navigation to orders page
+  //     window.location.href = '/orders'
+  //   }
+  // }, [success, order, clearCart, dispatch])
 
   const handleContinue = async (stepData, nextStep) => {
     // If this is the final step (place order)
     if (nextStep === 'placeOrder') {
       // Validate address is selected
       if (!formData.shippingAddress?._id) {
-        setAddressError('Please select a shipping address before placing your order')
+        setAddressError(
+          'Please select a shipping address before placing your order',
+        )
         setCurrentStep(1) // Go back to address selection step
         return
       }
@@ -120,7 +123,8 @@ export default function CheckoutPage() {
 
       try {
         // Verify user and token again before proceeding
-        const token = localStorage.getItem('token')
+        const token =
+          localStorage.getItem('accessToken') || localStorage.getItem('token')
         if (!user || !token) {
           setShowAuthModal(true)
           return
@@ -137,38 +141,46 @@ export default function CheckoutPage() {
 
         // Prepare products array based on direct checkout or cart
         const products = directCheckoutItem
-          ? [{
-            productId: directCheckoutItem.id,
-            quantity: directCheckoutItem.quantity,
-            color: directCheckoutItem.colorId,
-            size: directCheckoutItem.sizeId
-          }]
+          ? [
+              {
+                productId: directCheckoutItem.id,
+                quantity: directCheckoutItem.quantity,
+                color: directCheckoutItem.colorId,
+                size: directCheckoutItem.sizeId,
+              },
+            ]
           : cart.map((item) => ({
-            productId: item.id,
-            quantity: item.quantity,
-            color: item.colorId,
-            size: item.sizeId
-          }));
+              productId: item.id,
+              quantity: item.quantity,
+              color: item.colorId,
+              size: item.sizeId,
+            }))
 
-        // Calculate subtotal based on displayItems
-        const subtotal = displayItems.reduce(
+        // Calculate subtotal based on directCheckoutItem or cart
+        const displayItemsForSubtotal = directCheckoutItem
+          ? [directCheckoutItem]
+          : cart
+        const subtotal = displayItemsForSubtotal.reduce(
           (sum, item) => sum + item.price * item.quantity,
           0,
         )
 
         // Prepare order data
+        const shippingCost = Number(formData.shippingMethod?.price || 0)
+
         const orderData = {
           user: user?._id,
           shippingMethod: formData.shippingMethod?._id,
-          shippingCost: formData.shippingMethod?.price || 0,
+          shippingCost,
           shippingAddressId: formData.shippingAddress._id,
           products: products,
           paymentMethod: stepData.paymentMethod, // Use payment method from OrderDetail instead of formData
-          paymentStatus: '695e0471c424c92fee37713b',
+          paymentStatus: stepData.paymentStatus || '695e0471c424c92fee37713b',
+          paymentProviderOrderId: stepData.paymentProviderOrderId || null,
           orderStatus: pendingStatus._id,
           subtotal: subtotal,
           tax: 0,
-          total: subtotal + (formData.shippingMethod?.price || 0),
+          total: subtotal + shippingCost,
           comments: stepData.orderNotes || '',
         }
 
@@ -187,6 +199,20 @@ export default function CheckoutPage() {
             const productId = error.match(/product\s+(\w+)$/i)?.[1]
             setOutOfStockError(productId || 'one or more products')
           }
+        }
+
+        if (createOrder.fulfilled.match(result)) {
+          console.log('Order created successfully:', result.payload)
+
+          toast.success('Order created successfully! 🎉')
+
+          clearCart()
+
+          // ⏳ wait for toast to mount
+          setTimeout(() => {
+            dispatch(resetOrderState())
+            router.push('/orders')
+          }, 1200)
         }
       } catch (error) {
         if (error?.response?.status === 401) {
@@ -223,10 +249,6 @@ export default function CheckoutPage() {
           'selectedShippingMethod',
           JSON.stringify(stepData.shippingMethod),
         )
-        console.log(
-          'Shipping method stored in localStorage:',
-          stepData.shippingMethod,
-        )
       }
 
       return updatedFormData
@@ -254,12 +276,12 @@ export default function CheckoutPage() {
                 {addressError}
               </div>
             )}
-            <ShippingAddress 
+            <ShippingAddress
               onContinue={(data) => {
                 setAddressError('')
                 handleContinue(data, 2)
-              }} 
-              initialData={formData.shippingAddress} 
+              }}
+              initialData={formData.shippingAddress}
             />
           </div>
         )
@@ -280,6 +302,7 @@ export default function CheckoutPage() {
             }}
             paymentMethod={formData.paymentMethod}
             directCheckoutItem={directCheckoutItem}
+            shippingMethod={formData.shippingMethod}
           />
         )
       default:
@@ -303,7 +326,7 @@ export default function CheckoutPage() {
   const orderTotal =
     displayItems.reduce((total, item) => {
       return total + item.price * item.quantity
-    }, 0) + (formData.shippingMethod?.price || 0)
+    }, 0) + Number(formData.shippingMethod?.price || 0)
 
   return (
     <div className="min-h-screen bg-white">
