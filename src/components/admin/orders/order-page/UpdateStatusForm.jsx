@@ -39,7 +39,7 @@ const StatusUpdateForm = ({
           >
             {statuses.map((statusItem) => (
               <option key={statusItem._id} value={statusItem._id}>
-                {statusItem.orderStatus}
+                {statusItem.name}
               </option>
             ))}
           </select>

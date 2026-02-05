@@ -8,13 +8,41 @@ import Image from 'next/image'
 import { FiHeart, FiShoppingBag, FiArrowLeft, FiLoader } from 'react-icons/fi'
 import { toast } from '@/utils/toastConfig'
 import { useAuth } from '@/context/AuthContext'
+import { useEffect, useState } from 'react'
 
 export default function WishlistPage() {
-  const { wishlist, removeFromWishlist } = useWishlist()
+  const { wishlist, removeFromWishlist, wishlistLoading, getWishlist } =
+    useWishlist()
   const { addToCart } = useCart()
-  const { isAuthenticated } = useAuth()
+  const { loading: authLoading } = useAuth()
   const router = useRouter()
-  const loading = !isAuthenticated // Show loading while auth state is being checked
+
+  const getImageSrc = (image) => {
+    if (!image) return '/placeholder-product.jpg'
+    if (typeof image === 'string') return image
+    return (
+      image.thumbnailUrl ||
+      image.originalUrl ||
+      image.mediumUrl ||
+      image.largeUrl ||
+      '/placeholder-product.jpg'
+    )
+  }
+
+  const [showLoader, setShowLoader] = useState(true)
+
+  useEffect(() => {
+    if (!authLoading) {
+      getWishlist()
+    }
+  }, [authLoading, getWishlist])
+
+  useEffect(() => {
+    if (!authLoading && !wishlistLoading) {
+      const timer = setTimeout(() => setShowLoader(false), 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [authLoading, wishlistLoading])
 
   const handleAddToCart = (product) => {
     addToCart(product, 1)
@@ -29,6 +57,17 @@ export default function WishlistPage() {
       console.error('Failed to remove from wishlist:', error)
       toast.error('Failed to remove from wishlist')
     }
+  }
+
+  if (authLoading || showLoader) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center space-y-3">
+          <FiLoader className="h-8 w-8 animate-spin text-[#BA8B4E]" />
+          <p className="text-sm text-gray-600">Loading wishlist...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -72,8 +111,8 @@ export default function WishlistPage() {
               >
                 <div className="relative w-full aspect-square overflow-hidden rounded-lg bg-gray-50">
                   <Image
-                    src={product.image || '/placeholder-product.jpg'}
-                    alt={product.name}
+                    src={getImageSrc(product.image)}
+                    alt={product.name || 'Product'}
                     width={300}
                     height={300}
                     className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"

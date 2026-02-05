@@ -27,6 +27,8 @@ export function WishlistProvider({ children }) {
   const [authModalMode, setAuthModalMode] = useState('email') // 'email' or 'otp'
   const [pendingProduct, setPendingProduct] = useState(null)
 
+  const [wishlistLoading, setWishlistLoading] = useState(true)
+
   // Initialize local wishlist from localStorage or empty array
   const [localWishlist, setLocalWishlist] = useState(() => {
     if (typeof window === 'undefined') return []
@@ -93,19 +95,6 @@ export function WishlistProvider({ children }) {
 
     return uniqueMerged
   }, [user?.wishlist, allProducts])
-
-  // Save to localStorage whenever localWishlist changes
-  useEffect(() => {
-    try {
-      if (localWishlist.length > 0) {
-        localStorage.setItem('wishlist', JSON.stringify(localWishlist))
-      } else {
-        localStorage.removeItem('wishlist')
-      }
-    } catch (e) {
-      console.error('Failed to update wishlist in localStorage', e)
-    }
-  }, [localWishlist])
 
   // Sync with server when authenticated
   useEffect(() => {
@@ -176,6 +165,44 @@ export function WishlistProvider({ children }) {
       return false
     }
   }
+
+  const getWishlist = useCallback(async () => {
+    try {
+      setWishlistLoading(true)
+      const response = await api.get('/product/getWishlist')
+
+      // Transform the response data to match the expected format
+      const wishlistProducts = response.data.map((item) => ({
+        id: item.product._id,
+        name: item.product.productName || 'Product',
+        price: item.product.price || 0,
+        image:
+          item.product.image?.originalUrl ||
+          item.product.image ||
+          '/placeholder-product.jpg',
+        quantity: item.quantity,
+        ...item.product,
+      }))
+
+      setLocalWishlist(wishlistProducts)
+      return wishlistProducts
+    } catch (error) {
+      console.error('Error fetching wishlist:', error)
+      // On error, try to use cached data from localStorage
+      try {
+        const saved = localStorage.getItem('wishlist')
+        const cachedWishlist = saved ? JSON.parse(saved) : []
+        setLocalWishlist(cachedWishlist)
+        return cachedWishlist
+      } catch (e) {
+        console.error('Error loading cached wishlist:', e)
+        setLocalWishlist([])
+        return []
+      }
+    } finally {
+      setWishlistLoading(false)
+    }
+  }, [])
 
   const removeFromWishlist = async (productId) => {
     try {
@@ -266,6 +293,17 @@ export function WishlistProvider({ children }) {
     setAuthModalMode('phone')
   }
 
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setWishlistLoading(false)
+      return
+    }
+
+    if (isAuthenticated) {
+      getWishlist()
+    }
+  }, [isAuthenticated, getWishlist])
+
   // Calculate wishlist count
   const wishlistCount = wishlist.length
 
@@ -275,6 +313,7 @@ export function WishlistProvider({ children }) {
       wishlistCount,
       addToWishlist,
       removeFromWishlist,
+      getWishlist,
       isInWishlist: (productId) =>
         localWishlist.some((item) => item.id === productId),
       showAuthModal,
@@ -283,6 +322,7 @@ export function WishlistProvider({ children }) {
       closeAuthModal,
       authModalMode,
       setAuthModalMode,
+      wishlistLoading,
     }),
     [
       wishlist,
@@ -291,6 +331,7 @@ export function WishlistProvider({ children }) {
       authModalMode,
       openAuthModal,
       closeAuthModal,
+      wishlistLoading,
     ],
   )
 

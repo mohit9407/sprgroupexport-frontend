@@ -110,6 +110,7 @@ export const routeMeta = [
       '/admin/inventory',
       '/admin/bulk-upload',
       '/admin/reviews',
+      '/admin/gold',
     ],
   },
   {
@@ -194,6 +195,23 @@ export const routeMeta = [
     label: 'Reviews',
     parent: '/admin',
     sidebar: true,
+    icon: FaRegGrinStars,
+  },
+  {
+    key: 'gold',
+    path: '/admin/gold',
+    label: 'Gold Price',
+    parent: '/admin',
+    sidebar: true,
+    icon: FaRegGrinStars,
+  },
+  {
+    key: 'add-gold',
+    path: '/admin/gold/add',
+    label: 'Add Gold Price',
+    description: 'Add Gold Price...',
+    parent: '/admin/gold',
+    sidebar: false,
     icon: FaRegGrinStars,
   },
 

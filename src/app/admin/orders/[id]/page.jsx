@@ -14,6 +14,7 @@ import CustomerInformation from '@/components/admin/orders/order-page/CustomerIn
 import OrderItems from '@/components/admin/orders/order-page/OrderItems'
 import StatusUpdateForm from '@/components/admin/orders/order-page/UpdateStatusForm'
 import StatusHistory from '@/components/admin/orders/order-page/StatusHistory'
+import { FiCopy } from 'react-icons/fi'
 
 export default function OrderDetailPage() {
   const { id } = useParams()
@@ -290,10 +291,28 @@ export default function OrderDetailPage() {
     )
   }
 
+  const handleCopyOrderId = () => {
+    if (order && order?.orderId) {
+      navigator.clipboard.writeText(order.orderId)
+      toast.success('Order ID copied to clipboard')
+    }
+  }
+
+  const paymentMethod = order.paymentMethod?.name || order.paymentMethod
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Order #{order.orderId}</h1>
+        <div className="flex items-center space-x-2">
+          <h1 className="text-2xl font-bold">Order #{order.orderId}</h1>
+          <button
+            onClick={handleCopyOrderId}
+            className="p-1 rounded hover:bg-gray-200 transition-colors"
+            title="Copy Order ID"
+          >
+            <FiCopy className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
         <div className="flex space-x-2">
           <button
             onClick={() => window.print()}
@@ -322,6 +341,7 @@ export default function OrderDetailPage() {
           <CustomerInformation
             order={order}
             shippingAddress={shippingAddress}
+            paymentMethod={paymentMethod}
           />
           <OrderItems
             loadingDetails={loadingDetails}
