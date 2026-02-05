@@ -22,6 +22,8 @@ export default function CartPage() {
   const [showClearCartModal, setShowClearCartModal] = useState(false)
   const [isClient, setIsClient] = useState(false)
   const [updatingItemId, setUpdatingItemId] = useState(null)
+  const [error, setError] = useState(null)
+  const [localQuantities, setLocalQuantities] = useState({})
 
   useEffect(() => {
     setIsClient(true)
@@ -237,13 +239,31 @@ export default function CartPage() {
                       <input
                         type="number"
                         min="1"
-                        value={item.quantity || 1}
-                        onChange={(e) =>
-                          handleQuantityChange(
-                            item.id,
-                            parseInt(e.target.value) || 1,
-                          )
-                        }
+                        value={localQuantities[item.id] !== undefined ? localQuantities[item.id] : (item.quantity || 1)}
+                        onChange={(e) => {
+                          const newValue = parseInt(e.target.value) || 1;
+                          setLocalQuantities(prev => ({
+                            ...prev,
+                            [item.id]: newValue
+                          }));
+                        }}
+                        onBlur={(e) => {
+                          const newValue = parseInt(e.target.value) || 1;
+                          if (newValue !== (item.quantity || 1)) {
+                            handleQuantityChange(item.id, newValue);
+                          }
+                          // Clear the local quantity after blur to sync with server
+                          setLocalQuantities(prev => {
+                            const newState = {...prev};
+                            delete newState[item.id];
+                            return newState;
+                          });
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.target.blur(); // Trigger blur to save when Enter is pressed
+                          }
+                        }}
                         disabled={updatingItemId === item.id}
                         className={`w-12 h-8 border-t border-b border-gray-300 text-center ${
                           updatingItemId === item.id ? 'bg-gray-50' : ''

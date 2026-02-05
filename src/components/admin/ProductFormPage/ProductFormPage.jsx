@@ -194,16 +194,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
   // Function to handle gold price calculation
   const handleGoldPriceCalculation = useCallback(
     async (carat, gram) => {
-      if (!carat || !gram) return
-
-      // Skip calculation if values haven't changed in edit mode
-      if (
-        isEditMode &&
-        defaultValues?.carat === carat &&
-        defaultValues?.gram === parseFloat(gram)
-      ) {
-        return
-      }
+      if (!carat || !gram || gram <= 0) return
 
       try {
         await dispatch(calculateGoldPrice({ carat, gram })).unwrap()
@@ -212,22 +203,8 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
         toast.error('Failed to calculate gold price')
       }
     },
-    [dispatch, isEditMode, defaultValues],
+    [dispatch]
   )
-
-  // Watch for changes in carat and gram to calculate price
-  useEffect(() => {
-    const subscription = watch((value, { name }) => {
-      if ((name === 'carat' || name === 'gram') && value.carat && value.gram) {
-        // Skip if this is the initial render in edit mode
-        if (isEditMode && isInitialMount.current) {
-          return
-        }
-        handleGoldPriceCalculation(value.carat, value.gram)
-      }
-    })
-    return () => subscription.unsubscribe()
-  }, [watch, handleGoldPriceCalculation, isEditMode])
 
   useEffect(() => {
     if (selectedCategory) {
@@ -682,6 +659,13 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                   required={isGoldCategory}
                   fullWidth
                   disabled={caratLoading || caratData === null}
+                  onBlur={async (e) => {
+                    const caratValue = e.target.value;
+                    const gramValue = parseFloat(watch('gram') || 0);
+                    if (caratValue && gramValue > 0) {
+                      await handleGoldPriceCalculation(caratValue, gramValue);
+                    }
+                  }}
                   onChange={(e) => {
                     const carat = caratData?.find(
                       (item) => item.carat === e.target.value,
@@ -691,11 +675,8 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                         setSelectedCarat({
                           carat: carat.carat,
                           pricePerGram: carat.pricePerGram,
-                        }),
+                        })
                       )
-                      // Update gold price when carat changes
-                      const gram = parseFloat(watch('gram') || 0)
-                      setGoldPrice(gram * carat.pricePerGram)
                     }
                     setValue('carat', e.target.value, { shouldValidate: true })
                   }}
@@ -711,25 +692,16 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                   placeholder="0.00"
                   required={isGoldCategory}
                   fullWidth
-                  onChange={(e) => {
-                    const gram = parseFloat(e.target.value) || 0
-                    setValue('gram', gram, { shouldValidate: true })
-
-                    // Update gold price when gram change
-                    const selectedCaratValue = watch('carat')
-                    const carat = caratData?.find(
-                      (item) => item.carat === selectedCaratValue,
-                    )
-                    if (carat) {
-                      const newGoldPrice = gram * carat.pricePerGram
-                      setGoldPrice(newGoldPrice)
-
-                      // Update total price (gold price + extra cost)
-                      const extraCost = parseFloat(watch('extraCost') || 0)
-                      setValue('price', newGoldPrice + extraCost, {
-                        shouldValidate: true,
-                      })
+                  onBlur={async (e) => {
+                    const gramValue = parseFloat(e.target.value) || 0;
+                    const caratValue = watch('carat');
+                    if (caratValue && gramValue > 0) {
+                      await handleGoldPriceCalculation(caratValue, gramValue);
                     }
+                  }}
+                  onChange={(e) => {
+                    const gram = parseFloat(e.target.value) || 0;
+                    setValue('gram', gram, { shouldValidate: true });
                   }}
                 />
 
@@ -774,13 +746,13 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                   fullWidth
                   startAdornment="$"
                   onChange={(e) => {
-                    const userExtra = parseFloat(e.target.value) || 0
-                    setValue('userExtra', userExtra, { shouldValidate: true })
+                    const userExtra = parseFloat(e.target.value) || 0;
+                    setValue('userExtra', userExtra, { shouldValidate: true });
                     // Update total price (gold price + extra cost)
-                    const goldPrice = calculatedPrice?.totalPrice || 0
+                    const goldPrice = calculatedPrice?.totalPrice || 0;
                     setValue('price', goldPrice + userExtra, {
                       shouldValidate: true,
-                    })
+                    });
                   }}
                 />
               </>

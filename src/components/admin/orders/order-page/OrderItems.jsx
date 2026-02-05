@@ -22,7 +22,7 @@ const OrderItems = ({ loadingDetails, products, order }) => (
           <div key={product._id || product.orderItemId} className="p-4 flex">
             <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-md border border-gray-200 relative">
               <Image
-                src={product.images?.[0] || '/images/placeholder-product.png'}
+                src={product.images?.[0]?.thumbnailUrl || '/images/placeholder-product.png'}
                 alt={product.name}
                 width={80}
                 height={80}

@@ -35,23 +35,28 @@ export default function ShippingAddress({ onContinue, initialData = {} }) {
 
   // Set the first address as selected by default when addresses are loaded
   useEffect(() => {
-    let timer
     if (addresses.length > 0) {
+      let addressToSelect = null;
+      
       // If we have initialData with an ID, use that
       if (initialData?._id) {
-        timer = setTimeout(() => setSelectedAddressId(initialData._id), 0)
-      }
+        addressToSelect = addresses.find(addr => addr._id === initialData._id);
+      } 
       // Otherwise, if no address is selected yet, use the default or first address
       else if (!selectedAddressId) {
-        const defaultAddress =
-          addresses.find((addr) => addr.isDefault) || addresses[0]
-        if (defaultAddress) {
-          timer = setTimeout(() => setSelectedAddressId(defaultAddress._id), 0)
-        }
+        addressToSelect = addresses.find(addr => addr.isDefault) || addresses[0];
+      }
+      
+      // Only update if we found an address and it's different from the currently selected one
+      if (addressToSelect && (!selectedAddressId || addressToSelect._id !== selectedAddressId)) {
+        setSelectedAddressId(addressToSelect._id);
+        // Notify parent component about the selected address
+        onContinue({ shippingAddress: addressToSelect }, null, true);
       }
     }
-    return () => clearTimeout(timer)
-  }, [addresses, initialData, selectedAddressId])
+    // We're intentionally not including onContinue in the deps array to prevent infinite loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addresses.length, initialData?._id, selectedAddressId])
 
   const handleSetDefault = async (addressId, e) => {
     e.stopPropagation()
@@ -121,16 +126,16 @@ export default function ShippingAddress({ onContinue, initialData = {} }) {
 
   const handleSubmit = () => {
     if (!selectedAddressId) {
-      setError('Please select a shipping address before continuing')
+      setError('Please select a shipping address')
       return
     }
 
     const selectedAddress = addresses.find(
-      (addr) => addr._id === selectedAddressId,
+      (address) => address._id === selectedAddressId,
     )
+
     if (selectedAddress) {
-      setError('')
-      onContinue({ shippingAddress: selectedAddress })
+      onContinue({ shippingAddress: selectedAddress }, 2) // Pass the next step (2)
     }
   }
 

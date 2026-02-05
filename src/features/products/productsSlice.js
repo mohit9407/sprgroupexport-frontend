@@ -6,6 +6,7 @@ import {
   updateProduct as updateProductService,
   deleteProduct as deleteProductService,
 } from './productService'
+import { sortByCreatedAtDesc } from '@/utils/sortUtils'
 
 // Async thunk for fetching products with filters
 export const fetchProducts = createAsyncThunk(
@@ -220,7 +221,7 @@ const productsSlice = createSlice({
 
 // Selectors
 export const selectAllProducts = (state) => ({
-  data: state.products.items,
+  data: sortByCreatedAtDesc(state.products.items),
   pagination: {
     totalItems: state.products.filters.totalItems,
     totalPages: state.products.filters.totalPages,

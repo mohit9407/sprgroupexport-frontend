@@ -46,7 +46,9 @@ export function AdminInputRow({
           value={value}
           defaultValue={defaultValue}
           onChange={onChange}
-          onBlur={onBlur}
+          onBlur={(e) => {
+            onBlur?.(e);
+          }}
         />
 
         {(error || helpText) && (
@@ -73,6 +75,7 @@ export function FormAdminInputRow({
   fullWidth,
   readOnly = false,
   touchedField = false,
+  onBlur,
   ...rest
 }) {
   const { control } = useFormContext()
@@ -109,7 +112,10 @@ export function FormAdminInputRow({
           field.onChange(e)
         }
       }}
-      onBlur={field.onBlur}
+      onBlur={(e) => {
+        field.onBlur(e)
+        onBlur?.(e)
+      }}
     />
   )
 }

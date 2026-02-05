@@ -3,11 +3,11 @@
 import ButtonLoader from '@/components/admin/ButtonLoader'
 import { CustomerFormPage } from '@/components/admin/CustomerFormPage'
 import { getCustomer } from '@/features/customers/customersSlice'
-import React, { use, useEffect } from 'react'
+import React, { use, useEffect, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
 export default function EditCustomerPage({ params }) {
-  const { _id } = use(params)
+  const { _id } = params;
   const dispatch = useDispatch()
   const { data, isLoading } = useSelector(
     (state) => state.customers.getCustomer,

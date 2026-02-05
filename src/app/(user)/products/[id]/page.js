@@ -31,7 +31,7 @@ export default function ProductDetails() {
   const router = useRouter()
   const params = useParams()
   const productId = params?.id
-  const { addToCart } = useCart()
+  const { addToCart, addDirectCheckoutItem } = useCart()
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
   const { user } = useAuth()
 
@@ -188,7 +188,7 @@ export default function ProductDetails() {
 
     const cartItem = {
       id: product._id,
-      name: product.name,
+      name: product.name || product.productName,
       price: product.price,
       image: product.image,
       color: color?.value || '',
@@ -197,20 +197,11 @@ export default function ProductDetails() {
       sizeId: selectedSize,
       quantity: quantity,
       inStock: true,
-      // Add a flag to indicate this is a direct checkout item
       isDirectCheckout: true
     }
 
-    // Clear any existing direct checkout items first
-    sessionStorage.removeItem('directCheckoutItem')
-
-    // Store the item in session storage for checkout
-    sessionStorage.setItem('directCheckoutItem', JSON.stringify(cartItem))
-
-    // Clear the cart from localStorage to prevent any conflicts
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('cart')
-    }
+    // Add to direct checkout
+    addDirectCheckoutItem(cartItem)
 
     // Redirect to checkout page
     router.push('/checkout')

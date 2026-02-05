@@ -38,25 +38,50 @@ export default function ProfilePage() {
   const [imagePreview, setImagePreview] = useState('')
   const fileInputRef = useRef(null)
 
+  const [isClient, setIsClient] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Set client-side flag on mount
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
   // Load user data when component mounts
   useEffect(() => {
-    // Get user ID from local storage
-    const storedUser =
-      typeof window !== 'undefined' ? localStorage.getItem('user') : null
-    const userId = storedUser ? JSON.parse(storedUser)?.id : null
+    if (!isClient) return
 
-    if (userId) {
-      dispatch(getUserById(userId))
-        .then((result) => {})
-        .catch((error) => {
-          console.error('Error fetching user:', error) // Debug log
-        })
-    } else {
-      console.error('No user ID found in local storage')
-      // Redirect to login if no user ID found
+    // Get user ID from local storage
+    let userId = null
+    try {
+      const storedUser = localStorage.getItem('user')
+      const userObj = storedUser ? JSON.parse(storedUser) : null
+      userId = userObj?._id || userObj?.id || null
+    } catch (error) {
+      console.error('Error accessing localStorage:', error)
+      setIsLoading(false)
       router.push('/login')
+      return
     }
-  }, [dispatch, router])
+
+    if (!userId) {
+      console.warn('No user ID found in local storage')
+      setIsLoading(false)
+      router.push('/login')
+      return
+    }
+
+    setIsLoading(true)
+    dispatch(getUserById(userId))
+      .unwrap()
+      .catch((error) => {
+        console.error('Failed to fetch user data:', error)
+        toast.error(error)
+        router.push('/login')
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
+  }, [dispatch, router, isClient])
 
   // Update form data when user data is loaded
   useEffect(() => {

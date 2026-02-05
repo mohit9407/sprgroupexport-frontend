@@ -6,6 +6,7 @@ import {
   updateOrderStatus as updateOrderStatusApi,
   deleteOrder as deleteOrderApi,
 } from '@/features/order/orderService'
+import { sortByCreatedAtDesc } from '@/utils/sortUtils';
 
 // Helper to get auth token
 const getAuthToken = () => {
@@ -42,8 +43,8 @@ export const fetchUserOrders = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await getUserOrders()
-      // The orders are in response.data
-      return response.data || []
+      // Sort orders by creation date (newest first)
+      return sortByCreatedAtDesc(response.data || [])
     } catch (error) {
       console.error('Error fetching user orders:', error)
       return rejectWithValue(
@@ -68,8 +69,11 @@ export const fetchAdminOrders = createAsyncThunk(
         searchValue,
         filterBy,
       )
+      // Sort orders by creation date (oldest first)
+      const sortedOrders = sortByCreatedAtDesc(response.data.orders || [])
+      
       return {
-        orders: response.data.orders || [],
+        orders: sortedOrders,
         total: response.pagination.total || 0,
         page: response.pagination.page || 1,
         totalPages: response.pagination.totalPages || 1,

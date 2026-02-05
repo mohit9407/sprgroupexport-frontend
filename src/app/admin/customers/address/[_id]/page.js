@@ -102,7 +102,7 @@ export const addressColumns = ({ onEdit, onDelete }) => [
 ]
 
 export const CustomerAddressPage = ({ params }) => {
-  const { _id: userId } = use(params)
+  const { _id: userId } = params
   const dispatch = useDispatch()
   const [showModal, setShowModal] = useState(false)
   const [openDelete, setOpenDelete] = useState(false)

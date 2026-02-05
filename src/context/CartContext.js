@@ -9,21 +9,26 @@ const CartContext = createContext({})
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([])
   const [cartCount, setCartCount] = useState(0)
-  const [isLoading, setIsLoading] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [directCheckoutItem, setDirectCheckoutItem] = useState(null)
 
   // Transform API response to cart format
   const transformCartData = (response) => {
-    return Array.isArray(response) ? response.map(item => ({
-      id: item.product._id,
-      _id: item.product._id,
-      name: item.product.productName,
-      price: item.product.price,
-      image: item.product.image,
-      brand: item.product.brand || '',
-      quantity: item.quantity, // Default quantity
-      product: item.product
-    })) : []
+    if (!Array.isArray(response)) return [];
+    
+    return response
+      .filter(item => item?.product?._id) // Filter out items with missing product or product._id
+      .map(item => ({
+        id: item.product._id,
+        _id: item.product._id,
+        name: item.product.productName,
+        price: item.product.price,
+        image: item.product.image,
+        brand: item.product.brand || '',
+        quantity: item.quantity,
+        product: item.product
+      }));
   }
 
   // Update cart count
@@ -225,20 +230,36 @@ export function CartProvider({ children }) {
     }
   }, [user?.accessToken])
 
+  // Add direct checkout item
+  const addDirectCheckoutItem = useCallback((item) => {
+    setDirectCheckoutItem({
+      ...item,
+      isDirectCheckout: true
+    });
+  }, []);
+
+  // Clear direct checkout item
+  const clearDirectCheckoutItem = useCallback(() => {
+    setDirectCheckoutItem(null);
+  }, []);
+
   return (
     <CartContext.Provider
       value={{
         cart,
         cartCount,
+        removeAllFromCart,
         isLoading,
         error,
+        directCheckoutItem,
         addToCart,
         removeFromCart,
-        removeAllFromCart,
         updateQuantity,
         clearCart,
+        refreshCart: fetchCart,
+        addDirectCheckoutItem,
+        clearDirectCheckoutItem,
         getCartTotal,
-        refreshCart: fetchCart // Add refreshCart to manually refresh cart data
       }}
     >
       {children}

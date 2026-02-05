@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -10,7 +10,17 @@ export default function OrderSummary({
   onContinue,
   isLoading = false,
   error = null,
+  paymentMethod = '',
 }) {
+  const [showError, setShowError] = useState(false);
+  
+  // Clear error when payment method is selected
+  useEffect(() => {
+    if (paymentMethod) {
+      setShowError(false);
+    }
+  }, [paymentMethod]);
+  
   // Calculate subtotal from cart items
   const subtotal = cartItems.reduce((sum, item) => {
     return sum + item.price * item.quantity
@@ -30,13 +40,9 @@ export default function OrderSummary({
     { label: 'Discount', value: '₹0' },
     {
       label: 'Shipping Cost',
-      value:
-        shippingCost > 0
-          ? `₹${Number(shippingCost).toLocaleString('en-IN')}`
-          : 'FREE',
+      value: shippingCost > 0 ? `₹${Number(shippingCost).toLocaleString('en-IN')}` : 'FREE',
     },
   ]
-
   return (
     <div className="border border-gray-200 p-6 rounded-lg h-fit sticky top-6">
       <h2 className="text-lg font-bold uppercase tracking-wide mb-6">
@@ -106,6 +112,12 @@ export default function OrderSummary({
             {error}
           </div>
         )}
+        {showError && (
+          <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700">
+            <p className="font-medium">Payment Method Required</p>
+            <p className="text-sm">Please select a payment method to continue with your order.</p>
+          </div>
+        )}
 
         {currentStep < 3 ? (
           <button
@@ -119,7 +131,14 @@ export default function OrderSummary({
         ) : (
           <button
             type="button"
-            onClick={() => onContinue({}, 'placeOrder')}
+            onClick={() => {
+              if (!paymentMethod) {
+                setShowError(true);
+                return;
+              }
+              setShowError(false);
+              onContinue({}, 'placeOrder');
+            }}
             className="w-full bg-[#c89b5a] text-white py-3 px-4 rounded-md hover:bg-[#b38950]
              transition-colors font-medium uppercase text-sm tracking-wider disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             disabled={isLoading}

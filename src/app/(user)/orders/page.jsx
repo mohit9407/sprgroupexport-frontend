@@ -6,15 +6,24 @@ import { useDispatch, useSelector } from 'react-redux'
 import { fetchUserOrders, resetOrderState } from '@/features/order/orderSlice'
 import { toast } from '@/utils/toastConfig'
 import Link from 'next/link'
-import { FiShoppingBag, FiExternalLink, FiCopy } from 'react-icons/fi'
+import { FiShoppingBag, FiExternalLink, FiCopy, FiChevronDown, FiChevronUp, FiPackage, FiTag, FiDollarSign } from 'react-icons/fi'
 import Image from 'next/image'
+import { motion, AnimatePresence } from 'framer-motion'
 import { fetchProducts } from '@/features/products/productsSlice'
 import { fetchAllCategories } from '@/features/categories/categoriesSlice'
 
 export default function OrdersPage() {
   const [isClient, setIsClient] = useState(false)
+  const [expandedOrders, setExpandedOrders] = useState({})
   const dispatch = useDispatch()
   const router = useRouter()
+
+  const toggleOrderExpansion = (orderId) => {
+    setExpandedOrders(prev => ({
+      ...prev,
+      [orderId]: !prev[orderId]
+    }))
+  }
 
   const {
     userOrders = [],
@@ -73,12 +82,12 @@ export default function OrdersPage() {
     const date = new Date(dateString)
     return isClient
       ? date.toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        })
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
       : date.toISOString().split('T')[0] // Fallback for SSR
   }
 
@@ -158,13 +167,46 @@ export default function OrdersPage() {
         {orders.length > 0 ? (
           <div className="space-y-6">
             {orders.map((order) => (
-              <div
+              <motion.div
                 key={order._id}
-                className="bg-white rounded-lg shadow overflow-hidden border border-gray-200"
+                className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow duration-300"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
               >
                 {/* Order Header */}
-                <div className="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white flex flex-col sm:flex-row sm:items-center sm:justify-between">
                   <div className="mb-2 sm:mb-0">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 mt-1">
+                        <h2 className="text-gray-700 font-medium text-sm">
+                          ORDER PLACED
+                        </h2>
+                        <p className="text-gray-900 font-medium">
+                          {formatDate(order.createdAt)}
+                        </p>
+                        <Link
+                          href={`/orders/${order._id}`}
+                          className="inline-flex items-center text-sm font-medium text-[#BA8B4E] hover:text-[#a87d45] ml-[765px]"
+                        >
+                          View Order Details
+                          <svg
+                            className="ml-1 w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 5l7 7-7 7"
+                            />
+                          </svg>
+                        </Link>
+                      </div>
+                    </div>
                     <h3 className="text-lg font-medium text-gray-900">
                       Order{' '}
                       <span className="text-sm text-gray-600 font-mono">
@@ -172,17 +214,12 @@ export default function OrdersPage() {
                       </span>
                       <button
                         onClick={() => copyOrderId(order._id)}
-                        className="text-gray-400 hover:text-gray-600 transition-colors"
+                        className="text-gray-400 hover:text-gray-600 transition-colors ml-1"
                         title="Copy order ID"
                       >
                         <FiCopy size={14} />
                       </button>
                     </h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <p className="text-sm text-gray-500">
-                        Placed on {formatDate(order.createdAt)}
-                      </p>
-                    </div>
                   </div>
                   {/* <div className="flex items-center">
                     <span
@@ -203,149 +240,134 @@ export default function OrdersPage() {
                 </div>
 
                 {/* Order Items */}
-                <div className="divide-y divide-gray-200">
-                  {order.products?.map((item, index) => {
-                    const itemDetails = getOrderItemDetails(item)
-                    return (
-                      <div key={index} className="p-6">
-                        <div className="flex flex-col sm:flex-row">
-                          {/* Product Image */}
-                          <div className="flex-shrink-0 w-full sm:w-32 h-32 bg-gray-100 rounded-md overflow-hidden mb-4 sm:mb-0 sm:mr-6">
-                            {itemDetails.product?.image ? (
-                              <Image
-                                src={itemDetails.product.image.thumbnailUrl}
-                                alt={
-                                  itemDetails.product.name ||
-                                  `Product ${index + 1}`
-                                }
-                                width={128}
-                                height={128}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-gray-50">
-                                <FiShoppingBag className="text-gray-300 text-2xl" />
-                              </div>
-                            )}
-                          </div>
+                <div className="divide-y divide-gray-100">
+                  <AnimatePresence>
+                    {order.products?.map((item, index) => {
+                      // Only show first item by default, or all if expanded
+                      if (!expandedOrders[order._id] && index > 0) return null;
 
-                          {/* Product Details */}
-                          <div className="flex-1">
-                            <div className="flex flex-col h-full">
-                              <div className="flex-1">
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <h4 className="text-base font-medium text-gray-900">
-                                      <Link
-                                        href={`/products/${itemDetails.product?._id}`}
-                                        className="hover:text-[#BA8B4E] transition-colors"
-                                      >
-                                        {itemDetails.product?.productName ||
-                                          'Product'}
-                                      </Link>
-                                    </h4>
-                                    <p className="text-sm text-gray-500 mt-1">
-                                      SKU: {itemDetails.product?.sku}
-                                    </p>
-                                    <p className="text-sm text-gray-500">
-                                      Category: {itemDetails.product?.category}
-                                    </p>
-                                  </div>
-                                  <Link
-                                    href={`/products/${itemDetails.product?._id}`}
-                                    className="text-[#BA8B4E] hover:text-[#a87d45] text-sm flex items-center"
-                                  >
-                                    View Product{' '}
-                                    <FiExternalLink
-                                      className="ml-1"
-                                      size={14}
-                                    />
-                                  </Link>
+                      const itemDetails = getOrderItemDetails(item)
+                      return (
+                        <motion.div
+                          key={index}
+                          className="p-6 hover:bg-gray-50 transition-colors duration-200"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <div className="flex flex-col sm:flex-row group">
+                            {/* Product Image with Hover Effect */}
+                            <div className="flex-shrink-0 w-full sm:w-36 h-36 bg-gray-50 rounded-lg overflow-hidden mb-4 sm:mb-0 sm:mr-6 border border-gray-100 transition-all duration-300 group-hover:shadow-md">
+                              {itemDetails.product?.image ? (
+                                <Image
+                                  src={itemDetails.product.image.thumbnailUrl}
+                                  alt={itemDetails.product.name || `Product ${index + 1}`}
+                                  width={144}
+                                  height={144}
+                                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 text-gray-300">
+                                  <FiPackage className="text-3xl mb-2" />
+                                  <span className="text-xs">No Image</span>
                                 </div>
-
-                                <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
-                                  <div>
-                                    <span className="text-gray-500">
-                                      Quantity:
-                                    </span>{' '}
-                                    <span className="font-medium">
-                                      {itemDetails.quantity || 1}
-                                    </span>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-500">
-                                      Price:
-                                    </span>{' '}
-                                    <span className="font-medium">
-                                      ₹
-                                      {itemDetails.product.price
-                                        ? itemDetails.product.price.toFixed(2)
-                                        : '0.00'}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {index === 0 && order.products.length > 1 && (
-                                <p className="mt-3 pt-2 border-t border-gray-100 text-sm text-gray-500">
-                                  + {order.products.length - 1} more item
-                                  {order.products.length > 2 ? 's' : ''} in this
-                                  order
-                                </p>
                               )}
                             </div>
+
+                            {/* Product Details */}
+                            <div className="flex-1">
+                              <div className="flex flex-col h-full">
+                                <div className="flex-1">
+                                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
+                                    <div>
+                                      <h4 className="text-lg font-semibold text-gray-900 group-hover:text-[#BA8B4E] transition-colors">
+                                        <Link
+                                          href={`/products/${itemDetails.product?._id}`}
+                                          className="hover:underline"
+                                        >
+                                          {itemDetails.product?.productName ||
+                                            'Product'}
+                                        </Link>
+                                      </h4>
+                                      <div className="flex items-center mt-2 text-sm text-gray-500">
+                                        <FiTag className="mr-1.5" size={14} />
+                                        <span>SKU: {itemDetails.product?.sku || 'N/A'}</span>
+                                      </div>
+                                      <div className="flex items-center mt-1 text-sm text-gray-500">
+                                        <span className="inline-block w-2 h-2 rounded-full bg-green-400 mr-1.5"></span>
+                                        <span>Category: {itemDetails.product?.category || 'N/A'}</span>
+                                      </div>
+                                    </div>
+                                    <Link
+                                      href={`/products/${itemDetails.product?._id}`}
+                                      className="mt-2 sm:mt-0 inline-flex items-center px-3 py-1.5 border border-[#BA8B4E] text-[#BA8B4E] rounded-full text-xs font-medium hover:bg-[#f9f5f0] transition-colors"
+                                    >
+                                      View Product Details
+                                      <FiExternalLink className="ml-1" size={12} />
+                                    </Link>
+                                  </div>
+
+                                  <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                                    <div className="bg-gray-50 p-3 rounded-lg">
+                                      <div className="text-xs text-gray-500 mb-1">Quantity</div>
+                                      <div className="font-medium text-gray-900">
+                                        {itemDetails.quantity || 1}
+                                      </div>
+                                    </div>
+                                    <div className="bg-gray-50 p-3 rounded-lg">
+                                      <div className="text-xs text-gray-500 mb-1">Price</div>
+                                      <div className="font-medium text-gray-900 flex items-center">
+                                        <FiDollarSign size={14} className="mr-0.5" />
+                                        {itemDetails.product.price
+                                          ? itemDetails.product.price.toFixed(2)
+                                          : '0.00'}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                    )
-                  })}
+                        </motion.div>
+                      )
+                    })}
+                  </AnimatePresence>
+
+                  {/* Show more/less button for orders with multiple items */}
+                  {order.products?.length > 1 && (
+                    <div className="px-6 py-3 border-t border-gray-100 bg-gray-50">
+                      <button
+                        onClick={() => toggleOrderExpansion(order._id)}
+                        className="w-full py-2.5 px-4 bg-white border border-gray-200 rounded-lg shadow-sm text-sm font-medium text-[#BA8B4E] hover:bg-[#f9f5f0] hover:border-[#d4b78f] transition-all duration-200 flex items-center justify-center group"
+                      >
+                        {expandedOrders[order._id] ? (
+                          <>
+                            <span>Show less</span>
+                            <FiChevronUp className="ml-2 group-hover:translate-y-[-2px] transition-transform" size={16} />
+                          </>
+                        ) : (
+                          <>
+                            <span>View {order.products.length - 1} more item{order.products.length > 2 ? 's' : ''}</span>
+                            <FiChevronDown className="ml-2 group-hover:translate-y-[2px] transition-transform" size={16} />
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Order Footer */}
-                <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between">
                   <div className="mb-3 sm:mb-0">
                     {order.comments && (
                       <p className="text-sm text-gray-600">
-                        <span className="font-medium">Note:</span>{' '}
-                        {order.comments}
+                        <span className="font-medium">Note:</span> {order.comments}
                       </p>
                     )}
                   </div>
-                  <div className="flex flex-col sm:items-end">
-                    <div className="text-right">
-                      <p className="text-sm text-gray-600">
-                        Order Total:{' '}
-                        <span className="font-medium text-gray-900">
-                          ₹
-                          {typeof order.total === 'number'
-                            ? order.total.toFixed(2)
-                            : '0.00'}
-                        </span>
-                      </p>
-                    </div>
-                    <Link
-                      href={`/orders/${order._id}`}
-                      className="mt-2 inline-flex items-center text-sm font-medium text-[#BA8B4E] hover:text-[#a87d45]"
-                    >
-                      View Order Details
-                      <svg
-                        className="ml-1 w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
-                    </Link>
-                  </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         ) : (

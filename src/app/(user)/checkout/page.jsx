@@ -19,11 +19,10 @@ export default function CheckoutPage() {
   const router = useRouter()
   const dispatch = useDispatch()
   const { user } = useAuth()
-  const { cart, clearCart, addToCart } = useCart()
+  const { cart, clearCart, directCheckoutItem, clearDirectCheckoutItem } = useCart()
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [isCheckingDirectCheckout, setIsCheckingDirectCheckout] = useState(true)
   const [currentStep, setCurrentStep] = useState(1)
-  const [directCheckoutItem, setDirectCheckoutItem] = useState(null)
   const [formData, setFormData] = useState({
     shippingAddress: {},
     shippingMethod: {},
@@ -32,6 +31,7 @@ export default function CheckoutPage() {
   })
   const [outOfStockError, setOutOfStockError] = useState(null)
   const [addressError, setAddressError] = useState('')
+  const [paymentError, setPaymentError] = useState('')
 
   // Get order and order status state from Redux
   const { order, loading, error, success } = useSelector((state) => state.order)
@@ -40,49 +40,29 @@ export default function CheckoutPage() {
   // Handle direct checkout and authentication
   useEffect(() => {
     const checkAuthAndDirectCheckout = async () => {
-      if (typeof window === 'undefined') return
-
-      // Check authentication first
-      const token = localStorage.getItem('accessToken')
-      if (!user || !token) {
-        router.push('/cart')
-        return
-      }
-
-      // Check if cart is empty
-      if ((!cart || cart.length === 0) && !directCheckoutItem) {
-        router.push('/cart')
-        return
-      }
-
-      // Check for direct checkout item
-      const directCheckoutItem = sessionStorage.getItem('directCheckoutItem')
-      if (directCheckoutItem) {
-        try {
-          const item = JSON.parse(directCheckoutItem)
-          // Clear the direct checkout item from storage
-          sessionStorage.removeItem('directCheckoutItem')
-
-          // Set the direct checkout item in state
-          setDirectCheckoutItem({
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            image: item.image,
-            color: item.color,
-            colorId: item.colorId,
-            size: item.size,
-            sizeId: item.sizeId,
-            quantity: item.quantity || 1,
-            inStock: true,
-          })
-        } catch (error) {
-          console.error('Error processing direct checkout:', error)
-          router.push('/cart')
+      try {
+        if (typeof window === 'undefined') {
+          return
         }
-      }
 
-      setIsCheckingDirectCheckout(false)
+        // Check authentication first
+        const token = localStorage.getItem('accessToken')
+        if (!user || !token) {
+          router.push('/cart')
+          return
+        }
+        
+        // If no direct checkout item and cart is empty, redirect to cart
+        if (!directCheckoutItem && (!cart || cart.length === 0)) {
+          router.push('/cart')
+          return
+        }
+      } catch (error) {
+        console.error('Error in checkout flow:', error)
+        router.push('/cart')
+      } finally {
+        setIsCheckingDirectCheckout(false)
+      }
     }
 
     checkAuthAndDirectCheckout()
@@ -142,9 +122,8 @@ export default function CheckoutPage() {
         ...formData,
         ...stepData,
       }
-
       // Validate address is selected
-      if (!formData.shippingAddress.shippingAddress?._id) {
+      if (!currentFormData?.shippingAddress || !currentFormData.shippingAddress._id) {
         setAddressError(
           'Please select a shipping address before placing your order',
         )
@@ -153,15 +132,15 @@ export default function CheckoutPage() {
       }
 
       // Validate payment method is selected
-      if (!stepData.paymentMethod) {
-        setAddressError(
-          'Please select a payment method before placing your order',
-        )
+      if (!currentFormData.paymentMethod) {
+        setPaymentError('Please select a payment method before placing your order')
         setCurrentStep(3) // Go back to payment method selection step
         return
       }
 
-      setAddressError('') // Clear any previous address errors
+      // Clear any previous errors
+      setAddressError('')
+      setPaymentError('')
 
       // Check if statuses are loaded
       if (!statuses || statuses.length === 0) {
@@ -173,7 +152,6 @@ export default function CheckoutPage() {
           return
         }
       }
-
       try {
         // Verify user and token again before proceeding
         const token =
@@ -195,19 +173,19 @@ export default function CheckoutPage() {
         // Prepare products array based on direct checkout or cart
         const products = directCheckoutItem
           ? [
-              {
-                productId: directCheckoutItem.id,
-                quantity: directCheckoutItem.quantity,
-                color: directCheckoutItem.colorId,
-                size: directCheckoutItem.sizeId,
-              },
-            ]
+            {
+              productId: directCheckoutItem.id,
+              quantity: directCheckoutItem.quantity,
+              color: directCheckoutItem.colorId,
+              size: directCheckoutItem.sizeId,
+            },
+          ]
           : cart.map((item) => ({
-              productId: item.id,
-              quantity: item.quantity,
-              color: item.colorId,
-              size: item.sizeId,
-            }))
+            productId: item.id,
+            quantity: item.quantity,
+            color: item.colorId,
+            size: item.sizeId,
+          }))
 
         // Calculate subtotal based on directCheckoutItem or cart
         const displayItemsForSubtotal = directCheckoutItem
@@ -225,7 +203,7 @@ export default function CheckoutPage() {
           user: user?._id,
           shippingMethod: formData.shippingMethod?._id,
           shippingCost: formData.shippingMethod?.price || 0,
-          shippingAddressId: formData.shippingAddress.shippingAddress?._id,
+          shippingAddressId: formData.shippingAddress?._id,
           products: products,
           paymentMethod: stepData.paymentMethod, // Use payment method from OrderDetail instead of formData
           paymentStatus: stepData.paymentStatus || '695e0471c424c92fee37713b',
@@ -326,9 +304,15 @@ export default function CheckoutPage() {
               </div>
             )}
             <ShippingAddress
-              onContinue={(data) => {
-                setAddressError('')
-                handleContinue({ shippingAddress: data }, 2) // Wrap data in shippingAddress and set nextStep to 2
+              onContinue={(data, nextStep) => {
+                setAddressError('');
+                setFormData(prev => ({
+                  ...prev,
+                  shippingAddress: data.shippingAddress
+                }));
+                if (typeof nextStep === 'number') {
+                  setCurrentStep(nextStep);
+                }
               }}
               initialData={formData.shippingAddress}
             />
@@ -428,7 +412,8 @@ export default function CheckoutPage() {
               currentStep={currentStep}
               onContinue={handleContinue}
               isLoading={loading}
-              error={error}
+              error={error || paymentError}
+              paymentMethod={formData.paymentMethod}
             />
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import api from '@/lib/axios'
+import { sortByCreatedAtDesc } from '@/utils/sortUtils';
 
 const initialState = {
   allCategories: {
@@ -207,7 +208,7 @@ export const { clearCategories, resetCategoryStatus } = categoriesSlice.actions
 export default categoriesSlice.reducer
 
 export const selectAllCategories = (state) => ({
-  data: state.categories.allCategories.data,
+  data: sortByCreatedAtDesc(state.categories.allCategories.data),
   pagination: state.categories.allCategories.pagination,
   isLoading: state.categories.allCategories.isLoading,
   error: state.categories.allCategories.error,

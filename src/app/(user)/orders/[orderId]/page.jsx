@@ -245,9 +245,9 @@ export default function OrderDetailsPage() {
               Order Items ({order.products?.length || 0})
             </h1>
             <div className="flex flex-col items-end gap-2 text-right">
-              <span className="text-sm text-gray-500">
+              <h2 className='font-semibold'>
                 Placed on {formatDate(order.createdAt)}
-              </span>
+              </h2>
               <div className="flex items-center gap-1">
                 <span className="text-sm text-gray-600 font-mono">
                   ID: {order._id}
