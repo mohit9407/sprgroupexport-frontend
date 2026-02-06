@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
 export function AdminCheckbox({
@@ -11,6 +12,7 @@ export function AdminCheckbox({
   helpText,
   error,
   disabled = false,
+  additionalText,
 }) {
   const checkboxId = id ?? name
 
@@ -25,7 +27,7 @@ export function AdminCheckbox({
       >
         {label}
       </label>
-      <div className="col-span-12 md:col-span-4 h-full flex items-center">
+      <div className="col-span-12 md:col-span-4 gap-2 pt-2">
         <input
           id={checkboxId}
           name={name}
@@ -33,11 +35,16 @@ export function AdminCheckbox({
           checked={checked}
           disabled={disabled}
           onChange={(e) => onChange?.(e.target.checked)}
-          className={`mt-1 h-4 w-4 rounded border
+          className={`mr-1 min-h-4 min-w-4 rounded border
               ${error ? 'border-red-500' : 'border-gray-300'}
               focus:ring-2 focus:ring-blue-500
             `}
         />
+        {additionalText && (
+          <span className="text-[14px] align-text-bottom text-gray-500">
+            {additionalText}
+          </span>
+        )}
       </div>
       {(error || helpText) && (
         <span
@@ -52,7 +59,13 @@ export function AdminCheckbox({
   )
 }
 
-export function FormAdminCheckbox({ name, label, helpText, disabled = false }) {
+export function FormAdminCheckbox({
+  name,
+  label,
+  helpText,
+  additionalText,
+  disabled = false,
+}) {
   const { control, formState } = useFormContext()
   const { errors, touchedFields } = formState
 
@@ -72,6 +85,7 @@ export function FormAdminCheckbox({ name, label, helpText, disabled = false }) {
           helpText={helpText}
           error={errorMessage}
           disabled={disabled}
+          additionalText={additionalText}
         />
       )}
     />
