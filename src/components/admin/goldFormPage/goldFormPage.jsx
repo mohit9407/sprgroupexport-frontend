@@ -20,7 +20,7 @@ const goldSchema = yup.object({
     .required('Price per gram is required'),
 })
 
-export default function GoldForm({
+export default function GoldFormPage({
   mode = 'add',
   defaultValues,
   title = 'Add Gold',

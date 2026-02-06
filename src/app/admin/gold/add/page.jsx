@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useDispatch } from 'react-redux'
 import { createGold } from '@/features/gold/goldSlice'
-import GoldForm from '@/components/admin/goldFormPage/goldFormPage'
+import GoldFormPage from '@/components/admin/GoldFormPage/GoldFormPage'
 import { toast } from 'react-hot-toast'
 
 export default function AddGoldPage() {
@@ -22,7 +22,7 @@ export default function AddGoldPage() {
 
   return (
     <div className="container mx-auto px-4 py-6">
-      <GoldForm
+      <GoldFormPage
         mode="add"
         title="Add New Gold Data"
         onSubmit={handleCreateGold}
