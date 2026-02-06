@@ -214,6 +214,15 @@ export const routeMeta = [
     sidebar: false,
     icon: FaRegGrinStars,
   },
+  {
+    key: 'edit-gold',
+    path: '/admin/gold/edit/:_id',
+    label: 'Edit Gold Price',
+    description: 'Edit Gold Price...',
+    parent: '/admin/gold',
+    sidebar: false,
+    icon: FaRegGrinStars,
+  },
 
   // ===== Orders =====
   {
