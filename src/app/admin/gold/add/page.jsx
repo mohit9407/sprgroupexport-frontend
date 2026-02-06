@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useDispatch } from 'react-redux'
 import { createGold } from '@/features/gold/goldSlice'
-import GoldFormPage from '@/components/admin/GoldFormPage/GoldFormPage'
+import GoldFormPage from '@/components/admin/GoldFormPage/GoldForm'
 import { toast } from 'react-hot-toast'
 
 export default function AddGoldPage() {

@@ -8,7 +8,7 @@ import {
   updateGold,
   clearGoldById,
 } from '@/features/gold/goldSlice'
-import GoldFormPage from '@/components/admin/GoldFormPage/GoldFormPage'
+import GoldFormPage from '@/components/admin/GoldFormPage/GoldForm'
 import { toast } from 'react-hot-toast'
 
 export default function EditGoldPage() {
