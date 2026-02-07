@@ -24,7 +24,7 @@ export default function GoldFormPage({
   mode = 'add',
   defaultValues,
   title = 'Add Gold',
-  onSubmit, // ✅ comes from page
+  onSubmit,
 }) {
   const router = useRouter()
   const isEditMode = mode === 'edit'

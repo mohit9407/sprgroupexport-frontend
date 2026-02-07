@@ -284,7 +284,12 @@ export const routeMeta = [
     parent: '/admin',
     sidebar: true,
     icon: FaRegFileAlt,
-    sidebarChildrens: ['/admin/low-stock', '/admin/out-of-stock'],
+    sidebarChildrens: [
+      '/admin/low-stock',
+      '/admin/out-of-stock',
+      '/admin/customer-reports',
+      '/admin/product-liked',
+    ],
   },
   {
     key: 'low-stock',
@@ -300,6 +305,21 @@ export const routeMeta = [
     label: 'Out of Stock Products',
     parent: '/admin',
     sidebar: true,
+    icon: FaRegFileAlt,
+  },
+  {
+    key: 'customer-reports',
+    path: '/admin/customer-reports',
+    label: 'Customer Reports',
+    parent: '/admin',
+    sidebar: true,
+    icon: FaRegFileAlt,
+  },
+  {
+    key: 'product-liked',
+    path: '/admin/product-liked',
+    label: 'Product Liked',
+    parent: '/admin',
     icon: FaRegFileAlt,
   },
 
@@ -345,12 +365,22 @@ export const routeMeta = [
   // ===== Settings =====
   {
     key: 'general-settings',
-    path: '/admin/settings/general',
+    path: '/admin/general-settings/',
     label: 'General Settings',
     parent: '/admin',
     sidebar: true,
     icon: FaGears,
+    sidebarChildrens: ['/admin/general-settings'],
   },
+  {
+    key: 'general-settings',
+    path: '/admin/general-settings',
+    label: 'Store Settings',
+    parent: '/admin',
+    sidebar: true,
+    icon: FaGears,
+  },
+
   {
     key: 'website-settings',
     label: 'Settings (Website)',

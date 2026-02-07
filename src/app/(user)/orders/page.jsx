@@ -6,11 +6,21 @@ import { useDispatch, useSelector } from 'react-redux'
 import { fetchUserOrders, resetOrderState } from '@/features/order/orderSlice'
 import { toast } from '@/utils/toastConfig'
 import Link from 'next/link'
-import { FiShoppingBag, FiExternalLink, FiCopy, FiChevronDown, FiChevronUp, FiPackage, FiTag, FiDollarSign } from 'react-icons/fi'
+import {
+  FiShoppingBag,
+  FiExternalLink,
+  FiCopy,
+  FiChevronDown,
+  FiChevronUp,
+  FiPackage,
+  FiTag,
+  FiDollarSign,
+} from 'react-icons/fi'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { fetchProducts } from '@/features/products/productsSlice'
 import { fetchAllCategories } from '@/features/categories/categoriesSlice'
+import { FaRupeeSign } from 'react-icons/fa'
 
 export default function OrdersPage() {
   const [isClient, setIsClient] = useState(false)
@@ -19,9 +29,9 @@ export default function OrdersPage() {
   const router = useRouter()
 
   const toggleOrderExpansion = (orderId) => {
-    setExpandedOrders(prev => ({
+    setExpandedOrders((prev) => ({
       ...prev,
-      [orderId]: !prev[orderId]
+      [orderId]: !prev[orderId],
     }))
   }
 
@@ -82,12 +92,12 @@ export default function OrdersPage() {
     const date = new Date(dateString)
     return isClient
       ? date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        })
       : date.toISOString().split('T')[0] // Fallback for SSR
   }
 
@@ -244,7 +254,7 @@ export default function OrdersPage() {
                   <AnimatePresence>
                     {order.products?.map((item, index) => {
                       // Only show first item by default, or all if expanded
-                      if (!expandedOrders[order._id] && index > 0) return null;
+                      if (!expandedOrders[order._id] && index > 0) return null
 
                       const itemDetails = getOrderItemDetails(item)
                       return (
@@ -262,7 +272,10 @@ export default function OrdersPage() {
                               {itemDetails.product?.image ? (
                                 <Image
                                   src={itemDetails.product.image.thumbnailUrl}
-                                  alt={itemDetails.product.name || `Product ${index + 1}`}
+                                  alt={
+                                    itemDetails.product.name ||
+                                    `Product ${index + 1}`
+                                  }
                                   width={144}
                                   height={144}
                                   className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
@@ -292,11 +305,18 @@ export default function OrdersPage() {
                                       </h4>
                                       <div className="flex items-center mt-2 text-sm text-gray-500">
                                         <FiTag className="mr-1.5" size={14} />
-                                        <span>SKU: {itemDetails.product?.sku || 'N/A'}</span>
+                                        <span>
+                                          SKU:{' '}
+                                          {itemDetails.product?.sku || 'N/A'}
+                                        </span>
                                       </div>
                                       <div className="flex items-center mt-1 text-sm text-gray-500">
                                         <span className="inline-block w-2 h-2 rounded-full bg-green-400 mr-1.5"></span>
-                                        <span>Category: {itemDetails.product?.category || 'N/A'}</span>
+                                        <span>
+                                          Category:{' '}
+                                          {itemDetails.product?.category ||
+                                            'N/A'}
+                                        </span>
                                       </div>
                                     </div>
                                     <Link
@@ -304,21 +324,31 @@ export default function OrdersPage() {
                                       className="mt-2 sm:mt-0 inline-flex items-center px-3 py-1.5 border border-[#BA8B4E] text-[#BA8B4E] rounded-full text-xs font-medium hover:bg-[#f9f5f0] transition-colors"
                                     >
                                       View Product Details
-                                      <FiExternalLink className="ml-1" size={12} />
+                                      <FiExternalLink
+                                        className="ml-1"
+                                        size={12}
+                                      />
                                     </Link>
                                   </div>
 
                                   <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
                                     <div className="bg-gray-50 p-3 rounded-lg">
-                                      <div className="text-xs text-gray-500 mb-1">Quantity</div>
+                                      <div className="text-xs text-gray-500 mb-1">
+                                        Quantity
+                                      </div>
                                       <div className="font-medium text-gray-900">
                                         {itemDetails.quantity || 1}
                                       </div>
                                     </div>
                                     <div className="bg-gray-50 p-3 rounded-lg">
-                                      <div className="text-xs text-gray-500 mb-1">Price</div>
+                                      <div className="text-xs text-gray-500 mb-1">
+                                        Price
+                                      </div>
                                       <div className="font-medium text-gray-900 flex items-center">
-                                        <FiDollarSign size={14} className="mr-0.5" />
+                                        <FaRupeeSign
+                                          size={14}
+                                          className="mr-0.5"
+                                        />
                                         {itemDetails.product.price
                                           ? itemDetails.product.price.toFixed(2)
                                           : '0.00'}
@@ -344,12 +374,21 @@ export default function OrdersPage() {
                         {expandedOrders[order._id] ? (
                           <>
                             <span>Show less</span>
-                            <FiChevronUp className="ml-2 group-hover:translate-y-[-2px] transition-transform" size={16} />
+                            <FiChevronUp
+                              className="ml-2 group-hover:translate-y-[-2px] transition-transform"
+                              size={16}
+                            />
                           </>
                         ) : (
                           <>
-                            <span>View {order.products.length - 1} more item{order.products.length > 2 ? 's' : ''}</span>
-                            <FiChevronDown className="ml-2 group-hover:translate-y-[2px] transition-transform" size={16} />
+                            <span>
+                              View {order.products.length - 1} more item
+                              {order.products.length > 2 ? 's' : ''}
+                            </span>
+                            <FiChevronDown
+                              className="ml-2 group-hover:translate-y-[2px] transition-transform"
+                              size={16}
+                            />
                           </>
                         )}
                       </button>
@@ -362,7 +401,8 @@ export default function OrdersPage() {
                   <div className="mb-3 sm:mb-0">
                     {order.comments && (
                       <p className="text-sm text-gray-600">
-                        <span className="font-medium">Note:</span> {order.comments}
+                        <span className="font-medium">Note:</span>{' '}
+                        {order.comments}
                       </p>
                     )}
                   </div>

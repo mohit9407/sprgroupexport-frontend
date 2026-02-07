@@ -176,3 +176,25 @@ export const deleteOrder = async (orderId) => {
     throw error.response?.data?.message || 'Failed to delete order'
   }
 }
+
+export const customerReports = async (params = {}) => {
+  try {
+    const queryParams = new URLSearchParams()
+
+    if (params.search) queryParams.append('search', params.search)
+    if (params.sortBy) queryParams.append('sortBy', params.sortBy)
+    if (params.sortOrder) queryParams.append('sortOrder', params.sortOrder)
+    if (params.page) queryParams.append('page', params.page)
+    if (params.limit) queryParams.append('limit', params.limit)
+    if (params.filterBy) queryParams.append('filterBy', params.filterBy)
+
+    const queryString = queryParams.toString()
+    const url = `/orders/customer-reports${queryString ? `?${queryString}` : ''}`
+
+    const response = await api.get(url)
+    return response.data
+  } catch (error) {
+    console.log('error get customer reports', error)
+    throw error.response?.data?.message || 'Failed to get customer reports'
+  }
+}

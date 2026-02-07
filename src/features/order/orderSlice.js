@@ -5,8 +5,9 @@ import {
   getAdminOrders,
   updateOrderStatus as updateOrderStatusApi,
   deleteOrder as deleteOrderApi,
+  customerReports,
 } from '@/features/order/orderService'
-import { sortByCreatedAtDesc } from '@/utils/sortUtils';
+import { sortByCreatedAtDesc } from '@/utils/sortUtils'
 
 // Helper to get auth token
 const getAuthToken = () => {
@@ -71,7 +72,7 @@ export const fetchAdminOrders = createAsyncThunk(
       )
       // Sort orders by creation date (oldest first)
       const sortedOrders = sortByCreatedAtDesc(response.data.orders || [])
-      
+
       return {
         orders: sortedOrders,
         total: response.pagination.total || 0,
@@ -124,6 +125,29 @@ export const deleteOrder = createAsyncThunk(
   },
 )
 
+export const customerReportsData = createAsyncThunk(
+  'order/customerReports',
+  async (
+    { search, sortBy, sortOrder, page, limit, filterBy } = {},
+    { rejectWithValue },
+  ) => {
+    try {
+      const response = await customerReports({
+        search,
+        sortBy,
+        sortOrder,
+        page,
+        limit,
+        filterBy,
+      })
+      return response
+    } catch (error) {
+      console.error('error get customer reports', error)
+      return rejectWithValue(error.message || 'Failed to get customer reports')
+    }
+  },
+)
+
 const orderSlice = createSlice({
   name: 'order',
   initialState: {
@@ -148,6 +172,17 @@ const orderSlice = createSlice({
     loading: false,
     error: null,
     success: false,
+    customerReportsData: {
+      data: [],
+      pagination: {
+        currentPage: 1,
+        totalItems: 0,
+        totalPages: 1,
+        itemsPerPage: 10,
+      },
+      isLoading: false,
+      message: null,
+    },
   },
   reducers: {
     resetOrderState: (state) => {
@@ -275,6 +310,23 @@ const orderSlice = createSlice({
       .addCase(updateOrderStatus.rejected, (state, action) => {
         state.loading = false
         state.error = action.payload
+      })
+
+      .addCase(customerReportsData.pending, (state) => {
+        state.customerReportsData.isLoading = true
+        state.customerReportsData.message = null
+      })
+
+      .addCase(customerReportsData.fulfilled, (state, action) => {
+        state.customerReportsData.isLoading = false
+        state.success = true
+        state.customerReportsData.data = action.payload.data
+        state.customerReportsData.pagination = action.payload.pagination
+      })
+
+      .addCase(customerReportsData.rejected, (state, action) => {
+        state.customerReportsData.isLoading = false
+        state.customerReportsData.message = action.payload
       })
   },
 })

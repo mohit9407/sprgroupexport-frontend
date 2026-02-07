@@ -39,6 +39,20 @@ export const fetchProductsWithFilters = createAsyncThunk(
   },
 )
 
+export const fetchAllProduct = createAsyncThunk(
+  'products/fetchAllProduct',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await fetchAllProductsWithFilters()
+      return response
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch products',
+      )
+    }
+  },
+)
+
 export const createProduct = createAsyncThunk(
   'products/createProduct',
   async (productData, { rejectWithValue }) => {
@@ -97,6 +111,12 @@ const productsSlice = createSlice({
       limit: 10,
       totalItems: 0,
       totalPages: 1,
+    },
+    fetchAllProduct: {
+      data: [],
+      pagination: {},
+      message: null,
+      isLoading: false,
     },
   },
   reducers: {
@@ -215,6 +235,25 @@ const productsSlice = createSlice({
       .addCase(updateProduct.rejected, (state, action) => {
         state.status = 'failed'
         state.error = action.payload || 'Failed to update product'
+      })
+
+    builder
+      .addCase(fetchAllProduct.pending, (state) => {
+        state.fetchAllProduct.isLoading = true
+        state.fetchAllProduct.message = null
+      })
+      .addCase(fetchAllProduct.fulfilled, (state, action) => {
+        const response = action.payload
+
+        state.fetchAllProduct.isLoading = false
+        state.fetchAllProduct.data = response.data || []
+        state.fetchAllProduct.pagination = response.pagination || {}
+        state.fetchAllProduct.message = response.message || null
+      })
+      .addCase(fetchAllProduct.rejected, (state, action) => {
+        state.fetchAllProduct.isLoading = false
+        state.fetchAllProduct.message =
+          action.payload || 'Failed to load products with filters'
       })
   },
 })

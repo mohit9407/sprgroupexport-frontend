@@ -69,6 +69,7 @@ export const fetchAllProductsWithFilters = async (filters = {}) => {
       search,
       sortBy,
       sortOrder = 'asc',
+      onlyLiked = false,
     } = filters
 
     const params = new URLSearchParams()
@@ -79,6 +80,7 @@ export const fetchAllProductsWithFilters = async (filters = {}) => {
     if (search) params.append('search', search)
     if (sortBy) params.append('sortBy', sortBy)
     if (sortOrder) params.append('sortOrder', sortOrder)
+    if (onlyLiked) params.append('onlyLiked', onlyLiked)
 
     const response = await api.get(
       `/product/get-all-products-with-filters?${params.toString()}`,
