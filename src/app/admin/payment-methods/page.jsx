@@ -1,9 +1,8 @@
 'use client'
 
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { FaEdit, FaPlus } from 'react-icons/fa'
-import { createColumnHelper } from '@tanstack/react-table'
+import { FaEdit } from 'react-icons/fa'
 import { TanstackTable } from '@/components/admin/TanStackTable'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -12,7 +11,7 @@ import {
 } from '@/features/paymentMethod/paymentMethodSlice'
 import { toast } from 'react-hot-toast'
 
-const PaymentMethodsPage = () => {
+function PaymentMethodsContent() {
   const router = useRouter()
   const dispatch = useDispatch()
   const {
@@ -36,7 +35,8 @@ const PaymentMethodsPage = () => {
       dispatch(fetchPaymentMethods())
       toast.success('Payment method updated successfully')
     } catch (error) {
-      toast.error(error || 'Failed to update payment method')
+      toast.error(error?.message || 'Failed to update payment method')
+      throw error
     }
   }
 
@@ -86,17 +86,15 @@ const PaymentMethodsPage = () => {
     },
   ]
 
+  if (error) {
+    throw new Error(error)
+  }
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold">List Of All Payment Methods</h1>
       </div>
-
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
 
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <TanstackTable
@@ -110,4 +108,10 @@ const PaymentMethodsPage = () => {
   )
 }
 
-export default PaymentMethodsPage
+export default function PaymentMethodsPage() {
+  return (
+    <Suspense fallback={<div className="p-6">Loading payment methods...</div>}>
+      <PaymentMethodsContent />
+    </Suspense>
+  )
+}
