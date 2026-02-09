@@ -94,20 +94,18 @@ export default function SettingsPage() {
         fd.append('favicon', formData.favicon)
       }
 
-    await dispatch(
-      updateExistingSetting({
-        id: existingSetting._id,
-        data: fd,
-      }),
-    ).unwrap()
- 
+      await dispatch(
+        updateExistingSetting({
+          id: existingSetting._id,
+          data: fd,
+        }),
+      ).unwrap()
+
       toast.success('Settings updated successfully')
     } catch (err) {
       toast.error('Failed to update settings')
     }
   }
-
-  
 
   if (status === 'loading') return null
 
@@ -284,13 +282,6 @@ export default function SettingsPage() {
             className="px-6 py-2 rounded bg-sky-600 text-white font-semibold hover:bg-sky-700"
           >
             Save Settings
-          </button>
-
-          <button
-            onClick={() => router.back()}
-            className="px-6 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-100"
-          >
-            Cancel
           </button>
         </div>
       </div>

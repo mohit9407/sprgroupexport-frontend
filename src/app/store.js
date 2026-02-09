@@ -18,6 +18,7 @@ import stockReducer from '../features/stock/stockSlice'
 import caratReducer from '../features/carat/caratSlice'
 import settingsReducer from '../features/setting/settingSlice'
 import parallaxBannerReducer from '../features/parallax-banner/parallaxBannerSlice'
+import paymentMethodReducer from '../features/paymentMethod/paymentMethodSlice'
 import goldSlice from '@/features/gold/goldSlice'
 import generalSettingSlice from '@/features/general-setting/generatSettingSlice'
 
@@ -31,6 +32,7 @@ export const store = configureStore({
     categories: categoriesReducer,
     settings: settingsReducer,
     parallaxBanner: parallaxBannerReducer,
+    paymentMethods: paymentMethodReducer,
     user: userReducer,
     shippingAddress: shippingAddressReducer,
     shipping: shippingReducer,
