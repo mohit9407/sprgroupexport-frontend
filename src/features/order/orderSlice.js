@@ -183,6 +183,12 @@ const orderSlice = createSlice({
       isLoading: false,
       message: null,
     },
+
+    fetchAdminOrders: {
+      data: [],
+      loading: false,
+      error: null,
+    },
   },
   reducers: {
     resetOrderState: (state) => {

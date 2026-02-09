@@ -289,6 +289,7 @@ export const routeMeta = [
       '/admin/out-of-stock',
       '/admin/customer-reports',
       '/admin/product-liked',
+      '/admin/total-purchased',
     ],
   },
   {
@@ -319,6 +320,13 @@ export const routeMeta = [
     key: 'product-liked',
     path: '/admin/product-liked',
     label: 'Product Liked',
+    parent: '/admin',
+    icon: FaRegFileAlt,
+  },
+  {
+    key: 'total-purchased',
+    path: '/admin/total-purchased',
+    label: 'Total Purchased',
     parent: '/admin',
     icon: FaRegFileAlt,
   },
@@ -400,7 +408,7 @@ export const routeMeta = [
       '/admin/settings/website/slider-images',
       '/admin/settings/website/parallax-banners',
       '/admin/settings/website/banners',
-      '/admin/settings/website/content-pages',
+      '/admin/settings/website/content-page',
       '/admin/settings/website/seo-content',
       '/admin/settings/website/settings',
     ],
@@ -434,8 +442,8 @@ export const routeMeta = [
   },
 
   {
-    key: 'content-pages',
-    path: '/admin/settings/website/content-pages',
+    key: 'content-page',
+    path: '/admin/settings/website/content-page',
     label: 'Content Pages',
     parent: '/admin/settings/website',
     sidebar: true,
