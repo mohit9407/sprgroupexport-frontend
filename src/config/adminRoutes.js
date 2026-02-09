@@ -361,6 +361,15 @@ export const routeMeta = [
     sidebar: true,
     icon: FaRegCreditCard,
   },
+  {
+    key: 'edit-payment-method',
+    path: '/admin/payment-methods/edit/:_id',
+    label: 'Edit payment',
+    description: 'payment Order...',
+    parent: '/admin/payment-methods',
+    sidebar: false,
+    icon: FaEye,
+  },
 
   // ===== Settings =====
   {
@@ -410,7 +419,7 @@ export const routeMeta = [
     path: '/admin/settings/website/parallax-banners',
     label: 'Parallax Banners',
     description: 'Listing The Home Banners...',
-    parent: '/admin/settings/website',
+    parent: '/admin',
     sidebar: true,
     icon: FaImages,
   },
@@ -437,7 +446,7 @@ export const routeMeta = [
     key: 'seo-content',
     path: '/admin/settings/website/seo-content',
     label: 'SEO Content',
-    parent: '/admin/settings/website',
+    parent: '/admin',
     sidebar: true,
     icon: FaEye,
   },
@@ -446,7 +455,7 @@ export const routeMeta = [
     key: 'website-settings-config',
     path: '/admin/settings/website/settings',
     label: 'Website Settings',
-    parent: '/admin/settings/website',
+    parent: '/admin',
     sidebar: true,
     icon: FaGears,
   },

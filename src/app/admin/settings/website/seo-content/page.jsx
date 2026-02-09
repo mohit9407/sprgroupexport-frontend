@@ -119,13 +119,6 @@ export default function SeoContentPage() {
           >
             Submit
           </button>
-
-          <button
-            onClick={() => router.back()}
-            className="px-6 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-100"
-          >
-            Cancel
-          </button>
         </div>
       </div>
     </div>
