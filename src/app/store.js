@@ -21,6 +21,8 @@ import parallaxBannerReducer from '../features/parallax-banner/parallaxBannerSli
 import paymentMethodReducer from '../features/paymentMethod/paymentMethodSlice'
 import goldSlice from '@/features/gold/goldSlice'
 import generalSettingSlice from '@/features/general-setting/generatSettingSlice'
+import inventorySlice from '@/features/inventory/inventorySlice'
+import contentPageSlice from '@/features/content-page/contentPageSlice'
 
 export const store = configureStore({
   reducer: {
@@ -46,5 +48,7 @@ export const store = configureStore({
     carat: caratReducer,
     gold: goldSlice,
     generalSetting: generalSettingSlice,
+    inventory: inventorySlice,
+    contentPage: contentPageSlice,
   },
 })
