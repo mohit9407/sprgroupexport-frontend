@@ -19,7 +19,8 @@ export default function CheckoutPage() {
   const router = useRouter()
   const dispatch = useDispatch()
   const { user } = useAuth()
-  const { cart, clearCart, directCheckoutItem, clearDirectCheckoutItem } = useCart()
+  const { cart, clearCart, directCheckoutItem, clearDirectCheckoutItem } =
+    useCart()
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [isCheckingDirectCheckout, setIsCheckingDirectCheckout] = useState(true)
   const [currentStep, setCurrentStep] = useState(1)
@@ -51,7 +52,7 @@ export default function CheckoutPage() {
           router.push('/cart')
           return
         }
-        
+
         // If no direct checkout item and cart is empty, redirect to cart
         if (!directCheckoutItem && (!cart || cart.length === 0)) {
           router.push('/cart')
@@ -123,7 +124,10 @@ export default function CheckoutPage() {
         ...stepData,
       }
       // Validate address is selected
-      if (!currentFormData?.shippingAddress || !currentFormData.shippingAddress._id) {
+      if (
+        !currentFormData?.shippingAddress ||
+        !currentFormData.shippingAddress._id
+      ) {
         setAddressError(
           'Please select a shipping address before placing your order',
         )
@@ -133,7 +137,9 @@ export default function CheckoutPage() {
 
       // Validate payment method is selected
       if (!currentFormData.paymentMethod) {
-        setPaymentError('Please select a payment method before placing your order')
+        setPaymentError(
+          'Please select a payment method before placing your order',
+        )
         setCurrentStep(3) // Go back to payment method selection step
         return
       }
@@ -173,19 +179,19 @@ export default function CheckoutPage() {
         // Prepare products array based on direct checkout or cart
         const products = directCheckoutItem
           ? [
-            {
-              productId: directCheckoutItem.id,
-              quantity: directCheckoutItem.quantity,
-              color: directCheckoutItem.colorId,
-              size: directCheckoutItem.sizeId,
-            },
-          ]
+              {
+                productId: directCheckoutItem.id,
+                quantity: directCheckoutItem.quantity,
+                color: directCheckoutItem.colorId,
+                size: directCheckoutItem.sizeId,
+              },
+            ]
           : cart.map((item) => ({
-            productId: item.id,
-            quantity: item.quantity,
-            color: item.colorId,
-            size: item.sizeId,
-          }))
+              productId: item.id,
+              quantity: item.quantity,
+              color: item.colorId,
+              size: item.sizeId,
+            }))
 
         // Calculate subtotal based on directCheckoutItem or cart
         const displayItemsForSubtotal = directCheckoutItem
@@ -305,13 +311,13 @@ export default function CheckoutPage() {
             )}
             <ShippingAddress
               onContinue={(data, nextStep) => {
-                setAddressError('');
-                setFormData(prev => ({
+                setAddressError('')
+                setFormData((prev) => ({
                   ...prev,
-                  shippingAddress: data.shippingAddress
-                }));
+                  shippingAddress: data.shippingAddress,
+                }))
                 if (typeof nextStep === 'number') {
-                  setCurrentStep(nextStep);
+                  setCurrentStep(nextStep)
                 }
               }}
               initialData={formData.shippingAddress}
@@ -325,6 +331,7 @@ export default function CheckoutPage() {
               handleContinue(data, step)
             }}
             initialMethod={formData.shippingMethod}
+            shippingAddress={formData.shippingAddress}
           />
         )
       case 3:

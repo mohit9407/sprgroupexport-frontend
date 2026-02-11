@@ -32,9 +32,11 @@ export default function ShippingAddressPage() {
     address: '',
     city: '',
     state: '',
-    pinCode: '',
+    zipCode: '',
     isDefault: false,
   })
+
+  const hasAnyAddressWithGST = addresses.some((address) => address.gst)
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -45,17 +47,18 @@ export default function ShippingAddressPage() {
   }
 
   // Handle both add and update
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-
+  const handleSubmit = async (formData) => {
     const addressData = {
       name: formData.name,
       mobile: formData.mobile,
       address: formData.address,
       city: formData.city,
       state: formData.state,
-      pinCode: formData.pinCode,
+      zipCode: formData.zipCode,
       isDefault: formData.isDefault,
+      gst: formData.gst || undefined,
+      pancard: formData.pancard || undefined,
+      country: formData.country || 'India',
     }
 
     try {
@@ -91,7 +94,7 @@ export default function ShippingAddressPage() {
       address: '',
       city: '',
       state: '',
-      pinCode: '',
+      zipCode: '',
       isDefault: false,
     })
     setEditingId(null)
@@ -106,8 +109,10 @@ export default function ShippingAddressPage() {
       address: address.address || '',
       city: address.city || '',
       state: address.state || '',
-      pinCode: address.zip || address.pinCode || '',
+      zipCode: address.zipCode || address.zipCode || '',
       isDefault: address.isDefault || false,
+      gst: address.gst || '',
+      pancard: address.pancard || '',
     })
     setEditingId(address._id)
     setIsAddingNew(true)
@@ -187,6 +192,8 @@ export default function ShippingAddressPage() {
                   handleCancel={handleCancel}
                   isLoading={isLoading}
                   isEditing={!!editingId}
+                  hasGst={!!formData.gst || hasAnyAddressWithGST}
+                  initialFormData={formData}
                 />
               </>
             ) : (

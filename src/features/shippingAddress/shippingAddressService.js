@@ -12,11 +12,14 @@ export const addShippingAddress = async (addressData) => {
     const response = await api.post('/auth/shipping-address', {
       fullName: addressData.name,
       address: addressData.address,
-      country: 'India',
+      country: addressData.country || 'India',
       city: addressData.city,
       state: addressData.state,
-      zipCode: addressData.pinCode,
+      zipCode: addressData.zipCode,
       mobileNo: addressData.mobile,
+      gst: addressData.gst || '',
+      pancard: addressData.pancard || '',
+      isDefault: addressData.isDefault || false,
     })
     return response
   } catch (error) {
@@ -64,11 +67,14 @@ export const updateShippingAddress = async ({ id, ...addressData }) => {
     const response = await api.put(`/auth/update/${id}`, {
       fullName: addressData.name,
       address: addressData.address,
-      country: 'India',
+      country: addressData.country || 'India',
       city: addressData.city,
       state: addressData.state,
-      zip: addressData.pinCode,
+      zipCode: addressData.zipCode,
       mobileNo: addressData.mobile,
+      gst: addressData.gst || '',
+      pancard: addressData.pancard || '',
+      isDefault: addressData.isDefault || false,
     })
     return response
   } catch (error) {

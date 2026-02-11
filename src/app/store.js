@@ -23,6 +23,7 @@ import goldSlice from '@/features/gold/goldSlice'
 import generalSettingSlice from '@/features/general-setting/generatSettingSlice'
 import inventorySlice from '@/features/inventory/inventorySlice'
 import contentPageSlice from '@/features/content-page/contentPageSlice'
+import gstReducer from '@/features/gst/gstSlice'
 
 export const store = configureStore({
   reducer: {
@@ -50,5 +51,6 @@ export const store = configureStore({
     generalSetting: generalSettingSlice,
     inventory: inventorySlice,
     contentPage: contentPageSlice,
+    gst: gstReducer,
   },
 })

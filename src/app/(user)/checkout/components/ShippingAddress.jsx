@@ -18,14 +18,19 @@ export default function ShippingAddress({ onContinue, initialData = {} }) {
     initialData?._id || null,
   )
   const [showNewAddressForm, setShowNewAddressForm] = useState(false)
+  // Check if any address has GST
+  const hasAnyAddressWithGST = addresses.some((address) => address.gst)
   const [formData, setFormData] = useState({
     name: '',
     mobile: '',
     address: '',
     city: '',
     state: '',
-    pinCode: '',
+    zipCode: '',
     isDefault: false,
+    gst: '',
+    pancard: '',
+    country: 'India',
   })
 
   useEffect(() => {
@@ -36,22 +41,26 @@ export default function ShippingAddress({ onContinue, initialData = {} }) {
   // Set the first address as selected by default when addresses are loaded
   useEffect(() => {
     if (addresses.length > 0) {
-      let addressToSelect = null;
-      
+      let addressToSelect = null
+
       // If we have initialData with an ID, use that
       if (initialData?._id) {
-        addressToSelect = addresses.find(addr => addr._id === initialData._id);
-      } 
+        addressToSelect = addresses.find((addr) => addr._id === initialData._id)
+      }
       // Otherwise, if no address is selected yet, use the default or first address
       else if (!selectedAddressId) {
-        addressToSelect = addresses.find(addr => addr.isDefault) || addresses[0];
+        addressToSelect =
+          addresses.find((addr) => addr.isDefault) || addresses[0]
       }
-      
+
       // Only update if we found an address and it's different from the currently selected one
-      if (addressToSelect && (!selectedAddressId || addressToSelect._id !== selectedAddressId)) {
-        setSelectedAddressId(addressToSelect._id);
+      if (
+        addressToSelect &&
+        (!selectedAddressId || addressToSelect._id !== selectedAddressId)
+      ) {
+        setSelectedAddressId(addressToSelect._id)
         // Notify parent component about the selected address
-        onContinue({ shippingAddress: addressToSelect }, null, true);
+        onContinue({ shippingAddress: addressToSelect }, null, true)
       }
     }
     // We're intentionally not including onContinue in the deps array to prevent infinite loops
@@ -77,20 +86,27 @@ export default function ShippingAddress({ onContinue, initialData = {} }) {
   }
 
   const handleFormSubmit = async (e) => {
-    e.preventDefault()
+    // Handle both direct form submission and programmatic call with formData
+    const formDataToUse = e?.preventDefault ? formData : e
+
+    if (e?.preventDefault) {
+      e.preventDefault()
+    }
+
     try {
       const newAddress = {
-        fullName: formData.name || '',
-        name: formData.name || '', // Some APIs might expect 'name' instead of 'fullName'
-        mobileNo: formData.mobile || '',
-        mobile: formData.mobile || '', // Some APIs might expect 'mobile' instead of 'mobileNo'
-        address: formData.address || '',
-        city: formData.city || '',
-        state: formData.state || '',
-        zipCode: formData.pinCode || '',
-        pinCode: formData.pinCode || '', // Include both zipCode and pinCode for compatibility
-        isDefault: Boolean(formData.isDefault),
-        country: 'India',
+        fullName: formDataToUse.name || '',
+        name: formDataToUse.name || '', // Some APIs might expect 'name' instead of 'fullName'
+        mobileNo: formDataToUse.mobile || '',
+        mobile: formDataToUse.mobile || '', // Some APIs might expect 'mobile' instead of 'mobileNo'
+        address: formDataToUse.address || '',
+        city: formDataToUse.city || '',
+        state: formDataToUse.state || '',
+        zipCode: formDataToUse.zipCode || '',
+        isDefault: Boolean(formDataToUse.isDefault),
+        country: formDataToUse.country || 'India',
+        gst: formDataToUse.gst || '',
+        pancard: formDataToUse.pancard || '',
       }
 
       const result = await dispatch(addAddress(newAddress)).unwrap()
@@ -103,7 +119,7 @@ export default function ShippingAddress({ onContinue, initialData = {} }) {
         address: '',
         city: '',
         state: '',
-        pinCode: '',
+        zipCode: '',
         isDefault: false,
       })
     } catch (error) {
@@ -119,8 +135,11 @@ export default function ShippingAddress({ onContinue, initialData = {} }) {
       address: '',
       city: '',
       state: '',
-      pinCode: '',
+      zipCode: '',
       isDefault: false,
+      gst: '',
+      pancard: '',
+      country: 'India',
     })
   }
 
@@ -200,11 +219,18 @@ export default function ShippingAddress({ onContinue, initialData = {} }) {
                         >
                           {address.fullName}
                         </label>
-                        {address.isDefault && (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            Default
-                          </span>
-                        )}
+                        <div className="flex gap-2">
+                          {address.isDefault && (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              Default
+                            </span>
+                          )}
+                          {address.gst && (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              WITH GST
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <p className="text-sm text-gray-600 mt-1">
                         {address.address}, {address.city}, {address.state},{' '}
@@ -262,6 +288,7 @@ export default function ShippingAddress({ onContinue, initialData = {} }) {
             handleSubmit={handleFormSubmit}
             handleCancel={handleCancelNewAddress}
             isLoading={isLoading}
+            hasGst={!!formData.gst || hasAnyAddressWithGST}
           />
         </div>
       )}
