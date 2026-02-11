@@ -30,13 +30,18 @@ export default function AddressCard({
                   Default
                 </span>
               )}
+              {address.gst && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  WITH GST
+                </span>
+              )}
             </div>
             <p className="text-sm text-gray-500">
               {address.mobileNo || address.mobile}
             </p>
             <p className="text-sm text-gray-700 mt-1">{address.address}</p>
             <p className="text-sm text-gray-700">
-              {address.city}, {address.state} - {address.zip || address.pinCode}
+              {address.city}, {address.state} - {address.zip || address.zipCode}
             </p>
           </div>
         </div>

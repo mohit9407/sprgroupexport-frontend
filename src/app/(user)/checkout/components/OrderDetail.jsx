@@ -40,20 +40,44 @@ export default function OrderDetail({
         const response = await paymentService.getAllPaymentMethods()
         // API returns array directly, not nested under status/data
         if (Array.isArray(response)) {
-          setPaymentMethods(response)
+          // Filter payment methods based on shipping address city
+          const filteredMethods = response.filter((method) => {
+            // Always show all methods if no shipping address is selected yet
+            if (!shippingAddress) return true
+            // If city is Surat, show all methods including COD
+            if (shippingAddress.city?.toLowerCase() === 'surat') {
+              return true
+            }
+            // For other cities, exclude COD
+            return method.type?.toLowerCase() !== 'cod'
+          })
+          setPaymentMethods(filteredMethods)
         } else {
           console.log('Response is not an array:', response)
         }
       } catch (error) {
         console.error('Failed to fetch payment methods:', error)
         console.error('Error details:', error.response?.data || error.message)
+        // In case of error, still try to set some default payment methods
+        setPaymentMethods(
+          [
+            { _id: 'paypal', name: 'PayPal', type: 'paypal' },
+            { _id: 'razorpay', name: 'Credit/Debit Card', type: 'razorpay' },
+          ].filter((method) => {
+            if (!shippingAddress || !shippingAddress.city) return true
+            return (
+              shippingAddress.city.toLowerCase() !== 'surat' ||
+              method.type !== 'cod'
+            )
+          }),
+        )
       } finally {
         setLoadingPaymentMethods(false)
       }
     }
 
     fetchPaymentMethods()
-  }, [])
+  }, [shippingAddress]) // Add shippingAddress as a dependency
 
   const handleDeleteItem = (productId) => {
     setItemToDelete(productId)
@@ -168,8 +192,6 @@ export default function OrderDetail({
           products: displayItems,
           total: totalAmount,
         })
-
-        console.log('response???', response)
 
         // The URL is directly in the response object, not in response.data
         const paypalUrl = response.url

@@ -1,21 +1,48 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   fetchShippingMethods,
   selectAllShippingMethods,
   selectShippingStatus,
   selectShippingError,
-  selectShippingMethod,
 } from '@/features/shipping-method/shippingMethodSlice'
 
-export default function ShippingMethods({ onContinue, initialMethod = null }) {
+export default function ShippingMethods({
+  onContinue,
+  initialMethod = null,
+  shippingAddress = {},
+}) {
   const dispatch = useDispatch()
-  const shippingMethods = useSelector(selectAllShippingMethods)
+  const allShippingMethods = useSelector(selectAllShippingMethods)
   const status = useSelector(selectShippingStatus)
   const error = useSelector(selectShippingError)
   const [selectedMethod, setSelectedMethod] = useState(
     initialMethod?._id || null,
   )
+
+  // Filter shipping methods based on user's address
+  const getApplicableMethods = useCallback(() => {
+    if (!shippingAddress?.country) return allShippingMethods
+
+    const { city, state, country } = shippingAddress
+    const isIndia = country?.toLowerCase() === 'india'
+    const isGujarat = state?.toLowerCase() === 'gujarat'
+    const isSurat = city?.toLowerCase() === 'surat'
+
+    return allShippingMethods
+      .filter((method) => {
+        if (!method.status || method.status !== 'active') return false
+
+        const methodName = method.name?.toLowerCase() || ''
+        if (!isIndia) return methodName.includes('international')
+        if (!isGujarat) return methodName.includes('rest of india')
+        if (!isSurat) return methodName.includes('rest of gujarat')
+        return methodName.includes('surat city')
+      })
+      .sort((a, b) => a.price - b.price)
+  }, [allShippingMethods, shippingAddress])
+
+  const shippingMethods = getApplicableMethods()
 
   // Update selectedMethod when initialMethod changes
   useEffect(() => {
@@ -34,21 +61,24 @@ export default function ShippingMethods({ onContinue, initialMethod = null }) {
   // Set initial selected method if available
   useEffect(() => {
     let timer
-    if (shippingMethods && shippingMethods.length > 0 && !selectedMethod) {
-      const defaultMethod = shippingMethods[0]
-      if (!selectedMethod) {
-        // Only set default if no method is selected
+    if (shippingMethods && shippingMethods.length > 0) {
+      // If we have an initial method that's in the filtered list, use it
+      const initialInList =
+        initialMethod &&
+        shippingMethods.some((m) => m._id === initialMethod._id)
+      const defaultMethod = initialInList ? initialMethod : shippingMethods[0]
+
+      if (!selectedMethod || !initialInList) {
         timer = setTimeout(() => {
           setSelectedMethod(defaultMethod._id)
-          // Update the form data with the default shipping method without changing the step
           if (typeof onContinue === 'function') {
-            onContinue({ shippingMethod: defaultMethod }, null, true) // Changed 1 to null
+            onContinue({ shippingMethod: defaultMethod }, null, true)
           }
         }, 0)
       }
     }
     return () => clearTimeout(timer)
-  }, [shippingMethods, selectedMethod, onContinue])
+  }, [shippingMethods, selectedMethod, onContinue, initialMethod])
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -74,15 +104,13 @@ export default function ShippingMethods({ onContinue, initialMethod = null }) {
 
       <form onSubmit={handleSubmit}>
         <div className="border border-gray-200 rounded-md overflow-hidden mb-6">
-          {status === 'succeeded' &&
-            shippingMethods &&
-            shippingMethods.length > 0 && (
-              <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                <h3 className="text-sm font-medium text-gray-700">
-                  {shippingMethods[0]?.name || 'SHIPPING METHODS'}
-                </h3>
-              </div>
-            )}
+          {status === 'succeeded' && shippingMethods.length > 0 && (
+            <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+              <h3 className="text-sm font-medium text-gray-700">
+                AVAILABLE SHIPPING METHODS
+              </h3>
+            </div>
+          )}
 
           <div className="p-4">
             {status === 'loading' && (
@@ -95,9 +123,7 @@ export default function ShippingMethods({ onContinue, initialMethod = null }) {
                 Error loading shipping methods: {error}
               </div>
             )}
-            {status === 'succeeded' &&
-            shippingMethods &&
-            shippingMethods.length > 0 ? (
+            {status === 'succeeded' && shippingMethods.length > 0 ? (
               shippingMethods.map((method) => {
                 if (!method) return null
 
@@ -121,35 +147,30 @@ export default function ShippingMethods({ onContinue, initialMethod = null }) {
                     >
                       <div>
                         <span className="block text-sm font-medium text-gray-900">
-                          {method.name || 'Standard Shipping'}
+                          {method.name}
                         </span>
-                        {method.description && (
-                          <span className="block text-xs text-gray-500 mt-1">
-                            {method.description}
-                          </span>
-                        )}
+                        <span className="block text-xs text-gray-500 mt-1">
+                          {method.description || 'Standard delivery'}
+                        </span>
                       </div>
-                      <span className="text-sm font-medium text-[#c89b5a] ml-4">
-                        ₹
-                        {method.price
-                          ? Number(method.price).toLocaleString('en-IN')
-                          : '0'}
+                      <span className="text-sm font-medium text-[#c89b5a] ml-4 whitespace-nowrap">
+                        ₹{Number(method.price).toLocaleString('en-IN')}
                       </span>
                     </label>
                   </div>
                 )
               })
+            ) : status === 'succeeded' ? (
+              <div className="text-center py-4">
+                No shipping methods available for your location
+              </div>
             ) : status === 'loading' ? (
               <div className="text-center py-4">
                 Loading shipping methods...
               </div>
-            ) : status === 'failed' ? (
+            ) : (
               <div className="text-red-500 text-sm py-4">
                 Error loading shipping methods: {error || 'Unknown error'}
-              </div>
-            ) : (
-              <div className="text-center py-4">
-                No shipping methods available
               </div>
             )}
           </div>

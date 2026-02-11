@@ -93,8 +93,7 @@ export const { selectShippingMethod, clearShippingMethod } =
 export default shippingSlice.reducer
 
 // Selectors
-export const selectAllShippingMethods = (state) =>
-  state.shipping.methods.filter((method) => method.isDefault === true)
+export const selectAllShippingMethods = (state) => state.shipping.methods
 export const selectSelectedShippingMethod = (state) =>
   state.shipping.selectedMethod
 export const selectShippingStatus = (state) => state.shipping.status
