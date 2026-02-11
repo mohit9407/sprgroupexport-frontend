@@ -145,23 +145,44 @@ const productsSlice = createSlice({
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.status = 'succeeded'
-        // Handle different response structures
         const response = action.payload
 
-        if (response.data && Array.isArray(response.data.data)) {
-          // For paginated response: { data: { data: [...], total, page, pages } }
-          state.items = response.data.data
-          state.filters.totalItems = response.data.total || 0
-          state.filters.totalPages = response.data.pages || 1
-          state.filters.page = response.data.page || 1
-        } else if (Array.isArray(response.data)) {
-          // For non-paginated array response: { data: [...] }
+        // Handle API response with pagination
+        if (response && Array.isArray(response.data)) {
           state.items = response.data
+          state.filters = {
+            ...state.filters,
+            totalItems: response.pagination?.total || 0,
+            totalPages: response.pagination?.totalPages || 1,
+            page: response.pagination?.page || 1,
+            limit: response.pagination?.limit || state.filters.limit,
+          }
+        }
+        // Handle other response formats for backward compatibility
+        else if (response?.data?.data && Array.isArray(response.data.data)) {
+          state.items = response.data.data
+          state.filters = {
+            ...state.filters,
+            totalItems: response.data.total || 0,
+            totalPages: response.data.pages || 1,
+            page: response.data.page || 1,
+          }
         } else if (Array.isArray(response)) {
-          // For direct array response: [...]
           state.items = response
+          state.filters = {
+            ...state.filters,
+            totalItems: response.length,
+            totalPages: 1,
+            page: 1,
+          }
         } else {
           state.items = []
+          state.filters = {
+            ...state.filters,
+            totalItems: 0,
+            totalPages: 1,
+            page: 1,
+          }
         }
       })
       .addCase(fetchProducts.rejected, (state, action) => {
@@ -259,16 +280,21 @@ const productsSlice = createSlice({
 })
 
 // Selectors
-export const selectAllProducts = (state) => ({
-  data: sortByCreatedAtDesc(state.products.items),
-  pagination: {
-    totalItems: state.products.filters.totalItems,
-    totalPages: state.products.filters.totalPages,
-    currentPage: state.products.filters.page,
-    pageSize: state.products.filters.limit,
-  },
-  isLoading: state.products.status === 'loading',
-  error: state.products.error,
-})
+export const selectAllProducts = (state) => {
+  const { items, filters, status, error } = state.products
+
+  return {
+    items: sortByCreatedAtDesc(items),
+    status,
+    error,
+    filters,
+    pagination: {
+      currentPage: filters.page,
+      totalPages: filters.totalPages,
+      totalItems: filters.totalItems,
+      itemsPerPage: filters.limit,
+    },
+  }
+}
 
 export default productsSlice.reducer

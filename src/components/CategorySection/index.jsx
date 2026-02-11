@@ -77,7 +77,7 @@ const CategorySection = () => {
                 <CategoryCard
                   title={category.title}
                   imageUrl={category.image.mediumUrl}
-                  href={`/shop?category=${category.slug}`}
+                  href={`/shop?category=${category.id}`}
                   onClick={category.onClick}
                   className="w-full h-full cursor-pointer hover:opacity-90 transition-opacity"
                 />
