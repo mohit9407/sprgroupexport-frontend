@@ -33,6 +33,7 @@ export default function CheckoutPage() {
   const [outOfStockError, setOutOfStockError] = useState(null)
   const [addressError, setAddressError] = useState('')
   const [paymentError, setPaymentError] = useState('')
+  const { userOrders = [] } = useSelector((state) => state.order || {})
 
   // Get order and order status state from Redux
   const { order, loading, error, success } = useSelector((state) => state.order)
@@ -205,6 +206,11 @@ export default function CheckoutPage() {
         // Prepare order data
         const shippingCost = Number(formData.shippingMethod?.price || 0)
 
+        // Calculate first order discount (5% of subtotal)
+        const isFirstOrder = userOrders?.length === 0
+        const discount = isFirstOrder ? Math.round(subtotal * 0.05) : 0
+        const total = subtotal + shippingCost - discount
+
         const orderData = {
           user: user?._id,
           shippingMethod: formData.shippingMethod?._id,
@@ -216,8 +222,10 @@ export default function CheckoutPage() {
           paymentProviderOrderId: stepData.paymentProviderOrderId || null,
           orderStatus: pendingStatus._id,
           subtotal: subtotal,
+          discount: discount,
           tax: 0,
-          total: subtotal + shippingCost,
+          total: total,
+          discountReason: isFirstOrder ? 'first_order_5_percent' : null,
           comments: stepData.orderNotes || '',
         }
 

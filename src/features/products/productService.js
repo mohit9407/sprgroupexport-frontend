@@ -32,7 +32,7 @@ export const fetchAllProducts = async (filters = {}) => {
     const response = await api.get(
       `/product/get-all-product?${params.toString()}`,
     )
-    return response.data
+    return response
   } catch (error) {
     console.error('Error fetching products:', error)
     throw error // Re-throw to be caught by the thunk

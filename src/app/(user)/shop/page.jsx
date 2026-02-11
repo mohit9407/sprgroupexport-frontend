@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic'
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { selectAllProducts } from '@/features/products/productsSlice'
 import ProductCard from '@/components/ProductCard'
 import { fetchProducts } from '@/features/products/productsSlice'
 import { fetchAllCategories } from '@/features/categories/categoriesSlice'
@@ -114,12 +115,19 @@ function ShopPageContent() {
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [switchToEmail, setSwitchToEmail] = useState(false)
   const dispatch = useDispatch()
+  // Get products data using the selector
   const {
     items: products = [],
     status,
     error,
-    filters: currentFilters,
-  } = useSelector((state) => state.products || {})
+    filters: currentFilters = {},
+    pagination = {
+      currentPage: 1,
+      totalPages: 1,
+      totalItems: 0,
+      itemsPerPage: 15,
+    },
+  } = useSelector((state) => selectAllProducts(state) || {})
 
   const { allCategories = { data: [] }, status: categoriesStatus } =
     useSelector((state) => state.categories || {})
@@ -151,7 +159,7 @@ function ShopPageContent() {
             ? filters.categories
             : selectedCategories,
         sortBy: filters.sortBy !== undefined ? filters.sortBy : sortBy,
-        page: 1, // Reset to first page when filters change
+        page: filters.page !== undefined ? filters.page : 1,
         limit: filters.limit !== undefined ? filters.limit : itemsPerPage,
       }
 
@@ -190,13 +198,16 @@ function ShopPageContent() {
     }
   }, [status, categoriesStatus, dispatch, applyFilters])
 
-  // Map products for display with category names (client-side only)
-  const [mappedProducts, setMappedProducts] = useState([])
+  // Memoize the categories data to prevent unnecessary re-renders
+  const categoriesData = useMemo(
+    () => allCategories?.data || [],
+    [allCategories?.data],
+  )
 
-  useEffect(() => {
-    // This will only run on the client side
-    setMappedProducts(mapProducts(products, allCategories))
-  }, [products, allCategories])
+  // Memoize mapped products to prevent unnecessary recalculations
+  const mappedProducts = useMemo(() => {
+    return mapProducts(products, categoriesData)
+  }, [products, categoriesData])
 
   const toggleCategory = (categoryId) => {
     setExpandedCategories((prev) => ({
@@ -224,7 +235,16 @@ function ShopPageContent() {
       categories: [],
       sortBy: 'newest',
       limit: 15,
+      page: 1,
     })
+  }
+
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= pagination.totalPages) {
+      applyFilters({ page: newPage })
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
   }
   return (
     <div className="container mx-auto px-4 py-8">
@@ -334,34 +354,107 @@ function ShopPageContent() {
           )}
 
           {/* Pagination */}
-          <div className="mt-8 flex justify-center">
-            <nav
-              className="inline-flex rounded-md shadow-sm -space-x-px"
-              aria-label="Pagination"
-            >
-              <button className="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                Previous
-              </button>
-              <button className="px-3 py-2 border-t border-b border-gray-300 bg-white text-sm font-medium text-blue-600 hover:bg-blue-50">
-                1
-              </button>
-              <button className="px-3 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                2
-              </button>
-              <button className="px-3 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                3
-              </button>
-              <span className="px-3 py-2 border border-gray-300 bg-white text-sm text-gray-700">
-                ...
-              </span>
-              <button className="px-3 py-2 border-t border-b border-r border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                10
-              </button>
-              <button className="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                Next
-              </button>
-            </nav>
-          </div>
+          {pagination.totalPages > 1 && (
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-sm text-gray-700">
+                Showing{' '}
+                <span className="font-medium">
+                  {(pagination.currentPage - 1) * pagination.itemsPerPage + 1}
+                </span>{' '}
+                to{' '}
+                <span className="font-medium">
+                  {Math.min(
+                    pagination.currentPage * pagination.itemsPerPage,
+                    pagination.totalItems,
+                  )}
+                </span>{' '}
+                of <span className="font-medium">{pagination.totalItems}</span>{' '}
+                results
+              </div>
+              <nav
+                className="inline-flex rounded-md shadow-sm -space-x-px"
+                aria-label="Pagination"
+              >
+                <button
+                  onClick={() => handlePageChange(pagination.currentPage - 1)}
+                  disabled={pagination.currentPage === 1}
+                  className={`px-3 py-2 rounded-l-md border border-gray-300 text-sm font-medium ${pagination.currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-500 hover:bg-gray-50'}`}
+                >
+                  Previous
+                </button>
+
+                {/* First Page */}
+                {pagination.currentPage > 2 && (
+                  <button
+                    onClick={() => handlePageChange(1)}
+                    className="px-3 py-2 border-t border-b border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    1
+                  </button>
+                )}
+
+                {/* Ellipsis before current page if needed */}
+                {pagination.currentPage > 3 && (
+                  <span className="px-3 py-2 border border-gray-300 bg-white text-sm text-gray-700">
+                    ...
+                  </span>
+                )}
+
+                {/* Previous page button */}
+                {pagination.currentPage > 1 && (
+                  <button
+                    onClick={() => handlePageChange(pagination.currentPage - 1)}
+                    className="px-3 py-2 border-t border-b border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    {pagination.currentPage - 1}
+                  </button>
+                )}
+
+                {/* Current page */}
+                <button
+                  className="px-3 py-2 border-t border-b border-gray-300 bg-blue-50 text-sm font-medium text-blue-600"
+                  aria-current="page"
+                >
+                  {pagination.currentPage}
+                </button>
+
+                {/* Next page button */}
+                {pagination.currentPage < pagination.totalPages && (
+                  <button
+                    onClick={() => handlePageChange(pagination.currentPage + 1)}
+                    className="px-3 py-2 border-t border-b border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    {pagination.currentPage + 1}
+                  </button>
+                )}
+
+                {/* Ellipsis after current page if needed */}
+                {pagination.currentPage < pagination.totalPages - 2 && (
+                  <span className="px-3 py-2 border border-gray-300 bg-white text-sm text-gray-700">
+                    ...
+                  </span>
+                )}
+
+                {/* Last Page */}
+                {pagination.currentPage < pagination.totalPages - 1 && (
+                  <button
+                    onClick={() => handlePageChange(pagination.totalPages)}
+                    className="px-3 py-2 border-t border-b border-r border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    {pagination.totalPages}
+                  </button>
+                )}
+
+                <button
+                  onClick={() => handlePageChange(pagination.currentPage + 1)}
+                  disabled={pagination.currentPage === pagination.totalPages}
+                  className={`px-3 py-2 rounded-r-md border border-gray-300 text-sm font-medium ${pagination.currentPage === pagination.totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-500 hover:bg-gray-50'}`}
+                >
+                  Next
+                </button>
+              </nav>
+            </div>
+          )}
         </div>
       </div>
     </div>

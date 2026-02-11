@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useSelector } from 'react-redux'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -12,15 +13,15 @@ export default function OrderSummary({
   error = null,
   paymentMethod = '',
 }) {
-  const [showError, setShowError] = useState(false);
-  
+  const [showError, setShowError] = useState(false)
+
   // Clear error when payment method is selected
   useEffect(() => {
     if (paymentMethod) {
-      setShowError(false);
+      setShowError(false)
     }
-  }, [paymentMethod]);
-  
+  }, [paymentMethod])
+
   // Calculate subtotal from cart items
   const subtotal = cartItems.reduce((sum, item) => {
     return sum + item.price * item.quantity
@@ -29,18 +30,32 @@ export default function OrderSummary({
   // Calculate shipping cost based on selected method
   const shippingCost = Number(shippingMethod?.price) || 0
 
-  // Calculate total numerically
-  const total = Number(subtotal) + Number(shippingCost)
+  // Get user's order data
+  const { userOrders = [] } = useSelector((state) => state.order || {})
+  const isFirstOrder = userOrders.length === 0
+
+  // Calculate discount (5% for first order)
+  const discount = isFirstOrder ? Math.round(subtotal * 0.05) : 0
+
+  // Calculate total
+  const total = Number(subtotal) + Number(shippingCost) - discount
 
   const summaryItems = [
     {
-      label: 'Sub Total',
-      value: `₹${Number(subtotal).toLocaleString('en-IN')}`,
+      label: 'Subtotal',
+      value: `₹${subtotal.toLocaleString()}`,
     },
-    { label: 'Discount', value: '₹0' },
+    {
+      label: `Discount${isFirstOrder ? ' (5% First Order)' : ''}`,
+      value: `-₹${discount.toLocaleString()}`,
+      isDiscount: true,
+    },
     {
       label: 'Shipping Cost',
-      value: shippingCost > 0 ? `₹${Number(shippingCost).toLocaleString('en-IN')}` : 'FREE',
+      value:
+        shippingCost > 0
+          ? `₹${Number(shippingCost).toLocaleString('en-IN')}`
+          : 'FREE',
     },
   ]
   return (
@@ -82,8 +97,11 @@ export default function OrderSummary({
       {/* Order Summary */}
       <div className="space-y-4 text-sm">
         {summaryItems.map((item, index) => (
-          <div key={index} className="flex justify-between">
-            <span className="text-gray-600">{item.label}</span>
+          <div
+            key={item.label}
+            className={`flex justify-between py-2 ${item.isDiscount ? 'text-green-600' : 'text-gray-600'}`}
+          >
+            <span>{item.label}</span>
             <span className="font-medium">{item.value}</span>
           </div>
         ))}
@@ -115,7 +133,9 @@ export default function OrderSummary({
         {showError && (
           <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700">
             <p className="font-medium">Payment Method Required</p>
-            <p className="text-sm">Please select a payment method to continue with your order.</p>
+            <p className="text-sm">
+              Please select a payment method to continue with your order.
+            </p>
           </div>
         )}
 
@@ -133,11 +153,11 @@ export default function OrderSummary({
             type="button"
             onClick={() => {
               if (!paymentMethod) {
-                setShowError(true);
-                return;
+                setShowError(true)
+                return
               }
-              setShowError(false);
-              onContinue({}, 'placeOrder');
+              setShowError(false)
+              onContinue({}, 'placeOrder')
             }}
             className="w-full bg-[#c89b5a] text-white py-3 px-4 rounded-md hover:bg-[#b38950]
              transition-colors font-medium uppercase text-sm tracking-wider disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"

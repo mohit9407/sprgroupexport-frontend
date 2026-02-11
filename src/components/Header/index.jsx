@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import Image from 'next/image'
 import Link from 'next/link'
+import { fetchUserOrders } from '@/features/order/orderSlice'
 
 // Import Components
 import NotificationBar from './components/NotificationBar'
@@ -14,12 +16,25 @@ import BreadcrumbsWrapper from './components/BreadcrumbsWrapper'
 import StickyHeader from './components/StickyHeader'
 
 const Header = () => {
-  const [showNotification, setShowNotification] = useState(true)
+  const dispatch = useDispatch()
+  const { userOrders = [] } = useSelector((state) => state.order)
+  const [showNotification, setShowNotification] = useState(false)
   const [showCategories, setShowCategories] = useState(false)
   const [showAccountDropdown, setShowAccountDropdown] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [showCatalogDropdown, setShowCatalogDropdown] = useState(false)
   const [activeSubmenu, setActiveSubmenu] = useState(null)
+
+  // Fetch user orders when component mounts
+  useEffect(() => {
+    dispatch(fetchUserOrders())
+  }, [dispatch])
+
+  // Update notification visibility based on order count
+  useEffect(() => {
+    // Only show notification if user has 0 orders
+    setShowNotification(userOrders.length === 0)
+  }, [userOrders.length])
 
   const navItems = [
     { name: 'HOME', href: '/' },
@@ -52,10 +67,12 @@ const Header = () => {
       <StickyHeader />
 
       <header className={`w-full font-sans bg-white`}>
-        <NotificationBar
-          showNotification={showNotification}
-          onClose={() => setShowNotification(false)}
-        />
+        {showNotification && (
+          <NotificationBar
+            showNotification={showNotification}
+            onClose={() => setShowNotification(false)}
+          />
+        )}
 
         {/* Main Header */}
         <div className="border-b border-gray-200 relative bg-white z-1">

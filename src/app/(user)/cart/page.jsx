@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useCart } from '@/context/CartContext'
+import { useSelector } from 'react-redux'
 import { FiShoppingBag, FiPlus, FiMinus, FiTrash2 } from 'react-icons/fi'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -91,8 +92,11 @@ export default function CartPage() {
     }
   }
 
+  const { userOrders = [] } = useSelector((state) => state.order || {})
+  const isFirstOrder = userOrders.length === 0
+
   const subtotal = getCartTotal()
-  const discount = 0 // You can implement coupon logic here
+  const discount = isFirstOrder ? Math.round(subtotal * 0.05) : 0
   const total = subtotal - discount
   if (!isClient || isLoading) {
     return (
@@ -239,29 +243,33 @@ export default function CartPage() {
                       <input
                         type="number"
                         min="1"
-                        value={localQuantities[item.id] !== undefined ? localQuantities[item.id] : (item.quantity || 1)}
+                        value={
+                          localQuantities[item.id] !== undefined
+                            ? localQuantities[item.id]
+                            : item.quantity || 1
+                        }
                         onChange={(e) => {
-                          const newValue = parseInt(e.target.value) || 1;
-                          setLocalQuantities(prev => ({
+                          const newValue = parseInt(e.target.value) || 1
+                          setLocalQuantities((prev) => ({
                             ...prev,
-                            [item.id]: newValue
-                          }));
+                            [item.id]: newValue,
+                          }))
                         }}
                         onBlur={(e) => {
-                          const newValue = parseInt(e.target.value) || 1;
+                          const newValue = parseInt(e.target.value) || 1
                           if (newValue !== (item.quantity || 1)) {
-                            handleQuantityChange(item.id, newValue);
+                            handleQuantityChange(item.id, newValue)
                           }
                           // Clear the local quantity after blur to sync with server
-                          setLocalQuantities(prev => {
-                            const newState = {...prev};
-                            delete newState[item.id];
-                            return newState;
-                          });
+                          setLocalQuantities((prev) => {
+                            const newState = { ...prev }
+                            delete newState[item.id]
+                            return newState
+                          })
                         }}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
-                            e.target.blur(); // Trigger blur to save when Enter is pressed
+                            e.target.blur() // Trigger blur to save when Enter is pressed
                           }
                         }}
                         disabled={updatingItemId === item.id}
@@ -360,8 +368,10 @@ export default function CartPage() {
               </div>
 
               <div className="flex justify-between">
-                <span className="text-gray-600">Discount</span>
-                <span className="text-green-600">
+                <span className="text-gray-600">
+                  Discount{isFirstOrder && ' (5% First Order)'}
+                </span>
+                <span className="text-green-600 ml-2">
                   -₹{discount.toLocaleString()}
                 </span>
               </div>
