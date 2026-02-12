@@ -5,7 +5,7 @@ import { fetchProducts } from '@/features/products/productsSlice'
 import { useAuth } from '@/context/AuthContext'
 import { useWishlist } from '@/context/WishlistContext'
 
-const NewArrivalSection = () => {
+const NewArrivalSection = ({ title }) => {
   const dispatch = useDispatch()
   const [localLikes, setLocalLikes] = useState({})
   const { isInWishlist } = useWishlist()
@@ -85,7 +85,8 @@ const NewArrivalSection = () => {
     return (
       <section className="px-4 sm:px-6 lg:px-8 py-12">
         <div className="max-w-7xl mx-auto text-center">
-          <p>Loading products...</p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">{title || 'NEW ARRIVAL'}</h2>
+          <p className="text-gray-600">Loading products...</p>
         </div>
       </section>
     )
@@ -105,7 +106,7 @@ const NewArrivalSection = () => {
     <section className="px-4 sm:px-6 lg:px-8 py-12">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">NEW ARRIVAL</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">{title || 'NEW ARRIVAL'}</h2>
           <p className="text-gray-600">New Arrival Products</p>
         </div>
 

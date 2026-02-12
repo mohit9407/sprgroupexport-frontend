@@ -9,17 +9,22 @@ import SectionHeader from '@/components/SectionHeader'
 import NewArrivalSection from '@/components/NewArrivalSection'
 import FeaturesSection from '@/components/FeaturesSection'
 import { fetchParallaxBanners } from '@/features/parallax-banner/parallaxBannerSlice'
+import { getGeneralSetting } from '@/features/general-setting/generatSettingSlice'
 
 export default function UserDashboard() {
   const dispatch = useDispatch()
 
-  const { banners = [], status } = useSelector((state) => state.parallaxBanner)
+  const { banners = [], status: bannerStatus } = useSelector((state) => state.parallaxBanner)
+  const { data: generalSettings, status: generalSettingsStatus } = useSelector((state) => state.generalSetting)
 
   useEffect(() => {
-    if (status === 'idle') {
+    if (bannerStatus === 'idle') {
       dispatch(fetchParallaxBanners())
     }
-  }, [status, dispatch])
+    if (generalSettingsStatus === 'idle') {
+      dispatch(getGeneralSetting())
+    }
+  }, [bannerStatus, generalSettingsStatus, dispatch])
   const handleButtonClick = (section) => {
     console.log(`Navigating to: ${section.title}`)
   }
@@ -44,7 +49,7 @@ export default function UserDashboard() {
         />
       )}
       <div className="bg-white relative z-1">
-        <CategorySection />
+        <CategorySection title={generalSettings?.productCategorySectionText} />
       </div>
       <div className="bg-white h-25 relative z-1" />
       {banners?.[1] && (
@@ -64,7 +69,7 @@ export default function UserDashboard() {
       <div className="bg-white py-12 relative z-1">
         <div className="container mx-auto px-4">
           <SectionHeader
-            title="TOP SELLING OF THE WEEK"
+            title={generalSettings?.topSellingSectionText}
             subtitle="TOP SELLING PRODUCTS OF THE WEEK"
           />
         </div>
@@ -72,7 +77,7 @@ export default function UserDashboard() {
 
       {/* New Arrival Section */}
       <div className="bg-white relative z-1">
-        <NewArrivalSection />
+        <NewArrivalSection title={generalSettings?.newArrivalSectionText} />
       </div>
       <div className="bg-white h-25 relative z-1" />
       {banners?.[2] && (

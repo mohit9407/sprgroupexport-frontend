@@ -1,14 +1,27 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import { FaTwitterSquare, FaEnvelope } from 'react-icons/fa'
 import { GrInstagram } from 'react-icons/gr'
 import { BsGoogle } from 'react-icons/bs'
 import { ImFacebook2 } from 'react-icons/im'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useDispatch, useSelector } from 'react-redux'
+import { getGeneralSetting } from '@/features/general-setting/generatSettingSlice'
 
-const Footer = () => {
+const Footer = ({ settings = {} }) => {
+  const dispatch = useDispatch()
+  const { data: generalSettings, status } = useSelector((state) => state.generalSetting || { data: null, status: 'idle' })
+
+  useEffect(() => {
+    if (status === 'idle') {
+      dispatch(getGeneralSetting())
+    }
+  }, [status, dispatch])
+  
+  // Use settings from props if available, otherwise use empty object
+  const safeSettings = settings || {}
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -23,48 +36,57 @@ const Footer = () => {
           <div className="space-y-4">
             <div className="w-64 h-40 relative">
               <Image
-                src="/spr_logo.png"
+                src={safeSettings.logo || '/spr_logo.png'}
                 alt="SPR Logo"
                 fill
                 className="object-contain object-left"
                 sizes="(max-width: 768px) 100vw, 256px"
                 priority
+                onError={(e) => {
+                  e.target.src = '/spr_logo.png';
+                }}
               />
             </div>
 
             <div className="flex items-center text-gray-600 text-xs">
               <FaEnvelope className="w-5 h-5 mr-1 text-gray-500 flex-shrink-0" />
               <a
-                href="mailto:sprgroup100@gmail.com"
+                href={`mailto:${generalSettings?.contactUsEmail || 'sprgroup100@gmail.com'}`}
                 className="hover:underline hover:text-[#BA8B4E] text-[15px] text-gray-700 ml-1"
               >
-                sprgroup100@gmail.com
+                {generalSettings?.contactUsEmail || 'sprgroup100@gmail.com'}
               </a>
             </div>
             <div className="flex space-x-3 pt-2">
               <a
-                href="#"
+                href={safeSettings.faceBookLink || generalSettings?.facebook_link || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-gray-500 hover:text-[#3b5998]"
                 aria-label="Facebook"
               >
                 <ImFacebook2 className="w-6 h-6" />
               </a>
               <a
-                href="#"
+                href={safeSettings.twitterLink || generalSettings?.twitter_link || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-gray-500 hover:text-[#1DA1F2]"
                 aria-label="Twitter"
               >
                 <FaTwitterSquare className="w-6 h-6" />
               </a>
               <a
-                href="#"
+                href={safeSettings.googleLink || generalSettings?.google_link || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-gray-500 hover:text-[#DB4437]"
                 aria-label="Google"
               >
                 <BsGoogle className="w-6 h-6" />
               </a>
               <a
-                href="#"
+                href={safeSettings.instagramLink || generalSettings?.instagram_link || '#'}
                 className="text-gray-500 hover:text-[#E1306C]"
                 aria-label="Instagram"
               >
@@ -167,17 +189,6 @@ const Footer = () => {
                 </Link>
               </li>
             </ul>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-semibold mb-4 text-gray-800 uppercase tracking-wider">
-              INSTAGRAM FEED
-            </h3>
-            {/* <div className="grid grid-cols-3 gap-2">
-                            {[...Array(6)].map((_, i) => (
-                                <div key={i} className="aspect-square bg-gray-100 rounded-sm hover:opacity-80 transition-opacity"></div>
-                            ))}
-                        </div> */}
           </div>
         </div>
       </div>

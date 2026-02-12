@@ -7,21 +7,22 @@ import api from '@/lib/axios'
 export async function generateMetadata() {
   try {
     const resp = await api.get('/seo-content/get-all')
+    const settings = await api.get('/settings/get-all')
     const seo = resp.data?.[0]
-
-    if (!seo) {
+    const settingsData = settings.data?.[0]
+    if (!seo || !settingsData) {
       return {
-        title: 'SPR GROUP EXPORT',
-        description: 'spr group export ecommerce platform',
+        title: settingsData.siteNameOrLogo,
+        description: settingsData.contactUsDescription,
       }
     }
 
     return {
-      title: seo.title,
+      title: settingsData.siteNameOrLogo,
       description: seo.description || '',
       keywords: seo.keywords || '',
       icons: {
-        icon: '/spr_logo.png',
+        icon: settingsData.favicon,
       },
     }
   } catch (err) {
@@ -31,7 +32,7 @@ export async function generateMetadata() {
       title: 'SPR GROUP EXPORT',
       description: 'spr group export ecommerce platform',
       icons: {
-        icon: '/spr_logo.png',
+        icon: settingsData.favicon,
       },
     }
   }

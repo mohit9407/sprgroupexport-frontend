@@ -11,7 +11,7 @@ import {
   selectCategoriesError,
 } from '@/features/categories/categoriesSlice'
 
-const CategorySection = () => {
+const CategorySection = ({ title }) => {
   const router = useRouter()
   const dispatch = useDispatch()
   const categoriesData = useSelector(selectAllCategories)
@@ -47,7 +47,7 @@ const CategorySection = () => {
     return (
       <section className="py-10 px-4 sm:px-6 lg:px-8">
         <div className="text-3xl font-bold text-center mb-12 uppercase tracking-wider text-gray-800">
-          LOADING CATEGORIES...
+          {title || 'LOADING CATEGORIES...'}
         </div>
       </section>
     )
@@ -67,7 +67,7 @@ const CategorySection = () => {
   return (
     <section className="py-10 px-4 sm:px-6 lg:px-8">
       <div className="text-3xl font-bold text-center mb-12 uppercase tracking-wider text-gray-800">
-        PRODUCT CATEGORIES
+        {title || 'PRODUCT CATEGORIES'}
       </div>
       <div className="w-full">
         {mappedCategories.length > 0 ? (
