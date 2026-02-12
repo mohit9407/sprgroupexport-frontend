@@ -1,13 +1,33 @@
 'use client'
 
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer/Footer'
+import { useDispatch, useSelector } from 'react-redux'
+import { fetchSettings } from '@/features/setting/settingSlice'
 
 export default function UserLayout({ children }) {
+  const { settings = [], status: settingStatus = 'idle' } = useSelector((state) => state.settings || { settings: [], status: 'idle' });
+  const dispatch = useDispatch();
+  
+  useEffect(() => {
+    if (settingStatus === 'idle') {
+      dispatch(fetchSettings());
+    }
+  }, [settingStatus, dispatch]);
+
+  // Show loading state while settings are being fetched
+  if (settingStatus === 'loading') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#BA8B4E]"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header />
+      <Header settings={settings[0] || {}}/>
       <main className="grow w-full mx-auto">
         <Suspense
           fallback={
@@ -22,7 +42,7 @@ export default function UserLayout({ children }) {
           {children}
         </Suspense>
       </main>
-      <Footer />
+      <Footer settings={settings[0]} />
     </div>
   )
 }

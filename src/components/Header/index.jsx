@@ -15,7 +15,7 @@ import Navigation from './components/Navigation'
 import BreadcrumbsWrapper from './components/BreadcrumbsWrapper'
 import StickyHeader from './components/StickyHeader'
 
-const Header = () => {
+const Header = ({settings = {}}) => {
   const dispatch = useDispatch()
   const { userOrders = [] } = useSelector((state) => state.order)
   const [showNotification, setShowNotification] = useState(false)
@@ -100,12 +100,14 @@ const Header = () => {
                 {/* Logo */}
                 <Link href="/" className="flex items-center">
                   <Image
-                    src="/spr_logo.png"
+                    src={settings?.logo || '/spr_logo.png'}
                     alt="SPR Group of Export"
                     width={270}
                     height={175}
-                    // className="h-auto w-auto"
                     priority
+                    onError={(e) => {
+                      e.target.src = '/spr_logo.png';
+                    }}
                   />
                 </Link>
 
