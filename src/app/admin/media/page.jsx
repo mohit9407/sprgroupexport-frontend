@@ -12,8 +12,18 @@ const fetchImages = async () => {
     const response = await api.get('/media/get-all')
     return response?.data || []
   } catch (e) {
-    console.error('Get All Images: ', e)
+    console.error('Get All Images error: ', e)
+    return []
   }
+}
+
+const formatSize = (bytes) => {
+  if (!bytes || bytes === 0) return '0 B'
+  const gb = bytes / (1024 * 1024 * 1024)
+  const mb = bytes / (1024 * 1024)
+  if (gb >= 1) return `${gb.toFixed(2)} GB`
+  if (mb >= 1) return `${mb.toFixed(2)} MB`
+  return `${(bytes / 1024).toFixed(2)} KB`
 }
 
 export default function MediaListPage() {
@@ -21,11 +31,14 @@ export default function MediaListPage() {
   const [selected, setSelected] = useState([])
   const [openAddImage, setOpenAddImage] = useState(false)
   const [openDelete, setOpenDelete] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   const loadImages = async () => {
+    setLoading(true)
     const imgs = await fetchImages()
     setImages(imgs)
     setSelected([])
+    setLoading(false)
   }
 
   useEffect(() => {
@@ -112,37 +125,74 @@ export default function MediaListPage() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-        {images.map((img) => (
-          <div
-            key={img._id}
-            className={`text-center ${
-              isSelected(img._id)
-                ? 'border-2 border-blue-600 opacity-80'
-                : 'border border-gray-200 hover:border-2 hover:border-gray-400'
-            }`}
-          >
-            <div
-              onClick={() => toggleSelect(img._id)}
-              className={`
-                flex justify-center items-center cursor-pointer rounded p-1 transition h-32`}
-            >
-              <Image
-                src={img.thumbnailUrl}
-                alt=""
-                width={200}
-                height={100}
-                className="max-h-28 object-contain"
-              />
-            </div>
-
-            <a
-              href={`/admin/media/detail/${img._id}`}
-              className="block py-2 bg-sky-600 text-white text-sm rounded"
-            >
-              View Detail
-            </a>
+        {loading ? (
+          <div className="col-span-full flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
-        ))}
+        ) : images.length === 0 ? (
+          <div className="col-span-full text-center py-10 text-gray-500">
+            No media found. Upload some images or videos.
+          </div>
+        ) : (
+          images.map((img) => {
+            const isVideo = img.type === 'video'
+            const original = img.sizes?.original
+            const compressed = img.sizes?.compressed
+
+            return (
+              <div
+                key={img._id}
+                className={`text-center ${
+                  isSelected(img._id)
+                    ? 'border-2 border-blue-600 opacity-80'
+                    : 'border border-gray-200 hover:border-2 hover:border-gray-400'
+                }`}
+              >
+                <div
+                  onClick={() => toggleSelect(img._id)}
+                  className={`
+                    flex justify-center items-center cursor-pointer rounded p-1 transition h-32 relative`}
+                >
+                  {isVideo ? (
+                    <>
+                      <video
+                        src={img.videoUrl}
+                        className="max-h-28 object-contain"
+                        style={{ maxWidth: '100%' }}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="bg-black/50 rounded-full p-2">
+                          <svg
+                            className="w-6 h-6 text-white"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                          </svg>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <Image
+                      src={img.thumbnailUrl || img.largeUrl}
+                      alt=""
+                      width={200}
+                      height={100}
+                      className="max-h-28 object-contain"
+                    />
+                  )}
+                </div>
+
+                <a
+                  href={`/admin/media/detail/${img._id}`}
+                  className="block py-2 bg-sky-600 text-white text-sm rounded"
+                >
+                  View Detail
+                </a>
+              </div>
+            )
+          })
+        )}
       </div>
       <ConfirmationModal
         open={openDelete}

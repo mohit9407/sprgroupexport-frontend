@@ -1,6 +1,5 @@
 import { Arrow, getDeepestActivePath } from '@/utils/adminRouteUtils'
-
-const { default: Link } = require('next/link')
+import Link from 'next/link'
 
 export function SidebarItem({
   item,
@@ -15,20 +14,24 @@ export function SidebarItem({
   if (item.childrens?.length) {
     return (
       <div>
-        <button
-          onClick={() => toggle(item.key)}
+        <div
           className={`w-full flex items-center justify-between px-3 py-2 rounded
           hover:bg-slate-800`}
         >
-          <span className="flex items-center gap-2">
+          <Link
+            href={item.path || '#'}
+            className="flex items-center gap-2 flex-1"
+          >
             {item?.icon && (
               <item.icon className="mr-2 w-4 h-4 text-slate-300" />
             )}
             {!collapsed && item.label}
-          </span>
+          </Link>
 
-          <Arrow open={open} collapsed={collapsed} />
-        </button>
+          <button onClick={() => toggle(item.key)} className="p-1">
+            <Arrow open={open} collapsed={collapsed} />
+          </button>
+        </div>
 
         {open && !collapsed && (
           <div className="ml-3 space-y-1">

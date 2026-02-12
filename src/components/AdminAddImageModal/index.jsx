@@ -28,7 +28,7 @@ export default function MediaUploadModal({ open, onClose, onNewImagesAdd }) {
 
   const addFiles = (fileList) => {
     const existingNames = new Set(files.map((f) => f.file.name))
-    const MAX_SIZE = 5 * 1024 * 1024
+    const MAX_SIZE = 50 * 1024 * 1024
 
     const newFiles = Array.from(fileList)
       .filter((file) => !existingNames.has(file.name))
@@ -37,7 +37,7 @@ export default function MediaUploadModal({ open, onClose, onNewImagesAdd }) {
         file,
         preview: URL.createObjectURL(file),
         valid: file.size <= MAX_SIZE,
-        error: file.size <= MAX_SIZE ? null : 'Invalid image (Max 5MB)',
+        error: file.size <= MAX_SIZE ? null : 'Invalid file (Max 50MB)',
       }))
 
     setFiles((prev) => [...prev, ...newFiles])
@@ -77,7 +77,7 @@ export default function MediaUploadModal({ open, onClose, onNewImagesAdd }) {
       })
 
       setStatus('success')
-      setMessage('Images uploaded successfully')
+      setMessage('Files uploaded successfully')
       onNewImagesAdd()
 
       setTimeout(() => {
@@ -109,7 +109,7 @@ export default function MediaUploadModal({ open, onClose, onNewImagesAdd }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="font-semibold text-lg">Add File Here</h2>
+          <h2 className="font-semibold text-lg">Add Files</h2>
           <button
             disabled={uploading}
             onClick={handleClose}
@@ -121,7 +121,7 @@ export default function MediaUploadModal({ open, onClose, onNewImagesAdd }) {
 
         <div className="p-4 space-y-4 max-h-[calc(100vh-160px)] overflow-auto">
           <p className="text-sm text-gray-600">
-            Click or Drop Images in the Box for Upload.
+            Click or Drop Images/Videos in the Box for Upload.
           </p>
 
           <div
@@ -134,7 +134,7 @@ export default function MediaUploadModal({ open, onClose, onNewImagesAdd }) {
           >
             {files.length === 0 && (
               <div className="m-auto text-gray-400">
-                Drop images here or click to browse
+                Drop images/videos here or click to browse
               </div>
             )}
 
@@ -144,12 +144,21 @@ export default function MediaUploadModal({ open, onClose, onNewImagesAdd }) {
                 className={`relative w-[140px] h-[140px] border rounded
                   overflow-hidden ${!item.valid && 'opacity-50'}`}
               >
-                <Image
-                  src={item.preview}
-                  alt=""
-                  fill
-                  className="object-contain"
-                />
+                {item.file.type.startsWith('video/') ? (
+                  <video
+                    src={item.preview}
+                    className="w-full h-full object-contain"
+                    muted
+                    controls={false}
+                  />
+                ) : (
+                  <Image
+                    src={item.preview}
+                    alt=""
+                    fill
+                    className="object-contain"
+                  />
+                )}
 
                 {!item.valid && (
                   <div
@@ -168,7 +177,7 @@ export default function MediaUploadModal({ open, onClose, onNewImagesAdd }) {
             ref={fileInputRef}
             type="file"
             multiple
-            accept="image/*"
+            accept="image/*,video/*"
             hidden
             disabled={uploading}
             onChange={(e) => addFiles(e.target.files)}

@@ -217,15 +217,20 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
       const isGold = selectedCategoryObj?.label?.toLowerCase() === 'gold'
       setIsGoldCategory(isGold)
 
-      // Reset gold-related fields if category is changed from gold to non-gold
-      if (!isGold) {
+      // Reset gold-related fields if category is changed from gold to non-gold (only when adding new product)
+      if (!isGold && !isEditMode) {
         setValue('carat', '')
         setValue('gram', 0)
         setValue('extraCost', 0)
         setGoldPrice(0)
         // Reset price if switching away from gold category
         setValue('price', 0)
-      } else if (isEditMode && defaultValues?.carat && defaultValues?.gram) {
+      } else if (
+        isGold &&
+        isEditMode &&
+        defaultValues?.carat &&
+        defaultValues?.gram
+      ) {
         // If editing and it's a gold product, calculate the initial price
         handleGoldPriceCalculation(defaultValues.carat, defaultValues.gram)
       }
@@ -844,16 +849,32 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                     <div className="flex flex-wrap gap-3">
                       {selectedSideImages.map((img, index) => (
                         <div key={index} className="relative group">
-                          <img
-                            src={img.thumbnailUrl || img.originalUrl || img}
-                            alt={`Side ${index + 1}`}
-                            className="h-24 w-24 object-cover rounded border"
-                            onError={(e) => {
-                              e.target.onerror = null
-                              e.target.src =
-                                img.mediumUrl || img.largeUrl || img
-                            }}
-                          />
+                          <div className="relative">
+                            <img
+                              src={img.thumbnailUrl || img.mediumUrl || img}
+                              alt={`Side ${index + 1}`}
+                              className="h-24 w-24 object-cover rounded border"
+                              onError={(e) => {
+                                e.target.onerror = null
+                                e.target.src =
+                                  img.mediumUrl || img.largeUrl || img
+                              }}
+                            />
+                            {/* Video indicator icon */}
+                            {img.type === 'video' && (
+                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <div className="bg-black/50 rounded-full p-1">
+                                  <svg
+                                    className="w-4 h-4 text-white"
+                                    fill="currentColor"
+                                    viewBox="0 0 20 20"
+                                  >
+                                    <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                                  </svg>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                           <button
                             type="button"
                             onClick={() => removeSideImage(index)}
@@ -882,7 +903,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                   selectedItems={selectedSideImages}
                   ref={sideImagesInputRef}
                   className="w-full"
-                  accept="image/*"
+                  accept="image/*,video/*"
                 />
                 {formMethods.formState.errors?.sideImages?.message && (
                   <span className="mt-1 block text-[11px] text-red-600">

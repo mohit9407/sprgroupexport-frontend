@@ -22,7 +22,6 @@ export default function WishlistPage() {
     if (typeof image === 'string') return image
     return (
       image.thumbnailUrl ||
-      image.originalUrl ||
       image.mediumUrl ||
       image.largeUrl ||
       '/placeholder-product.jpg'

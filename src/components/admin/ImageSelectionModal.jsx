@@ -13,7 +13,7 @@ export default function ImageSelectionModal({
   onSelect,
   title = 'Select Image',
   multiSelect = false,
-  selectedImages: externalSelectedImages = []
+  selectedImages: externalSelectedImages = [],
 }) {
   const [images, setImages] = useState([])
   const [loading, setLoading] = useState(false)
@@ -31,7 +31,7 @@ export default function ImageSelectionModal({
     setLoading(true)
     try {
       const response = await api.get('/media/get-all')
-      setImages(response.data || [])
+      setImages(response?.data || [])
     } catch (error) {
       console.error('Error fetching images:', error)
     } finally {
@@ -78,8 +78,8 @@ export default function ImageSelectionModal({
 
   // Dynamically import AdminAddImageModal to avoid SSR issues
   const MediaUploadModal = dynamic(
-    () => import('@/components/AdminAddImageModal').then(mod => mod.default),
-    { ssr: false }
+    () => import('@/components/AdminAddImageModal'),
+    { ssr: false },
   )
 
   return (
@@ -99,10 +99,10 @@ export default function ImageSelectionModal({
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {images.map((image) => {
-              const isSelected = multiSelect 
-                ? selectedImages.some(img => img._id === image._id)
-                : selectedImage?._id === image._id;
-                
+              const isSelected = multiSelect
+                ? selectedImages.some((img) => img._id === image._id)
+                : selectedImage?._id === image._id
+
               return (
                 <div
                   key={image._id}
@@ -113,35 +113,61 @@ export default function ImageSelectionModal({
                   }`}
                   onClick={() => {
                     if (multiSelect) {
-                      setSelectedImages(prev => {
-                        const exists = prev.some(img => img._id === image._id);
-                        return exists 
-                          ? prev.filter(img => img._id !== image._id)
-                          : [...prev, image];
-                      });
+                      setSelectedImages((prev) => {
+                        const exists = prev.some((img) => img._id === image._id)
+                        return exists
+                          ? prev.filter((img) => img._id !== image._id)
+                          : [...prev, image]
+                      })
                     } else {
-                      setSelectedImage(image);
+                      setSelectedImage(image)
                     }
                   }}
                 >
-                  <Image
-                    src={image.thumbnailUrl}
-                    alt=""
-                    width={200}
-                    height={100}
-                    className="max-h-28 object-contain"
-                  />
+                  {image.type === 'video' ? (
+                    <>
+                      <video
+                        src={image.videoUrl}
+                        poster={image.thumbnailUrl}
+                        className="max-h-28 object-contain w-full"
+                        style={{ maxWidth: '100%' }}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="bg-black/50 rounded-full p-2">
+                          <svg
+                            className="w-6 h-6 text-white"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                          </svg>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <Image
+                      src={image.thumbnailUrl || image.largeUrl}
+                      alt=""
+                      width={200}
+                      height={100}
+                      className="max-h-28 object-contain"
+                    />
+                  )}
                   {isSelected && (
                     <div className="absolute inset-0 bg-cyan-500/20 flex items-center justify-center">
                       <div className="w-6 h-6 bg-cyan-500 rounded-full flex items-center justify-center">
                         <span className="text-white text-sm">
-                          {multiSelect ? selectedImages.findIndex(img => img._id === image._id) + 1 : '✓'}
+                          {multiSelect
+                            ? selectedImages.findIndex(
+                                (img) => img._id === image._id,
+                              ) + 1
+                            : '✓'}
                         </span>
                       </div>
                     </div>
                   )}
                 </div>
-              );
+              )
             })}
           </div>
         )}
@@ -150,7 +176,7 @@ export default function ImageSelectionModal({
           <div className="text-center py-8 text-gray-500">No images found</div>
         )}
       </div>
-      
+
       {showMediaUpload && (
         <MediaUploadModal
           open={showMediaUpload}

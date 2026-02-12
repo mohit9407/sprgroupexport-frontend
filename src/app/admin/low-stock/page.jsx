@@ -36,14 +36,14 @@ function LowStockTableContent() {
           const imageData = info.getValue()
           const sideImages = info.row.original.sideImages
 
-          let imageUrl = imageData?.thumbnailUrl || imageData?.originalUrl
+          let imageUrl = imageData?.thumbnailUrl || imageData?.mediumUrl
 
           // Fallback to side images if no main image
           if (!imageUrl && sideImages && sideImages.length > 0) {
             const firstSideImage = sideImages[0]
             imageUrl =
               firstSideImage.thumbnailUrl ||
-              firstSideImage.originalUrl ||
+              firstSideImage.mediumUrl ||
               firstSideImage.url
           }
 

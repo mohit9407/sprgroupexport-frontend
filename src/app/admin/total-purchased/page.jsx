@@ -53,7 +53,7 @@ function TotalPurchasedContent() {
           const imageData = info.getValue()
           const imageUrl =
             typeof imageData === 'object'
-              ? imageData?.thumbnailUrl || imageData?.originalUrl
+              ? imageData?.thumbnailUrl || imageData?.orimediumUrlginalUrl
               : imageData
 
           if (!imageUrl) return null

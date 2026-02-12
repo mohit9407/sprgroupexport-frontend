@@ -53,7 +53,7 @@ function ProductLikedContent() {
           const imageData = info.getValue()
           const imageUrl =
             typeof imageData === 'object'
-              ? imageData?.thumbnailUrl || imageData?.originalUrl
+              ? imageData?.thumbnailUrl || imageData?.mediumUrl
               : imageData
 
           return (

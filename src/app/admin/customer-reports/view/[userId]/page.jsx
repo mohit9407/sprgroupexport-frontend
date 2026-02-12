@@ -230,7 +230,7 @@ export default function CustomerOrdersPage() {
                                   <Image
                                     src={
                                       product.image?.thumbnailUrl ||
-                                      product.image?.originalUrl
+                                      product.image?.mediumUrl
                                     }
                                     alt={product.productName || 'Product'}
                                     width={60}

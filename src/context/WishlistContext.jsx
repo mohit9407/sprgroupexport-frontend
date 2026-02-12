@@ -177,7 +177,7 @@ export function WishlistProvider({ children }) {
         name: item.product.productName || 'Product',
         price: item.product.price || 0,
         image:
-          item.product.image?.originalUrl ||
+          item.product.image?.mediumUrl ||
           item.product.image ||
           '/placeholder-product.jpg',
         quantity: item.quantity,

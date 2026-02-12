@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 
@@ -9,6 +9,7 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
   const [isHovered, setIsHovered] = useState(false)
   const [zoomStyle, setZoomStyle] = useState({})
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const videoRef = useRef(null)
 
   // Combine main images with side images if they exist
   const allImages = React.useMemo(() => {
@@ -17,13 +18,42 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
       : images
         ? [images]
         : []
+
     const additionalImages = Array.isArray(sideImages)
       ? sideImages
-          .map((img) => (typeof img === 'string' ? img : img.mediumUrl || img.url || ''))
-          .filter(Boolean)
+          .map((img) => {
+            // Handle video files
+            if (img.type === 'video') {
+              return {
+                type: 'video',
+                url: img.videoUrl,
+                thumbnailUrl: img.thumbnailUrl,
+                description: img.description || `${productName} video`,
+              }
+            }
+            // Handle image files
+            const imgUrl =
+              img.mediumUrl || img.largeUrl || img.thumbnailUrl || img.url || ''
+            return {
+              type: 'image',
+              url: imgUrl,
+              description: img.description || `${productName} image`,
+            }
+          })
+          .filter((item) => item.url || item.thumbnailUrl)
       : []
+
     return [...mainImages, ...additionalImages].filter(Boolean)
-  }, [images, sideImages])
+  }, [images, sideImages, productName])
+
+  // Auto-play video when a video is selected
+  useEffect(() => {
+    if (allImages[selectedImage]?.type === 'video' && videoRef.current) {
+      videoRef.current.play().catch((error) => {
+        console.log('Auto-play failed:', error)
+      })
+    }
+  }, [selectedImage, allImages])
 
   // Image navigation callbacks with proper dependency array
   const nextImage = useCallback(() => {
@@ -80,15 +110,39 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
               ✕
             </button>
             <div className="relative w-full h-full">
-              <Image
-                src={allImages[selectedImage]}
-                alt={productName}
-                fill
-                style={{ objectFit: 'contain' }}
-                className="object-contain"
-                unoptimized={process.env.NODE_ENV !== 'production'}
-                priority
-              />
+              {allImages[selectedImage]?.type === 'video' ? (
+                <>
+                  <video
+                    src={allImages[selectedImage].url}
+                    poster={allImages[selectedImage].thumbnailUrl}
+                    className="w-full h-full object-contain"
+                    controls
+                    muted
+                    playsInline
+                    onClick={(e) => {
+                      e.preventDefault()
+                      const video = e.target
+                      if (video.paused) {
+                        video.play()
+                      } else {
+                        video.pause()
+                      }
+                    }}
+                  />
+                </>
+              ) : (
+                <Image
+                  src={
+                    allImages[selectedImage]?.url || allImages[selectedImage]
+                  }
+                  alt={productName}
+                  fill
+                  style={{ objectFit: 'contain' }}
+                  className="object-contain"
+                  unoptimized={process.env.NODE_ENV !== 'production'}
+                  priority
+                />
+              )}
             </div>
 
             {/* Thumbnail Navigation */}
@@ -100,21 +154,21 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
                     e.stopPropagation()
                     setSelectedImage(index)
                   }}
-                  className={`w-16 h-16 flex-shrink-0 border-2 transition-all ${
+                  className={`w-16 h-16 flex-shrink-0 border-2 transition-all relative ${
                     selectedImage === index
                       ? 'border-[#b7853f]'
                       : 'border-transparent'
                   }`}
-                  aria-label={`View image ${index + 1}`}
+                  aria-label={`View ${img.type === 'video' ? 'video' : 'image'} ${index + 1}`}
                 >
                   <div className="relative w-full h-full p-1">
                     <Image
-                      src={img}
+                      src={
+                        img.type === 'video' ? img.thumbnailUrl : img.url || img
+                      }
                       alt={
-                        typeof img === 'object'
-                          ? img.description ||
-                            `${productName} thumbnail ${index + 1}`
-                          : `${productName} thumbnail ${index + 1}`
+                        img.description ||
+                        `${productName} ${img.type === 'video' ? 'video' : 'image'} ${index + 1}`
                       }
                       fill
                       style={{ objectFit: 'cover' }}
@@ -171,19 +225,49 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
             className="relative w-full h-full cursor-pointer"
             onClick={() => setIsModalOpen(true)}
           >
-            <Image
-              src={allImages[selectedImage]}
-              alt={productName}
-              fill
-              style={{ objectFit: 'contain' }}
-              className="object-contain transition-opacity duration-300"
-              priority
-              unoptimized={process.env.NODE_ENV !== 'production'}
-            />
+            {allImages[selectedImage]?.type === 'video' ? (
+              <>
+                <video
+                  ref={videoRef}
+                  src={allImages[selectedImage].url}
+                  poster={allImages[selectedImage].thumbnailUrl}
+                  className="w-full h-full object-contain"
+                  controls
+                  muted
+                  playsInline
+                  autoPlay
+                  onClick={(e) => {
+                    e.preventDefault()
+                    const video = e.target
+                    if (video.paused) {
+                      video.play()
+                    } else {
+                      video.pause()
+                    }
+                  }}
+                />
+              </>
+            ) : (
+              <Image
+                src={allImages[selectedImage]?.url || allImages[selectedImage]}
+                alt={productName}
+                fill
+                style={{ objectFit: 'contain' }}
+                className="object-contain transition-opacity duration-300"
+                priority
+                unoptimized={process.env.NODE_ENV !== 'production'}
+              />
+            )}
             {isHovered && (
               <div
                 className="absolute inset-0 bg-cover bg-no-repeat"
-                style={zoomStyle}
+                style={{
+                  ...zoomStyle,
+                  backgroundImage:
+                    allImages[selectedImage]?.type === 'video'
+                      ? `url(${allImages[selectedImage].thumbnailUrl})`
+                      : zoomStyle.backgroundImage,
+                }}
               />
             )}
           </div>
@@ -242,33 +326,45 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
 
               if (index < start || index >= end) return null
 
-              const imgSrc = typeof img === 'object' ? img.url : img
+              const imgSrc =
+                img.type === 'video' ? img.thumbnailUrl : img.url || img
               return (
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
                   onMouseEnter={() => setSelectedImage(index)}
-                  className={`flex-shrink-0 w-20 h-20 transition-all duration-300 ease-in-out transform hover:scale-105 cursor-pointer ${
+                  className={`flex-shrink-0 w-20 h-20 transition-all duration-300 ease-in-out transform hover:scale-105 cursor-pointer relative ${
                     selectedImage === index
                       ? 'ring-2 ring-[#b7853f]'
                       : 'border border-gray-200 hover:border-[#b7853f]'
                   }`}
-                  aria-label={`Select image ${index + 1}`}
+                  aria-label={`Select ${img.type === 'video' ? 'video' : 'image'} ${index + 1}`}
                 >
                   <div className="relative w-full h-full p-1">
                     <Image
                       src={imgSrc}
                       alt={
-                        typeof img === 'object'
-                          ? img.description ||
-                            `${productName} thumbnail ${index + 1}`
-                          : `${productName} thumbnail ${index + 1}`
+                        img.description ||
+                        `${productName} ${img.type === 'video' ? 'video' : 'image'} ${index + 1}`
                       }
                       fill
                       style={{ objectFit: 'cover' }}
                       className="w-full h-full"
                       unoptimized={process.env.NODE_ENV !== 'production'}
                     />
+                    {img.type === 'video' && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="bg-black/50 rounded-full p-1.5">
+                          <svg
+                            className="w-4 h-4 text-white"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                          </svg>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </button>
               )
