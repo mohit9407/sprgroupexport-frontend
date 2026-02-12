@@ -33,6 +33,7 @@ export default function SettingsPage() {
     googleLink: '',
     twitterLink: '',
     linkedInLink: '',
+    instagramLink: '',
     aboutStore: '',
     contactUsDescription: '',
     allowCookies: false,
@@ -82,6 +83,7 @@ export default function SettingsPage() {
       fd.append('googleLink', formData.googleLink)
       fd.append('twitterLink', formData.twitterLink)
       fd.append('linkedInLink', formData.linkedInLink)
+      fd.append('instagramLink', formData.instagramLink)
       fd.append('aboutStore', formData.aboutStore)
       fd.append('contactUsDescription', formData.contactUsDescription)
       fd.append('allowCookies', formData.allowCookies)
@@ -241,6 +243,14 @@ export default function SettingsPage() {
           value={formData.linkedInLink}
           onChange={handleChange('linkedInLink')}
           helpText="Please enter linkedin link"
+        />
+
+        <AdminInputRow
+          label="Instagram URL"
+          placeholder="Enter Instagram URL"
+          value={formData.instagramLink}
+          onChange={handleChange('instagramLink')}
+          helpText="Please enter instagram link"
         />
 
         <AdminTextAreaRow
