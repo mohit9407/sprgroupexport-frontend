@@ -246,6 +246,7 @@ function ProductsDisplayContent() {
 
   const {
     data: products = [],
+    items,
     pagination: apiPagination = {
       totalItems: 0,
       totalPages: 1,
@@ -347,7 +348,7 @@ function ProductsDisplayContent() {
       ) : (
         <TanstackTable
           columns={columns}
-          data={products || []}
+          data={items || []}
           isLoading={isLoading}
           mode="server"
           pageCount={apiPagination?.totalPages}

@@ -11,6 +11,7 @@ export default function ShippingMethods({
   onContinue,
   initialMethod = null,
   shippingAddress = {},
+  cartItems = [],
 }) {
   const dispatch = useDispatch()
   const allShippingMethods = useSelector(selectAllShippingMethods)
@@ -19,6 +20,8 @@ export default function ShippingMethods({
   const [selectedMethod, setSelectedMethod] = useState(
     initialMethod?._id || null,
   )
+
+  const hasFreeShipping = cartItems.some(item => item.quantity >= 10)
 
   // Filter shipping methods based on user's address
   const getApplicableMethods = useCallback(() => {
@@ -29,7 +32,7 @@ export default function ShippingMethods({
     const isGujarat = state?.toLowerCase() === 'gujarat'
     const isSurat = city?.toLowerCase() === 'surat'
 
-    return allShippingMethods
+    let filteredMethods = allShippingMethods
       .filter((method) => {
         if (!method.status || method.status !== 'active') return false
 
@@ -39,8 +42,17 @@ export default function ShippingMethods({
         if (!isSurat) return methodName.includes('rest of gujarat')
         return methodName.includes('surat city')
       })
-      .sort((a, b) => a.price - b.price)
-  }, [allShippingMethods, shippingAddress])
+
+    // If user has free shipping (quantity >= 10), only show free shipping method
+    if (hasFreeShipping) {
+      const freeShippingMethod = allShippingMethods.find(method => 
+        method.name === 'Free'
+      )
+      filteredMethods = freeShippingMethod ? [freeShippingMethod] : filteredMethods
+    }
+
+    return filteredMethods.sort((a, b) => a.price - b.price)
+  }, [allShippingMethods, shippingAddress, hasFreeShipping])
 
   const shippingMethods = getApplicableMethods()
 
@@ -101,6 +113,25 @@ export default function ShippingMethods({
       <p className="text-sm text-gray-600 mb-6">
         Please select the preferred shipping method to use on this order.
       </p>
+
+      {/* Free Shipping Notification */}
+      {hasFreeShipping && (
+        <div className="bg-green-50 border border-green-200 rounded-md p-4 mb-6">
+          <div className="flex items-center">
+            <svg className="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            <div>
+              <p className="text-sm font-medium text-green-800">
+                🎉 Congratulations! You've earned FREE shipping
+              </p>
+              <p className="text-xs text-green-600 mt-1">
+                Your order qualifies for free shipping because you have 10 or more items.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         <div className="border border-gray-200 rounded-md overflow-hidden mb-6">

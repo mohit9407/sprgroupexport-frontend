@@ -20,6 +20,7 @@ import {
   useTableQueryParams,
 } from '@/components/admin/TanStackTable'
 import { toast } from '@/utils/toastConfig'
+import { Eye } from 'lucide-react'
 
 const columnHelper = createColumnHelper()
 
@@ -108,6 +109,33 @@ function OrdersPageContent() {
             setShowDeleteModal(true)
           }
 
+          const handleViewPaymentDetails = (e) => {
+            e.stopPropagation()
+
+            const paymentId = row.original.paymentProviderOrderId
+            const paymentMethod = row.original.paymentMethod
+
+            const RAZORPAY_ID = '695cae6321d3f5118b0c8c94'
+
+            const PAYPAL_ID = '695ccf386ea6dadf0aa1c14c'
+
+            if (!paymentId) {
+              toast.error('No payment details found')
+              return
+            }
+
+            if (paymentMethod === RAZORPAY_ID) {
+              const razorPayUrl = `https://dashboard.razorpay.com/app/payments/${paymentId}`
+
+              window.open(razorPayUrl, '_blank')
+            }
+
+            if (paymentMethod === PAYPAL_ID) {
+              const paypalUrl = `https://www.sandbox.paypal.com/unifiedtransactions/details/payment/${paymentId}`
+              window.open(paypalUrl, '_blank')
+            }
+          }
+
           return (
             <div className="flex items-center space-x-2">
               <button
@@ -123,6 +151,13 @@ function OrdersPageContent() {
                 title="Delete Order"
               >
                 <FaTrash className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleViewPaymentDetails}
+                className="p-1.5 text-green-600 hover:bg-red-50 rounded-full hover:text-green-700 transition-colors"
+                title="Delete Order"
+              >
+                <Eye className="w-4 h-4" />
               </button>
             </div>
           )
@@ -208,6 +243,8 @@ function OrdersPageContent() {
           status: statusName,
           _id: order._id,
           statusId: statusId, // Keep the status ID for reference
+          paymentProviderOrderId: order.paymentProviderOrderId,
+          paymentMethod: order.paymentMethod,
         }
       }),
     [orders, orderStatuses],
