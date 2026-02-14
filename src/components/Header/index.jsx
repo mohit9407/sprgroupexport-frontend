@@ -15,7 +15,7 @@ import Navigation from './components/Navigation'
 import BreadcrumbsWrapper from './components/BreadcrumbsWrapper'
 import StickyHeader from './components/StickyHeader'
 
-const Header = ({settings = {}}) => {
+const Header = ({ settings = {} }) => {
   const dispatch = useDispatch()
   const { userOrders = [] } = useSelector((state) => state.order)
   const [showNotification, setShowNotification] = useState(false)
@@ -39,7 +39,7 @@ const Header = ({settings = {}}) => {
   const navItems = [
     { name: 'HOME', href: '/' },
     { name: 'CATALOG', href: '/catalog' },
-    { name: 'ABOUT US', href: '/about' },
+    { name: 'ABOUT US', href: '/about-us' },
     { name: 'CONTACT US', href: '/contact' },
   ]
 
@@ -106,7 +106,7 @@ const Header = ({settings = {}}) => {
                     height={175}
                     priority
                     onError={(e) => {
-                      e.target.src = '/spr_logo.png';
+                      e.target.src = '/spr_logo.png'
                     }}
                   />
                 </Link>

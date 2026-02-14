@@ -9,17 +9,32 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useDispatch, useSelector } from 'react-redux'
 import { getGeneralSetting } from '@/features/general-setting/generatSettingSlice'
+import { fetchContentPages } from '@/features/content-page/contentPageSlice'
 
 const Footer = ({ settings = {} }) => {
   const dispatch = useDispatch()
-  const { data: generalSettings, status } = useSelector((state) => state.generalSetting || { data: null, status: 'idle' })
+  const { data: generalSettings, status } = useSelector(
+    (state) => state.generalSetting || { data: null, status: 'idle' },
+  )
 
+  const { data: contentPages = [], isLoading: contentPagesLoading } =
+    useSelector(
+      (state) =>
+        state.contentPage?.allContentPages || { data: [], isLoading: true },
+    )
+
+  // Filter active pages for display
+  const activePages = contentPages.filter((page) => page.status === 'active')
   useEffect(() => {
     if (status === 'idle') {
       dispatch(getGeneralSetting())
     }
-  }, [status, dispatch])
-  
+
+    if (!contentPagesLoading && contentPages.length === 0) {
+      dispatch(fetchContentPages({ status: 'active' }))
+    }
+  }, [status, contentPagesLoading, contentPages.length, dispatch])
+
   // Use settings from props if available, otherwise use empty object
   const safeSettings = settings || {}
   const scrollToTop = () => {
@@ -43,7 +58,7 @@ const Footer = ({ settings = {} }) => {
                 sizes="(max-width: 768px) 100vw, 256px"
                 priority
                 onError={(e) => {
-                  e.target.src = '/spr_logo.png';
+                  e.target.src = '/spr_logo.png'
                 }}
               />
             </div>
@@ -59,7 +74,11 @@ const Footer = ({ settings = {} }) => {
             </div>
             <div className="flex space-x-3 pt-2">
               <a
-                href={safeSettings.faceBookLink || generalSettings?.facebook_link || '#'}
+                href={
+                  safeSettings.faceBookLink ||
+                  generalSettings?.facebook_link ||
+                  '#'
+                }
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-500 hover:text-[#3b5998]"
@@ -68,7 +87,11 @@ const Footer = ({ settings = {} }) => {
                 <ImFacebook2 className="w-6 h-6" />
               </a>
               <a
-                href={safeSettings.twitterLink || generalSettings?.twitter_link || '#'}
+                href={
+                  safeSettings.twitterLink ||
+                  generalSettings?.twitter_link ||
+                  '#'
+                }
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-500 hover:text-[#1DA1F2]"
@@ -77,7 +100,9 @@ const Footer = ({ settings = {} }) => {
                 <FaTwitterSquare className="w-6 h-6" />
               </a>
               <a
-                href={safeSettings.googleLink || generalSettings?.google_link || '#'}
+                href={
+                  safeSettings.googleLink || generalSettings?.google_link || '#'
+                }
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-500 hover:text-[#DB4437]"
@@ -86,7 +111,11 @@ const Footer = ({ settings = {} }) => {
                 <BsGoogle className="w-6 h-6" />
               </a>
               <a
-                href={safeSettings.instagramLink || generalSettings?.instagram_link || '#'}
+                href={
+                  safeSettings.instagramLink ||
+                  generalSettings?.instagram_link ||
+                  '#'
+                }
                 className="text-gray-500 hover:text-[#E1306C]"
                 aria-label="Instagram"
               >
@@ -148,46 +177,68 @@ const Footer = ({ settings = {} }) => {
               PERSONALIZATION
             </h3>
             <ul className="space-y-3">
-              <li>
-                <Link
-                  href="/privacy-policy"
-                  className="text-gray-600 hover:text-[#BA8B4E] text-sm transition-colors"
-                >
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/refund-policy"
-                  className="text-gray-600 hover:text-[#BA8B4E] text-sm transition-colors"
-                >
-                  Return and Refund Policy
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/shipping"
-                  className="text-gray-600 hover:text-[#BA8B4E] text-sm transition-colors"
-                >
-                  Shipping and Delivery
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/terms"
-                  className="text-gray-600 hover:text-[#BA8B4E] text-sm transition-colors"
-                >
-                  Terms & Conditions
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/contact"
-                  className="text-gray-600 hover:text-[#BA8B4E] text-sm transition-colors"
-                >
-                  Contact Us
-                </Link>
-              </li>
+              {!contentPagesLoading && activePages.length > 0 ? (
+                activePages.map((page) => (
+                  <li key={page.id}>
+                    <Link
+                      href={`/${page.pageSlug}`}
+                      className="text-gray-600 hover:text-[#BA8B4E] text-sm transition-colors"
+                      prefetch={false}
+                    >
+                      {page.pageName}
+                    </Link>
+                  </li>
+                ))
+              ) : contentPagesLoading ? (
+                // Show loading skeleton
+                [...Array(3)].map((_, i) => (
+                  <li key={i} className="h-4 bg-gray-200 rounded w-32"></li>
+                ))
+              ) : (
+                // Fallback to default links if no content pages are loaded
+                <>
+                  <li>
+                    <Link
+                      href="/privacy-policy"
+                      className="text-gray-600 hover:text-[#BA8B4E] text-sm transition-colors"
+                    >
+                      Privacy Policy
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/refund-policy"
+                      className="text-gray-600 hover:text-[#BA8B4E] text-sm transition-colors"
+                    >
+                      Return and Refund Policy
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/shipping"
+                      className="text-gray-600 hover:text-[#BA8B4E] text-sm transition-colors"
+                    >
+                      Shipping and Delivery
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/terms"
+                      className="text-gray-600 hover:text-[#BA8B4E] text-sm transition-colors"
+                    >
+                      Terms & Conditions
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/contact"
+                      className="text-gray-600 hover:text-[#BA8B4E] text-sm transition-colors"
+                    >
+                      Contact Us
+                    </Link>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
         </div>

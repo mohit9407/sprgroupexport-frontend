@@ -22,6 +22,7 @@ import {
   FaImages,
   FaRegGrinStars,
   FaEye,
+  FaEnvelope,
 } from 'react-icons/fa'
 import { FaGears, FaTicket } from 'react-icons/fa6'
 
@@ -222,6 +223,16 @@ export const routeMeta = [
     parent: '/admin/gold',
     sidebar: false,
     icon: FaRegGrinStars,
+  },
+
+  // ===== Contact Messages =====
+  {
+    key: 'contact-messages',
+    path: '/admin/contact-messages',
+    label: 'Contact Messages',
+    parent: '/admin',
+    sidebar: true,
+    icon: FaEnvelope,
   },
 
   // ===== Orders =====

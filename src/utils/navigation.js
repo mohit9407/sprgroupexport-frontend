@@ -15,10 +15,10 @@ export const navItems = [
   },
   {
     name: 'ABOUT US',
-    href: '/about',
+    href: '/about-us',
   },
   {
     name: 'CONTACT US',
-    href: '/contact',
+    href: '/contact-us',
   },
 ]
