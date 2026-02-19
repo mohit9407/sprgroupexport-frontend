@@ -5,7 +5,22 @@ const OrderInformation = ({
   orderStatus,
   loadingDetails,
   shippingAddress,
+  onUpdatePaidAmount,
 }) => {
+  const [paidInput, setPaidInput] = React.useState(order?.paidAmount || 0)
+
+  React.useEffect(() => {
+    setPaidInput(order?.paidAmount || 0)
+  }, [order?.paidAmount])
+
+  const handlePaidChange = (e) => {
+    const value = Number(e.target.value) || 0
+    setPaidInput(value)
+    onUpdatePaidAmount?.(value)
+  }
+
+  const remainingAmount = Math.max(0, (order?.total || 0) - paidInput)
+
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case 'completed':
@@ -76,6 +91,32 @@ const OrderInformation = ({
         <div>
           <h3 className="font-medium text-gray-700">Shipping Cost</h3>
           <p className="text-gray-600">₹{order.shipping.toFixed(2)}</p>
+        </div>
+        <div>
+          <h3 className="font-medium text-gray-700">paidAmount</h3>
+          <div className="flex gap-2">
+            <input
+              type="number"
+              value={paidInput}
+              onChange={(e) => setPaidInput(Number(e.target.value) || 0)}
+              className="mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm w-32 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              min="0"
+            />
+
+            <button
+              type="button"
+              className="inline-flex items-center px-3 py-2 mt-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              onClick={() => onUpdatePaidAmount?.(paidInput)}
+            >
+              Update Amount
+            </button>
+          </div>
+        </div>
+        <div>
+          <h3 className="font-medium text-gray-700">remainingAmount</h3>
+          <p className="text-gray-600 inline-block bg-yellow-100 px-2 py-1 rounded">
+            ₹{remainingAmount.toFixed(2)}
+          </p>
         </div>
       </div>
     </div>

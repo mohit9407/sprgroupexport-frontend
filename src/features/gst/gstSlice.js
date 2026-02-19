@@ -22,6 +22,13 @@ export const verifyGST = createAsyncThunk(
         )
       }
 
+      // Check for error response from our API
+      if (response.data && response.data.error) {
+        return rejectWithValue(
+          response.data.message || 'GST verification failed',
+        )
+      }
+
       return response.data
     } catch (error) {
       console.error('GST Verification Error:', error)
@@ -39,7 +46,6 @@ const gstSlice = createSlice({
   initialState: {
     loading: false,
     verifiedData: null,
-    error: null,
     error: null,
   },
   reducers: {

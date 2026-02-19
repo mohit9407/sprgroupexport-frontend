@@ -128,22 +128,16 @@ export default function ProductDetails() {
     }
 
     if (!product || !product._id) {
-      toast.error('Product information is not available');
-      return false;
-    }
-
-    // Check max order limit
-    if (product.maxOrderLimit && quantity > product.maxOrderLimit) {
-      toast.error(`Maximum order limit is ${product.maxOrderLimit} items`);
-      return false;
+      toast.error('Product information is not available')
+      return false
     }
 
     try {
-      setIsAddingToCart(true);
+      setIsAddingToCart(true)
 
       // Find the selected color and size details with null checks
-      const color = attributes?.colors?.find((c) => c._id === selectedColor);
-      const size = attributes?.sizes?.find((s) => s._id === selectedSize);
+      const color = attributes?.colors?.find((c) => c._id === selectedColor)
+      const size = attributes?.sizes?.find((s) => s._id === selectedSize)
 
       await addToCart(
         {
@@ -159,14 +153,14 @@ export default function ProductDetails() {
         quantity,
       )
 
-      toast.success('Added to cart!');
-      return true;
+      toast.success('Added to cart!')
+      return true
     } catch (error) {
-      console.error('Error adding to cart:', error);
-      toast.error(error.response?.data?.message || 'Failed to add item to cart');
-      return false;
+      console.error('Error adding to cart:', error)
+      toast.error(error.response?.data?.message || 'Failed to add item to cart')
+      return false
     } finally {
-      setIsAddingToCart(false);
+      setIsAddingToCart(false)
     }
   }
 
@@ -197,7 +191,7 @@ export default function ProductDetails() {
       sizeId: selectedSize,
       quantity: quantity,
       inStock: true,
-      isDirectCheckout: true
+      isDirectCheckout: true,
     }
 
     // Add to direct checkout
@@ -375,22 +369,12 @@ export default function ProductDetails() {
                 </button>
                 <span className="px-6 py-1 bg-gray-100 border-x border-gray-300">
                   {quantity}
-                  {product.maxOrderLimit && (
-                    <span className="text-xs block text-gray-500">
-                      Max: {product.maxOrderLimit}
-                    </span>
-                  )}
                 </span>
                 <button
                   onClick={() => {
-                    if (product.maxOrderLimit && quantity >= product.maxOrderLimit) {
-                      toast.error(`Maximum order limit is ${product.maxOrderLimit} items`);
-                      return;
-                    }
-                    setQuantity(quantity + 1);
+                    setQuantity(quantity + 1)
                   }}
-                  className={`px-4 py-2 text-sm font-medium ${product.maxOrderLimit && quantity >= product.maxOrderLimit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100 cursor-pointer'}`}
-                  disabled={product.maxOrderLimit && quantity >= product.maxOrderLimit}
+                  className={`px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 cursor-pointer`}
                 >
                   +
                 </button>
@@ -437,19 +421,21 @@ export default function ProductDetails() {
               <div className="flex space-x-1">
                 <button
                   onClick={() => setActiveTab('details')}
-                  className={`px-6 py-2 rounded-t font-medium cursor-pointer ${activeTab === 'details'
+                  className={`px-6 py-2 rounded-t font-medium cursor-pointer ${
+                    activeTab === 'details'
                       ? 'bg-[#b7853f] text-white'
                       : 'bg-gray-100 text-gray-600'
-                    }`}
+                  }`}
                 >
                   Details
                 </button>
                 <button
                   onClick={() => setActiveTab('reviews')}
-                  className={`px-6 py-2 rounded-t font-medium cursor-pointer ${activeTab === 'reviews'
+                  className={`px-6 py-2 rounded-t font-medium cursor-pointer ${
+                    activeTab === 'reviews'
                       ? 'bg-[#b7853f] text-white'
                       : 'bg-gray-100 text-gray-600'
-                    }`}
+                  }`}
                 >
                   Reviews ({product?.reviews?.length || 0})
                 </button>

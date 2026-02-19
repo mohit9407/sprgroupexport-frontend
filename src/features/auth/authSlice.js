@@ -82,7 +82,9 @@ export const registerUser = createAsyncThunk(
       const response = await authService.register(userData)
       return response
     } catch (error) {
-      return rejectWithValue(error.response.data.message || 'Registration failed')
+      return rejectWithValue(
+        error.response.data.message || 'Registration failed',
+      )
     }
   },
 )
@@ -105,6 +107,18 @@ export const changePassword = createAsyncThunk(
   },
 )
 
+export const manualUser = createAsyncThunk(
+  'auth/manualUser',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const response = await authService.manualUserCreateByAdmin(payload)
+      return response
+    } catch (error) {
+      return rejectWithValue(error.response.data.message || 'Login failed')
+    }
+  },
+)
+
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
@@ -123,6 +137,11 @@ const authSlice = createSlice({
       error: null,
     },
     changePassword: {
+      loading: false,
+      success: false,
+      error: null,
+    },
+    manualUser: {
       loading: false,
       success: false,
       error: null,
@@ -245,6 +264,21 @@ const authSlice = createSlice({
       .addCase(resetPassword.rejected, (state, action) => {
         state.loading = false
         state.error = action.payload || 'Failed to reset password'
+      })
+
+      .addCase(manualUser.pending, (state) => {
+        state.manualUser.loading = true
+        state.manualUser.error = null
+        state.manualUser.success = false
+      })
+      .addCase(manualUser.fulfilled, (state) => {
+        state.manualUser.loading = false
+        state.manualUser.success = true
+        state.user = action.payload.user
+      })
+      .addCase(manualUser.rejected, (state, action) => {
+        state.manualUser.loading = false
+        state.manualUser.error = action.payload || 'Failed to create user'
       })
   },
 })

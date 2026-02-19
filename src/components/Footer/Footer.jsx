@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { getGeneralSetting } from '@/features/general-setting/generatSettingSlice'
 import { fetchContentPages } from '@/features/content-page/contentPageSlice'
 import SafeImage from '../SafeImage'
+import { Image } from 'lucide-react'
 
 const Footer = ({ settings = {} }) => {
   const dispatch = useDispatch()

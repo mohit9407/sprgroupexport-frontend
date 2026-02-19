@@ -9,7 +9,6 @@ import {
   useFormContext,
   Controller,
 } from 'react-hook-form'
-import { yupResolver } from '@hookform/resolvers/yup'
 import AdminTextAreaRow from '@/components/AdminTextAreaRow/AdminTextAreaRow'
 import { FormAdminRadioGroup } from '../AdminRadioGroup'
 

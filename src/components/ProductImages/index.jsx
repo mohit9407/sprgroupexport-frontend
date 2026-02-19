@@ -195,14 +195,18 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
           }}
           onMouseMove={(e) => {
             if (!isHovered) return
+            if (allImages[selectedImage]?.type === 'video') return
 
             const container = e.currentTarget.getBoundingClientRect()
             const x = ((e.clientX - container.left) / container.width) * 100
             const y = ((e.clientY - container.top) / container.height) * 100
 
+            const imgUrl =
+              allImages[selectedImage]?.url || allImages[selectedImage]
+
             setZoomStyle({
               display: 'block',
-              backgroundImage: `url(${allImages[selectedImage]})`,
+              backgroundImage: `url(${imgUrl})`,
               backgroundPosition: `${x}% ${y}%`,
               backgroundSize: '200%',
               backgroundRepeat: 'no-repeat',
@@ -215,8 +219,6 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
               zIndex: 5,
               opacity: 1,
               transition: 'opacity 0.3s ease',
-              transform: 'scale(1.5)',
-              transformOrigin: `${x}% ${y}%`,
             })
           }}
         >

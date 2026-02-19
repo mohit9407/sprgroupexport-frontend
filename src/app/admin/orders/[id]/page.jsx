@@ -177,6 +177,8 @@ export default function OrderDetailPage() {
           tax: data.tax || 0,
           shipping: data.shippingCost || 0,
           total: data.total || 0,
+          paidAmount: data.paidAmount || 0,
+          remainingAmount: data.remainingAmount || 0,
           status: resolvedStatus,
           paymentStatus: resolvedPaymentStatus,
           statusHistory: data.statusHistory || [
@@ -305,6 +307,30 @@ export default function OrderDetailPage() {
     }
   }
 
+  const handleUpdatePaidAmount = async (newPaidAmount) => {
+    try {
+      const remaining = Math.max(0, order.total - newPaidAmount)
+      await api.put(`/orders/update-payment/${id}`, {
+        paidAmount: newPaidAmount,
+        remainingAmount: remaining,
+      })
+      toast.success('Payment amount updated')
+      setOrder((prev) => ({
+        ...prev,
+        paidAmount: newPaidAmount,
+        remainingAmount: remaining,
+        originalData: {
+          ...prev.originalData,
+          paidAmount: newPaidAmount,
+          remainingAmount: remaining,
+        },
+      }))
+    } catch (err) {
+      console.error('Error updating paid amount:', err)
+      toast.error(err.message || 'Failed to update payment amount')
+    }
+  }
+
   const paymentMethod = order.paymentMethod?.name || order.paymentMethod
 
   return (
@@ -344,6 +370,7 @@ export default function OrderDetailPage() {
             orderStatus={orderStatus}
             loadingDetails={loadingDetails}
             shippingAddress={shippingAddress}
+            onUpdatePaidAmount={handleUpdatePaidAmount}
           />
           <CustomerInformation
             order={order}

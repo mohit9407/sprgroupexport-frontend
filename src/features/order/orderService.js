@@ -207,3 +207,49 @@ export const customerReports = async (params = {}) => {
     throw error.response?.data?.message || 'Failed to get customer reports'
   }
 }
+
+/**
+ * Creates a manual order by admin
+ * @param {Object} orderData - The order data
+ * @returns {Promise<Object>} The created order
+ */
+export const createAdminManualOrder = async (orderData) => {
+  try {
+    const token = getAuthToken()
+
+    if (!token) {
+      throw new Error('No authentication token found')
+    }
+
+    const payload = {
+      ...orderData,
+      isAdminOrderCreated: true,
+    }
+
+    const response = await api.post('/orders/admin/manual-create', payload, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true,
+    })
+
+    if (!response.data) {
+      throw new Error('No data received from server')
+    }
+
+    return response.data
+  } catch (error) {
+    if (error.response?.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token')
+      }
+      throw new Error('Your session has expired. Please log in again.')
+    }
+
+    throw new Error(
+      error.response?.data?.message ||
+        'Failed to create manual order. Please try again.',
+    )
+  }
+}
