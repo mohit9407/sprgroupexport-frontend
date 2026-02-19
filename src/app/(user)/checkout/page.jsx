@@ -50,25 +50,38 @@ export default function CheckoutPage() {
         // Check authentication first
         const token = localStorage.getItem('accessToken')
         if (!user || !token) {
-          router.push('/cart')
+          // Only redirect if we're not already checking
+          if (!isCheckingDirectCheckout) {
+            router.push('/cart')
+          }
           return
         }
 
         // If no direct checkout item and cart is empty, redirect to cart
         if (!directCheckoutItem && (!cart || cart.length === 0)) {
-          router.push('/cart')
+          // Only redirect if we're not already checking
+          if (!isCheckingDirectCheckout) {
+            router.push('/cart')
+          }
           return
         }
       } catch (error) {
         console.error('Error in checkout flow:', error)
-        router.push('/cart')
+        if (!isCheckingDirectCheckout) {
+          router.push('/cart')
+        }
       } finally {
-        setIsCheckingDirectCheckout(false)
+        // Only set checking to false after all checks are done
+        const timer = setTimeout(() => {
+          setIsCheckingDirectCheckout(false)
+        }, 500) // Small delay to prevent flash of content
+
+        return () => clearTimeout(timer)
       }
     }
 
     checkAuthAndDirectCheckout()
-  }, [user, cart, directCheckoutItem, router])
+  }, [user, cart, directCheckoutItem, router, isCheckingDirectCheckout])
 
   // Fetch order statuses on component mount
   useEffect(() => {
@@ -390,7 +403,29 @@ export default function CheckoutPage() {
         }} // Redirect to home if user closes without logging in
       />
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold uppercase mb-8">CHECKOUT</h1>
+        <div className="flex items-center gap-4 mb-8">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center text-gray-600 hover:text-[#BA8B4E] transition-colors"
+          >
+            <svg
+              className="w-5 h-5 mr-1"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
+            </svg>
+            Back
+          </button>
+          <h1 className="text-2xl font-bold uppercase">CHECKOUT</h1>
+        </div>
 
         <CheckoutSteps
           currentStep={currentStep}

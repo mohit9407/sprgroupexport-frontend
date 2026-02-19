@@ -44,6 +44,7 @@ export default function GeneralSettingFormPage({
       longitude: defaultValues?.longitude ?? undefined,
       googleCaptchaKey: defaultValues?.googleCaptchaKey ?? undefined,
       googleCaptchaSecret: defaultValues?.googleCaptchaSecret ?? undefined,
+      gstSecretKey: defaultValues?.gstSecretKey ?? undefined,
       uploadYourDesign: defaultValues?.uploadYourDesign ?? undefined,
       productCategorySectionText:
         defaultValues?.topSellingSectionText ?? undefined,
@@ -83,6 +84,7 @@ export default function GeneralSettingFormPage({
         longitude: defaultValues?.longitude ?? undefined,
         googleCaptchaKey: defaultValues?.googleCaptchaKey ?? undefined,
         googleCaptchaSecret: defaultValues?.googleCaptchaSecret ?? undefined,
+        gstSecretKey: defaultValues?.gstSecretKey ?? undefined,
         uploadYourDesign: defaultValues?.uploadYourDesign ?? undefined,
         productCategorySectionText:
           defaultValues?.topSellingSectionText ?? undefined,
@@ -234,6 +236,17 @@ export default function GeneralSettingFormPage({
               name="googleCaptchaSecret"
               label="Google Captcha Secret"
               type="string"
+            />
+            <hr />
+            <br />
+            <h1 className="pb-3 font-bold">GST Settings</h1>
+            <hr />
+            <br />
+            <FormAdminInputRow
+              name="gstSecretKey"
+              label="GST Secret Key"
+              type="string"
+              helpText="Enter your GST secret key for verification"
             />
             <hr />
             <br />

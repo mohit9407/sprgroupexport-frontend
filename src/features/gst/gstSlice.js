@@ -10,10 +10,20 @@ const api = axios.create({
 
 export const verifyGST = createAsyncThunk(
   'gst/verify',
-  async (gstNumber, { rejectWithValue }) => {
+  async (gstNumber, { getState, rejectWithValue }) => {
     try {
-      // Use relative path for Next.js API route
-      const response = await api.get(`/api/verify-gst/${gstNumber}`)
+      const { generalSetting } = getState()
+      const gstSecretKey = generalSetting?.data?.gstSecretKey
+      if (!gstSecretKey) {
+        return rejectWithValue(
+          'GST verification service is not properly configured',
+        )
+      }
+
+      // Use relative path for Next.js API route with the secret key
+      const response = await api.get(
+        `/api/verify-gst/${gstNumber}?key=${encodeURIComponent(gstSecretKey)}`,
+      )
 
       // Check if the API returned flag: false
       if (response.data && response.data.flag === false) {

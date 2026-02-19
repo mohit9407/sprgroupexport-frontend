@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic'
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectAllProducts } from '@/features/products/productsSlice'
+import { useWishlist } from '@/context/WishlistContext'
 import ProductCard from '@/components/ProductCard'
 import { fetchProducts } from '@/features/products/productsSlice'
 import { fetchAllCategories } from '@/features/categories/categoriesSlice'
@@ -139,6 +140,7 @@ function ShopPageContent() {
   const [itemsPerPage, setItemsPerPage] = useState(15)
   const [expandedCategories, setExpandedCategories] = useState({})
   const [isInitialLoad, setIsInitialLoad] = useState(true)
+  const { isInWishlist } = useWishlist()
 
   // Map categories for display
   const categories = useMemo(
@@ -343,6 +345,7 @@ function ShopPageContent() {
                       minOrderLimit={product.minOrderLimit}
                       sideImages={product.sideImages}
                       viewMode={viewMode}
+                      isLiked={isInWishlist(product.id)}
                       // Only pass necessary props to avoid hydration mismatches
                       key={`${product.id}-${viewMode}`}
                       className="h-full"

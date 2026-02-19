@@ -674,7 +674,7 @@ export default function OrderDetailsPage() {
               customer service.
             </p>
             <a
-              href="/contact"
+              href="/contact-us"
               className="inline-flex items-center text-sm font-medium text-[#BA8B4E] hover:text-[#a87d45]"
             >
               Contact Us

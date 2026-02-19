@@ -18,19 +18,27 @@ export default function PaymentMethodForm({
   const dispatch = useDispatch()
   const { loading } = useSelector((state) => state.paymentMethods)
 
+  const [isPayPal, setIsPayPal] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
-    environment: 'sandbox', // Default to sandbox
+    environment: 'SANDBOX', // Default to SANDBOX
     keyId: '',
     keySecret: '',
   })
   useEffect(() => {
     if (isEdit && initialData) {
+      const isPayPalMethod = initialData.name?.toLowerCase().includes('paypal')
+      setIsPayPal(isPayPalMethod)
+
+      // Handle both keyId/keySecret and clientId/clientSecret for backward compatibility
+      const keyId = initialData.keyId || initialData.clientId || ''
+      const keySecret = initialData.keySecret || initialData.clientSecret || ''
+
       setFormData({
         name: initialData.name || '',
-        environment: initialData.environment || 'sandbox',
-        keyId: initialData.keyId || '',
-        keySecret: initialData.keySecret || '',
+        environment: initialData.environment || 'SANDBOX',
+        keyId,
+        keySecret,
       })
     }
   }, [initialData, isEdit])
@@ -42,6 +50,13 @@ export default function PaymentMethodForm({
         ...prev,
         [name]: type === 'checkbox' ? checked : value,
       }
+
+      // Update isPayPal state when name changes
+      if (name === 'name') {
+        const isPayPalMethod = value.toLowerCase().includes('paypal')
+        setIsPayPal(isPayPalMethod)
+      }
+
       return newData
     })
   }
@@ -50,16 +65,27 @@ export default function PaymentMethodForm({
     e.preventDefault()
 
     try {
+      const isPayPalMethod = formData.name.toLowerCase().includes('paypal')
+      const payload = { ...formData }
+
+      // For PayPal, rename keyId to clientId and keySecret to clientSecret in the payload
+      if (isPayPalMethod) {
+        payload.clientId = payload.keyId
+        payload.clientSecret = payload.keySecret
+        delete payload.keyId
+        delete payload.keySecret
+      }
+
       if (isEdit) {
         await dispatch(
           updatePaymentMethod({
             id: initialData._id,
-            methodData: formData,
+            methodData: payload,
           }),
         ).unwrap()
         toast.success('Payment method updated successfully')
       } else {
-        await dispatch(createPaymentMethod(formData)).unwrap()
+        await dispatch(createPaymentMethod(payload)).unwrap()
         toast.success('Payment method created successfully')
       }
       router.push('/admin/payment-methods')
@@ -92,8 +118,8 @@ export default function PaymentMethodForm({
                     <input
                       type="radio"
                       name="environment"
-                      value="sandbox"
-                      checked={formData.environment === 'sandbox'}
+                      value="SANDBOX"
+                      checked={formData.environment === 'SANDBOX'}
                       onChange={handleChange}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                     />
@@ -103,8 +129,8 @@ export default function PaymentMethodForm({
                     <input
                       type="radio"
                       name="environment"
-                      value="live"
-                      checked={formData.environment === 'live'}
+                      value="LIVE"
+                      checked={formData.environment === 'LIVE'}
                       onChange={handleChange}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                     />
@@ -113,42 +139,44 @@ export default function PaymentMethodForm({
                 </div>
               </div>
 
-              {formData.environment === 'live' && (
-                <div className="space-y-4">
-                  <AdminInputRow
-                    label="Key ID"
-                    name="keyId"
-                    value={formData.keyId || ''}
-                    onChange={(e) =>
-                      handleChange({
-                        target: {
-                          name: 'keyId',
-                          value: e.target.value,
-                        },
-                      })
-                    }
-                    required
-                    placeholder="Enter key ID"
-                    className="w-full"
-                  />
-                  <AdminInputRow
-                    label="Key Secret"
-                    name="keySecret"
-                    value={formData.keySecret || ''}
-                    onChange={(e) =>
-                      handleChange({
-                        target: {
-                          name: 'keySecret',
-                          value: e.target.value,
-                        },
-                      })
-                    }
-                    required
-                    placeholder="Enter key secret"
-                    className="w-full"
-                  />
-                </div>
-              )}
+              {/* {formData.environment === 'LIVE' && ( */}
+              <div className="space-y-4">
+                <AdminInputRow
+                  label={isPayPal ? 'Client ID' : 'Key ID'}
+                  name={isPayPal ? 'clientId' : 'keyId'}
+                  value={formData.keyId || ''}
+                  onChange={(e) =>
+                    handleChange({
+                      target: {
+                        name: 'keyId',
+                        value: e.target.value,
+                      },
+                    })
+                  }
+                  required
+                  placeholder={isPayPal ? 'Enter client ID' : 'Enter key ID'}
+                  className="w-full"
+                />
+                <AdminInputRow
+                  label={isPayPal ? 'Client Secret' : 'Key Secret'}
+                  name={isPayPal ? 'clientSecret' : 'keySecret'}
+                  value={formData.keySecret || ''}
+                  onChange={(e) =>
+                    handleChange({
+                      target: {
+                        name: 'keySecret',
+                        value: e.target.value,
+                      },
+                    })
+                  }
+                  required
+                  placeholder={
+                    isPayPal ? 'Enter client secret' : 'Enter key secret'
+                  }
+                  className="w-full"
+                />
+              </div>
+              {/* )} */}
             </>
           )}
 

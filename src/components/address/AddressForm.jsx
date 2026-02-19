@@ -315,7 +315,7 @@ export default function AddressForm({
           // Address Details
           address: address || prev.address,
           city: cityName || prev.city,
-          state: stateName || prev.state,
+          state: stateCode || prev.state,
           zipCode: zipCode || prev.zipCode,
           country: 'India', // Default to India for GST
           // Additional fields from GST data if needed

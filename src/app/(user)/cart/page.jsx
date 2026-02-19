@@ -23,6 +23,7 @@ export default function CartPage() {
   const [showClearCartModal, setShowClearCartModal] = useState(false)
   const [isClient, setIsClient] = useState(false)
   const [updatingItemId, setUpdatingItemId] = useState(null)
+  const [removingItemId, setRemovingItemId] = useState(null)
   const [error, setError] = useState(null)
   const [localQuantities, setLocalQuantities] = useState({})
 
@@ -61,14 +62,15 @@ export default function CartPage() {
   }
 
   const handleRemoveItem = async (productId) => {
-    if (!updatingItemId) {
+    if (!removingItemId) {
       try {
-        setUpdatingItemId(productId)
+        setRemovingItemId(productId)
         await removeFromCart(productId)
       } catch (error) {
         console.error('Error removing item:', error)
+        toast.error(error.message || 'Failed to remove item')
       } finally {
-        setUpdatingItemId(null)
+        setRemovingItemId(null)
       }
     }
   }
@@ -79,7 +81,7 @@ export default function CartPage() {
   const subtotal = getCartTotal()
   const discount = isFirstOrder ? Math.round(subtotal * 0.05) : 0
   const total = subtotal - discount
-  if (!isClient || isLoading) {
+  if (!isClient) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#BA8B4E]"></div>
@@ -219,7 +221,11 @@ export default function CartPage() {
                             : ''
                         }`}
                       >
-                        <FiMinus size={14} />
+                        {updatingItemId === item.id ? (
+                          <div className="h-4 w-4 border-2 border-t-[#BA8B4E] border-gray-200 rounded-full animate-spin"></div>
+                        ) : (
+                          <FiMinus size={14} />
+                        )}
                       </button>
                       <input
                         type="number"
@@ -272,7 +278,11 @@ export default function CartPage() {
                             : ''
                         }`}
                       >
-                        <FiPlus size={14} />
+                        {updatingItemId === item.id ? (
+                          <div className="h-4 w-4 border-2 border-t-[#BA8B4E] border-gray-200 rounded-full animate-spin"></div>
+                        ) : (
+                          <FiPlus size={14} />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -289,14 +299,18 @@ export default function CartPage() {
                       </div>
                       <button
                         onClick={() => handleRemoveItem(item.id)}
-                        disabled={updatingItemId === item.id}
-                        className={`text-red-500 hover:text-red-700 text-sm flex-shrink-0 ${
-                          updatingItemId === item.id
+                        disabled={removingItemId === item.id}
+                        className={`text-red-500 hover:text-red-700 text-sm flex-shrink-0 w-6 h-6 flex items-center justify-center ${
+                          removingItemId === item.id
                             ? 'opacity-50 cursor-not-allowed'
                             : ''
                         }`}
                       >
-                        <FiTrash2 size={16} />
+                        {removingItemId === item.id ? (
+                          <div className="h-4 w-4 border-2 border-t-red-500 border-gray-200 rounded-full animate-spin"></div>
+                        ) : (
+                          <FiTrash2 size={16} />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -315,9 +329,18 @@ export default function CartPage() {
             <button
               onClick={() => setShowClearCartModal(true)}
               className="px-6 py-2 border border-gray-300 rounded-full text-gray-700 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors flex items-center"
-              disabled={cart.length === 0}
+              disabled={cart.length === 0 || isLoading}
             >
-              <FiTrash2 className="mr-2" /> Clear Cart
+              {isLoading ? (
+                <>
+                  <div className="h-4 w-4 border-2 border-t-red-500 border-gray-200 rounded-full animate-spin mr-2"></div>
+                  Clearing...
+                </>
+              ) : (
+                <>
+                  <FiTrash2 className="mr-2" /> Clear Cart
+                </>
+              )}
             </button>
 
             <ConfirmationModal

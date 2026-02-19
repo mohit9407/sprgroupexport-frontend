@@ -197,7 +197,7 @@ export default function OrdersPage() {
                         </p>
                         <Link
                           href={`/orders/${order._id}`}
-                          className="inline-flex items-center text-sm font-medium text-[#BA8B4E] hover:text-[#a87d45] ml-[765px]"
+                          className="inline-flex items-center text-sm font-medium text-[#BA8B4E] hover:text-[#a87d45] ml-[750px]"
                         >
                           View Order Details
                           <svg

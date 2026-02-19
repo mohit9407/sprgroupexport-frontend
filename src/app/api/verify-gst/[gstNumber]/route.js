@@ -4,7 +4,8 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request, { params }) {
   const { gstNumber } = params
-  const GST_SECRET_KEY = process.env.GST_SECRET_KEY
+  const { searchParams } = new URL(request.url)
+  const GST_SECRET_KEY = searchParams.get('key')
 
   if (!gstNumber) {
     return NextResponse.json(

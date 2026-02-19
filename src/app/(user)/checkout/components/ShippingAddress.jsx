@@ -178,10 +178,11 @@ export default function ShippingAddress({ onContinue, initialData = {} }) {
               {addresses.map((address) => (
                 <div
                   key={address._id}
-                  className={`border rounded-md p-4 cursor-pointer transition-colors ${selectedAddressId === address._id && !showNewAddressForm
+                  className={`border rounded-md p-4 cursor-pointer transition-colors ${
+                    selectedAddressId === address._id && !showNewAddressForm
                       ? 'border-[#c89b5a] bg-amber-50'
                       : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                  }`}
                   onClick={() => {
                     const selectedAddress = addresses.find(
                       (addr) => addr._id === address._id,
@@ -237,7 +238,9 @@ export default function ShippingAddress({ onContinue, initialData = {} }) {
                         {address.country}, {address.zipCode}
                       </p>
                       <p className="text-sm text-gray-600">
-                        Phone: {address.countryCode ? `${address.countryCode} ` : ''}{address.mobileNo || address.mobile}
+                        Phone:{' '}
+                        {address.countryCode ? `${address.countryCode} ` : ''}
+                        {address.mobileNo || address.mobile}
                       </p>
                       {!address.isDefault && (
                         <button
@@ -289,6 +292,7 @@ export default function ShippingAddress({ onContinue, initialData = {} }) {
             handleCancel={handleCancelNewAddress}
             isLoading={isLoading}
             hasGst={!!formData.gst || hasAnyAddressWithGST}
+            initialFormData={formData}
           />
         </div>
       )}
@@ -302,10 +306,11 @@ export default function ShippingAddress({ onContinue, initialData = {} }) {
         <button
           onClick={handleSubmit}
           disabled={isLoading || !selectedAddressId || showNewAddressForm}
-          className={`bg-[#c89b5a] text-white px-8 py-3 rounded-md uppercase text-sm font-medium transition-colors ${isLoading || !selectedAddressId || showNewAddressForm
+          className={`bg-[#c89b5a] text-white px-8 py-3 rounded-md uppercase text-sm font-medium transition-colors ${
+            isLoading || !selectedAddressId || showNewAddressForm
               ? 'opacity-50 cursor-not-allowed'
               : 'hover:bg-[#b38950]'
-            }`}
+          }`}
         >
           {isLoading ? 'Loading...' : 'CONTINUE'}
         </button>

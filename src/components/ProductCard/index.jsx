@@ -263,7 +263,11 @@ const ProductCard = ({
                   >
                     <div className="flex gap-3">
                       <button
-                        className={`w-10 h-10 rounded-full bg-red-500 flex items-center justify-center ${isWishlisted ? 'text-white bg-[#BA8B4E] border-2 border-[#BA8B4E]' : 'text-white'} transition-colors`}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          isWishlisted
+                            ? 'text-[#BA8B4E] bg-white border-2 border-[#BA8B4E]'
+                            : 'text-white bg-[#BA8B4E] hover:bg-[#a87d45]'
+                        } transition-colors`}
                         onClick={handleWishlistClick}
                       >
                         <FiHeart
