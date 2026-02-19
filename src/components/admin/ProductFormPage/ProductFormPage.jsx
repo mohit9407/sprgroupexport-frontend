@@ -35,10 +35,6 @@ const productSchema = (isEdit = false) => {
       .number()
       .min(1, 'Minimum order limit must be at least 1')
       .default(1),
-    maxOrderLimit: yup
-      .number()
-      .min(1, 'Maximum order limit must be at least 1')
-      .default(10),
     stock: yup
       .number()
       .min(0, 'Stock cannot be negative')
@@ -168,7 +164,6 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
       status: 'active',
       price: 0,
       minOrderLimit: 1,
-      maxOrderLimit: 10,
       stock: 0,
       productModel: '',
       carat: '',
@@ -621,15 +616,6 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
             <FormAdminInputRow
               name="minOrderLimit"
               label="Min Order Limit"
-              type="number"
-              min="1"
-              fullWidth
-            />
-
-            {/* Max Order Limit */}
-            <FormAdminInputRow
-              name="maxOrderLimit"
-              label="Max Order Limit"
               type="number"
               min="1"
               fullWidth

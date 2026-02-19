@@ -241,7 +241,11 @@ export const routeMeta = [
     label: 'Orders',
     sidebar: true,
     icon: FaList,
-    sidebarChildrens: ['/admin/orders', '/admin/orders/order-status'],
+    sidebarChildrens: [
+      '/admin/orders',
+      '/admin/orders/order-status',
+      '/admin/orders/manual-order',
+    ],
   },
   {
     key: 'orders-list',
@@ -284,6 +288,14 @@ export const routeMeta = [
     description: 'Edit Order...',
     parent: '/admin/orders',
     sidebar: false,
+    icon: FaEye,
+  },
+  {
+    key: 'manual-order',
+    path: '/admin/orders/manual-order',
+    label: 'Manual Order',
+    parent: '/admin/orders',
+    sidebar: true,
     icon: FaEye,
   },
 

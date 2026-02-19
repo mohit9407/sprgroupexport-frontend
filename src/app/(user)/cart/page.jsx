@@ -45,25 +45,6 @@ export default function CartPage() {
           return
         }
 
-        // Check max order limit
-        if (
-          product?.product?.maxOrderLimit &&
-          newQuantity > product.product.maxOrderLimit
-        ) {
-          toast.error(
-            `Maximum order quantity is ${product.product.maxOrderLimit}`,
-          )
-          return
-        }
-
-        // Check stock availability
-        if (
-          product?.product?.stock !== undefined &&
-          newQuantity > product.product.stock
-        ) {
-          toast.error(`Only ${product.product.stock} items available in stock`)
-          return
-        }
         setUpdatingItemId(productId)
 
         try {

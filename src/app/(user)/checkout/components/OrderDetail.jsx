@@ -309,6 +309,11 @@ export default function OrderDetail({
     if (method.type?.toLowerCase() === 'cod') {
       return selectedCity === 'surat'
     }
+
+    if (method.type?.toLowerCase() === 'offline') {
+      return false
+    }
+
     return true
   })
 
@@ -470,7 +475,7 @@ export default function OrderDetail({
                 </div>
               ))}
 
-              {paymentMethods.length === 0 && (
+              {filteredPaymentMethods.length === 0 && (
                 <div className="text-sm text-gray-600">
                   No payment methods available
                 </div>

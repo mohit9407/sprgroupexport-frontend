@@ -117,7 +117,6 @@ export default function EditProductPage() {
     status: product.status || 'active',
     price: product.price || 0,
     minOrderLimit: product.minOrderLimit || 1,
-    maxOrderLimit: product.maxOrderLimit || 10,
     stock: product.stock || 0,
     productModel: product.productModel || '',
     carat: product.carat || '',

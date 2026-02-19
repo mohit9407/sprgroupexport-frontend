@@ -68,6 +68,11 @@ const resendGuestOTP = async (email) => {
   return response
 }
 
+const manualUserCreateByAdmin = async (payload) => {
+  const response = await api.post('/authadmin/manual-user', payload)
+  return response
+}
+
 export const authService = {
   forgotPassword,
   login,
@@ -79,4 +84,5 @@ export const authService = {
   resendOTP,
   changePassword,
   resendGuestOTP,
+  manualUserCreateByAdmin,
 }

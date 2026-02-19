@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { getGeneralSetting } from '@/features/general-setting/generatSettingSlice'
 import { fetchContentPages } from '@/features/content-page/contentPageSlice'
 import SafeImage from '../SafeImage'
+import { Image } from 'lucide-react'
 
 const Footer = ({ settings = {} }) => {
   const dispatch = useDispatch()
@@ -59,8 +60,7 @@ const Footer = ({ settings = {} }) => {
                 sizes="(max-width: 768px) 100vw, 256px"
                 priority
               />
-              <Image
-              />
+              <Image />
             </div>
 
             <div className="flex items-center text-gray-600 text-xs">

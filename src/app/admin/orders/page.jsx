@@ -91,12 +91,45 @@ function OrdersPageContent() {
           )
         },
       }),
+      columnHelper.accessor('isAdminOrderCreated', {
+        header: 'Admin Order',
+        enableSorting: false,
+        cell: (info) => {
+          const value = info.getValue()
+
+          return value ? (
+            <span className="px-2 py-1 text-xs bg-purple-100 text-purple-900 rounded-full">
+              Yes
+            </span>
+          ) : (
+            <span className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
+              No
+            </span>
+          )
+        },
+      }),
+      columnHelper.accessor('paidAmount', {
+        header: 'Paid Amount',
+        enableSorting: true,
+        cell: ({ getValue }) => `₹${getValue() ?? 0}`,
+      }),
+      columnHelper.accessor('remainingAmount', {
+        header: 'Remaining Amount',
+        enableSorting: true,
+        cell: ({ getValue }) => `₹${getValue() ?? 0}`,
+      }),
       columnHelper.display({
         id: 'action',
         header: 'Action',
         enableSorting: false,
         cell: ({ row }) => {
           const id = row.original.id
+          const paymentMethod = row.original.paymentMethod
+
+          const RAZORPAY_ID = '695cae6321d3f5118b0c8c94'
+          const PAYPAL_ID = '695ccf386ea6dadf0aa1c14c'
+          const COD_ID = '695cae5421d3f5118b0c8c91'
+          const OFFLINE_ID = '6992b463d4ae5d4dfaa75469'
 
           const handleEdit = (e) => {
             e.stopPropagation()
@@ -113,11 +146,6 @@ function OrdersPageContent() {
             e.stopPropagation()
 
             const paymentId = row.original.paymentProviderOrderId
-            const paymentMethod = row.original.paymentMethod
-
-            const RAZORPAY_ID = '695cae6321d3f5118b0c8c94'
-
-            const PAYPAL_ID = '695ccf386ea6dadf0aa1c14c'
 
             if (!paymentId) {
               toast.error('No payment details found')
@@ -125,14 +153,17 @@ function OrdersPageContent() {
             }
 
             if (paymentMethod === RAZORPAY_ID) {
-              const razorPayUrl = `https://dashboard.razorpay.com/app/payments/${paymentId}`
-
-              window.open(razorPayUrl, '_blank')
+              window.open(
+                `https://dashboard.razorpay.com/app/payments/${paymentId}`,
+                '_blank',
+              )
             }
 
             if (paymentMethod === PAYPAL_ID) {
-              const paypalUrl = `https://www.sandbox.paypal.com/unifiedtransactions/details/payment/${paymentId}`
-              window.open(paypalUrl, '_blank')
+              window.open(
+                `https://www.sandbox.paypal.com/unifiedtransactions/details/payment/${paymentId}`,
+                '_blank',
+              )
             }
           }
 
@@ -140,25 +171,26 @@ function OrdersPageContent() {
             <div className="flex items-center space-x-2">
               <button
                 onClick={handleEdit}
-                className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-full hover:text-blue-700 transition-colors"
-                title="Edit Order"
+                className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-full"
               >
                 <FaEdit className="w-4 h-4" />
               </button>
+
               <button
                 onClick={handleDeleteClick}
-                className="p-1.5 text-red-600 hover:bg-red-50 rounded-full hover:text-red-700 transition-colors"
-                title="Delete Order"
+                className="p-1.5 text-red-600 hover:bg-red-50 rounded-full"
               >
                 <FaTrash className="w-4 h-4" />
               </button>
-              <button
-                onClick={handleViewPaymentDetails}
-                className="p-1.5 text-green-600 hover:bg-red-50 rounded-full hover:text-green-700 transition-colors"
-                title="Delete Order"
-              >
-                <Eye className="w-4 h-4" />
-              </button>
+              {paymentMethod !== COD_ID && paymentMethod !== OFFLINE_ID && (
+                <button
+                  onClick={handleViewPaymentDetails}
+                  className="p-1.5 text-green-600 hover:bg-green-50 rounded-full"
+                  title="View Payment"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
+              )}
             </div>
           )
         },
@@ -245,6 +277,9 @@ function OrdersPageContent() {
           statusId: statusId, // Keep the status ID for reference
           paymentProviderOrderId: order.paymentProviderOrderId,
           paymentMethod: order.paymentMethod,
+          isAdminOrderCreated: order.isAdminOrderCreated,
+          paidAmount: order.paidAmount,
+          remainingAmount: order.remainingAmount,
         }
       }),
     [orders, orderStatuses],
@@ -283,6 +318,15 @@ function OrdersPageContent() {
               label: status.orderStatus || status.name,
               value: status._id,
             })),
+          },
+          {
+            label: 'Admin Created Order',
+            value: 'isAdminOrderCreated',
+            type: 'select',
+            options: [
+              { label: 'Yes', value: true },
+              { label: 'No', value: false },
+            ],
           },
         ]}
       />
