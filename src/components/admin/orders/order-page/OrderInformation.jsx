@@ -1,13 +1,15 @@
+import { toast } from '@/utils/toastConfig'
 import React from 'react'
+import { FiCopy } from 'react-icons/fi'
 
 const OrderInformation = ({
   order,
   orderStatus,
   loadingDetails,
-  shippingAddress,
   onUpdatePaidAmount,
 }) => {
   const [paidInput, setPaidInput] = React.useState(order?.paidAmount || 0)
+  const [additionalAmount, setAdditionalAmount] = React.useState()
 
   React.useEffect(() => {
     setPaidInput(order?.paidAmount || 0)
@@ -36,13 +38,28 @@ const OrderInformation = ({
         return 'bg-yellow-100 text-yellow-800'
     }
   }
+
+  const handleCopyOrderId = () => {
+    if (order && order?.orderId) {
+      navigator.clipboard.writeText(order.orderId)
+      toast.success('Order ID copied to clipboard')
+    }
+  }
+
   return (
     <div className="bg-white rounded-lg shadow p-6 mb-6">
       <h2 className="text-xl font-semibold mb-4">Order Information</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <h3 className="font-medium text-gray-700">Order ID</h3>
-          <p className="text-gray-600">{order.orderId}</p>
+        <div className="flex items-center space-x-2">
+          <h3 className="font-bold text-gray-700">Order ID </h3>
+          <p className="text-gray-600"> {order.orderId}</p>
+          <button
+            onClick={handleCopyOrderId}
+            className="rounded hover:bg-gray-200 transition-colors"
+            title="Copy Order ID"
+          >
+            <FiCopy className="w-5 h-5 text-gray-500" />
+          </button>
         </div>
         <div>
           <h3 className="font-medium text-gray-700">Order Date</h3>
@@ -101,12 +118,24 @@ const OrderInformation = ({
               onChange={(e) => setPaidInput(Number(e.target.value) || 0)}
               className="mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm w-32 focus:outline-none focus:ring-2 focus:ring-cyan-500"
               min="0"
+              disabled
+            />
+            <input
+              type="number"
+              value={additionalAmount}
+              onChange={(e) => setAdditionalAmount(Number(e.target.value) || 0)}
+              className="mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm w-32 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              min="0"
             />
 
             <button
               type="button"
               className="inline-flex items-center px-3 py-2 mt-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              onClick={() => onUpdatePaidAmount?.(paidInput)}
+              onClick={() => {
+                const updatedAmount = paidInput + additionalAmount
+                onUpdatePaidAmount?.(updatedAmount)
+                setAdditionalAmount('')
+              }}
             >
               Update Amount
             </button>
