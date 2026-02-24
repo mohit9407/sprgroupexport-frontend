@@ -14,6 +14,14 @@ export const verifyGST = createAsyncThunk(
     try {
       const { generalSetting } = getState()
       const gstSecretKey = generalSetting?.data?.gstSecretKey
+      const gstVerificationEnabled =
+        generalSetting?.data?.gstVerificationEnabled
+
+      // Check if GST verification is enabled
+      if (!gstVerificationEnabled) {
+        return rejectWithValue('GST verification is disabled')
+      }
+
       if (!gstSecretKey) {
         return rejectWithValue(
           'GST verification service is not properly configured',
