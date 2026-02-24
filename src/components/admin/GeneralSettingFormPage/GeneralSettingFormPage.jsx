@@ -54,6 +54,12 @@ export default function GeneralSettingFormPage({
         defaultValues?.specialProductSectionText ?? undefined,
       welcomeStoreSectionText:
         defaultValues?.welcomeStoreSectionText ?? undefined,
+      twilioAccountSid: defaultValues?.twilioAccountSid ?? undefined,
+      twilioAuthToken: defaultValues?.twilioAuthToken ?? undefined,
+      twilioPhone: defaultValues?.twilioPhone ?? undefined,
+      smsEnabled: defaultValues?.smsEnabled !== false ? 'yes' : 'no',
+      gstVerificationEnabled:
+        defaultValues?.gstVerificationEnabled !== false ? 'yes' : 'no',
     },
   })
 
@@ -84,9 +90,10 @@ export default function GeneralSettingFormPage({
         longitude: defaultValues?.longitude ?? undefined,
         googleCaptchaKey: defaultValues?.googleCaptchaKey ?? undefined,
         googleCaptchaSecret: defaultValues?.googleCaptchaSecret ?? undefined,
-        gstSecretKey: defaultValues?.gstSecretKey ?? undefined,
         uploadYourDesign: defaultValues?.uploadYourDesign ?? undefined,
         productCategorySectionText:
+          defaultValues?.productCategorySectionText ?? undefined,
+        topSellingSectionText:
           defaultValues?.topSellingSectionText ?? undefined,
         newArrivalSectionText:
           defaultValues?.newArrivalSectionText ?? undefined,
@@ -95,6 +102,13 @@ export default function GeneralSettingFormPage({
           defaultValues?.specialProductSectionText ?? undefined,
         welcomeStoreSectionText:
           defaultValues?.welcomeStoreSectionText ?? undefined,
+        gstSecretKey: defaultValues?.gstSecretKey ?? undefined,
+        twilioAccountSid: defaultValues?.twilioAccountSid ?? undefined,
+        twilioAuthToken: defaultValues?.twilioAuthToken ?? undefined,
+        twilioPhone: defaultValues?.twilioPhone ?? undefined,
+        smsEnabled: defaultValues?.smsEnabled !== false ? 'yes' : 'no',
+        gstVerificationEnabled:
+          defaultValues?.gstVerificationEnabled !== false ? 'yes' : 'no',
       })
     }
   }, [defaultValues, reset])
@@ -112,7 +126,12 @@ export default function GeneralSettingFormPage({
           onSubmit={(e) => {
             e.preventDefault()
             handleSubmit((data) => {
-              onSubmit(data)
+              const payload = {
+                ...data,
+                smsEnabled: data.smsEnabled === 'yes',
+                gstVerificationEnabled: data.gstVerificationEnabled === 'yes',
+              }
+              onSubmit(payload)
             })(e)
           }}
           className="space-y-6"
@@ -179,6 +198,37 @@ export default function GeneralSettingFormPage({
               label="Order Email"
               type="string"
             />
+
+            <hr />
+            <br />
+            <h1 className="pb-3 font-bold">SMS Service Setting</h1>
+            <hr />
+            <br />
+
+            <FormAdminInputRow
+              name="twilioAccountSid"
+              label="Twilio Account Sid"
+              type="string"
+            />
+            <FormAdminInputRow
+              name="twilioAuthToken"
+              label="Twilio Auth Token"
+              type="string"
+            />
+            <FormAdminInputRow
+              name="twilioPhone"
+              label="Twilio Phone"
+              type="string"
+            />
+            <FormAdminRadioGroup
+              name="smsEnabled"
+              label="SMS Enabled"
+              options={[
+                { label: 'Active', value: 'yes' },
+                { label: 'InActive', value: 'no' },
+              ]}
+            />
+
             <hr />
             <br />
             <h1 className="pb-3 font-bold">Orders</h1>
@@ -247,6 +297,14 @@ export default function GeneralSettingFormPage({
               label="GST Secret Key"
               type="string"
               helpText="Enter your GST secret key for verification"
+            />
+            <FormAdminRadioGroup
+              name="gstVerificationEnabled"
+              label="GST Verification Enabled"
+              options={[
+                { label: 'Active', value: 'yes' },
+                { label: 'InActive', value: 'no' },
+              ]}
             />
             <hr />
             <br />

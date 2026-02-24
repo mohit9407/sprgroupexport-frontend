@@ -27,8 +27,6 @@ export default function PayPalSuccess() {
       }
 
       try {
-        console.log('Processing PayPal success:', { token, payerId })
-
         const storedOrderData = localStorage.getItem('pendingPayPalOrder')
         if (!storedOrderData) {
           throw new Error('Order data not found')
@@ -39,10 +37,6 @@ export default function PayPalSuccess() {
         const orderData = JSON.parse(storedOrderData)
 
         orderData.paymentProviderOrderId = paypalOrderId
-        console.log(
-          'Order data with PayPal ID:',
-          JSON.stringify(orderData, null, 2),
-        )
 
         const orderResponse = await api.post('/orders/create', orderData)
         console.log('Order created successfully:', orderResponse.data)
