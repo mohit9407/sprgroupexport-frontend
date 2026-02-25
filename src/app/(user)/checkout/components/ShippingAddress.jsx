@@ -291,7 +291,6 @@ export default function ShippingAddress({ onContinue, initialData = {} }) {
             handleCancel={handleCancelNewAddress}
             isLoading={isLoading}
             hasGst={!!formData.gst || hasAnyAddressWithGST}
-            initialFormData={formData}
           />
         </div>
       )}
