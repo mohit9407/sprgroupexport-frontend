@@ -137,44 +137,6 @@ export default function GeneralSettingFormPage({
           className="space-y-6"
         >
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <FormAdminRadioGroup
-              name="environment"
-              label="Web/App Environment"
-              options={[
-                { label: 'Maintenance', value: 'Maintenance' },
-                { label: 'Production', value: 'Production' },
-                { label: 'local', value: 'local' },
-              ]}
-            />
-            <FormAdminInputRow
-              name="maintenanceText"
-              label="Maintenance Text"
-              type="string"
-            />
-
-            <FormAdminInputRow
-              name="websiteLink"
-              label="Website Link"
-              type="string"
-            />
-
-            <FormAdminInputRow name="appName" label="App Name" type="string" />
-            <FormAdminInputRow
-              name="newProductDuration"
-              label="New Product Duration"
-              type="number"
-            />
-            <hr />
-            <br />
-            <h1 className="pb-3 font-bold">Google Map API</h1>
-            <hr />
-            <br />
-
-            <FormAdminInputRow
-              name="googleMapApi"
-              label="Google Map Api"
-              type="string"
-            />
             <hr />
             <br />
             <h1 className="pb-3 font-bold">Inquery Email</h1>
@@ -266,27 +228,6 @@ export default function GeneralSettingFormPage({
 
             <FormAdminInputRow name="country" label="Country" type="string" />
 
-            <FormAdminInputRow name="latitude" label="Latitude" type="string" />
-            <FormAdminInputRow
-              name="longitude"
-              label="Longitude"
-              type="string"
-            />
-            <hr />
-            <br />
-            <h1 className="pb-3 font-bold">Google Captcha</h1>
-            <hr />
-            <br />
-            <FormAdminInputRow
-              name="googleCaptchaKey"
-              label="Google Captcha Key"
-              type="string"
-            />
-            <FormAdminInputRow
-              name="googleCaptchaSecret"
-              label="Google Captcha Secret"
-              type="string"
-            />
             <hr />
             <br />
             <h1 className="pb-3 font-bold">GST Settings</h1>
@@ -305,16 +246,6 @@ export default function GeneralSettingFormPage({
                 { label: 'Active', value: 'yes' },
                 { label: 'InActive', value: 'no' },
               ]}
-            />
-            <hr />
-            <br />
-            <h1 className="pb-3 font-bold">Upload Your Design</h1>
-            <hr />
-            <br />
-            <FormAdminInputRow
-              name="uploadYourDesign"
-              label="Upload Your Design"
-              type="string"
             />
             <hr />
             <br />

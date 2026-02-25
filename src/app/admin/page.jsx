@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, Suspense } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   fetchAdminDashboard,
@@ -232,12 +232,16 @@ export default function AdminDashboard() {
                 New Customer(s)
               </h2>
 
-              <TanstackTable
-                columns={customerColumns}
-                data={customersData}
-                isLoading={loading}
-                mode="client"
-              />
+              <Suspense
+                fallback={<div className="p-4 text-center">Loading...</div>}
+              >
+                <TanstackTable
+                  columns={customerColumns}
+                  data={customersData}
+                  isLoading={loading}
+                  mode="client"
+                />
+              </Suspense>
 
               <button
                 onClick={() => router.push('/admin/orders')}
@@ -255,12 +259,16 @@ export default function AdminDashboard() {
                 New Orders
               </h2>
 
-              <TanstackTable
-                columns={ordersColumns}
-                data={ordersData}
-                isLoading={loading}
-                mode="client"
-              />
+              <Suspense
+                fallback={<div className="p-4 text-center">Loading...</div>}
+              >
+                <TanstackTable
+                  columns={ordersColumns}
+                  data={ordersData}
+                  isLoading={loading}
+                  mode="client"
+                />
+              </Suspense>
 
               <button
                 onClick={() => router.push('/admin/orders')}
