@@ -93,6 +93,8 @@ export default function AddressForm({
     error: gstError,
   } = useSelector((state) => state.gst)
 
+  const { data: generalSetting } = useSelector((state) => state.generalSetting)
+
   // Load countries on component mount and set initial form data
   useEffect(() => {
     const allCountries = Country.getAllCountries().map((country) => {
@@ -242,6 +244,11 @@ export default function AddressForm({
   }
   const handleGSTBlur = (e) => {
     const gstNumber = e.target.value.trim()
+
+    if (generalSetting?.data?.gstVerificationEnabled === false) {
+      return rejectWithValue('GST verification is disabled')
+    }
+
     if (gstNumber && gstNumber.length === 15) {
       dispatch(verifyGST(gstNumber))
     } else if (gstNumber) {
