@@ -43,11 +43,11 @@ export function AdminInputRow({
                 ? 'border-red-500 focus:ring-red-500'
                 : 'border-gray-300 focus:ring-blue-500'
             }`}
-          value={value}
+          value={value ?? ''}
           defaultValue={defaultValue}
           onChange={onChange}
           onBlur={(e) => {
-            onBlur?.(e);
+            onBlur?.(e)
           }}
         />
 
