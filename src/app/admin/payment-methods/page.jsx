@@ -62,6 +62,26 @@ function PaymentMethodsContent() {
       cell: (info) => <span className="font-medium">{info.getValue()}</span>,
     },
     {
+      id: 'environment',
+      header: 'Mode',
+      cell: ({ row }) => {
+        const env = row.original.environment
+        const isLive = env === 'LIVE'
+        return (
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-semibold ${
+              isLive
+                ? 'bg-green-100 text-green-800 border border-green-200'
+                : 'bg-yellow-100 text-yellow-800 border border-yellow-200'
+            }`}
+          >
+            {isLive ? '🟢 LIVE' : '🟡 TEST'}
+          </span>
+        )
+      },
+      size: 120,
+    },
+    {
       id: 'actions',
       header: 'Action',
       cell: ({ row }) => (

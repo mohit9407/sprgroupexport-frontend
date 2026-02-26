@@ -10,9 +10,12 @@ export default function RazorpaySuccess() {
   const searchParams = useSearchParams()
   const [status, setStatus] = useState('processing')
   const [message, setMessage] = useState('Processing your Razorpay payment...')
-  const isProcessingRef = useRef(false)
+  // const processingRef = useRef(false)
 
   useEffect(() => {
+    if (window.__razorpayProcessing) return
+    window.__razorpayProcessing = true
+
     const razorpayPaymentId = searchParams.get('razorpay_payment_id')
     const processedKey = razorpayPaymentId
       ? `razorpay_processed_${razorpayPaymentId}`
@@ -26,11 +29,6 @@ export default function RazorpaySuccess() {
       }, 1500)
       return
     }
-    if (isProcessingRef.current) {
-      console.log('Already processing, skipping duplicate execution')
-      return
-    }
-    isProcessingRef.current = true
 
     const processRazorpayPayment = async () => {
       if (razorpayPaymentId && sessionStorage.getItem(processedKey)) {
@@ -140,7 +138,7 @@ export default function RazorpaySuccess() {
     }
 
     processRazorpayPayment()
-  }, [searchParams, router])
+  }, [])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">

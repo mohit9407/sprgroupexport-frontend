@@ -19,26 +19,39 @@ export default function PaymentMethodForm({
   const { loading } = useSelector((state) => state.paymentMethods)
 
   const [isPayPal, setIsPayPal] = useState(false)
+  const [isRazorpay, setIsRazorpay] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     environment: 'SANDBOX', // Default to SANDBOX
     keyId: '',
     keySecret: '',
+    clientId: '',
+    clientSecret: '',
+    testClientId: '',
+    testClientSecret: '',
+    testKeyId: '',
+    testKeySecret: '',
   })
   useEffect(() => {
-    if (isEdit && initialData) {
+    if (isEdit && initialData && !formData.name) {
       const isPayPalMethod = initialData.name?.toLowerCase().includes('paypal')
+      const isRazorpayMethod = initialData.name
+        ?.toLowerCase()
+        .includes('razorpay')
       setIsPayPal(isPayPalMethod)
-
-      // Handle both keyId/keySecret and clientId/clientSecret for backward compatibility
-      const keyId = initialData.keyId || initialData.clientId || ''
-      const keySecret = initialData.keySecret || initialData.clientSecret || ''
+      setIsRazorpay(isRazorpayMethod)
 
       setFormData({
         name: initialData.name || '',
         environment: initialData.environment || 'SANDBOX',
-        keyId,
-        keySecret,
+        keyId: initialData.keyId || '',
+        keySecret: initialData.keySecret || '',
+        testKeyId: initialData.testKeyId || '',
+        testKeySecret: initialData.testKeySecret || '',
+        clientId: initialData.clientId || '',
+        clientSecret: initialData.clientSecret || '',
+        testClientId: initialData.testClientId || '',
+        testClientSecret: initialData.testClientSecret || '',
       })
     }
   }, [initialData, isEdit])
@@ -51,10 +64,40 @@ export default function PaymentMethodForm({
         [name]: type === 'checkbox' ? checked : value,
       }
 
-      // Update isPayPal state when name changes
+      // Update isPayPal/isRazorpay state when name changes
       if (name === 'name') {
         const isPayPalMethod = value.toLowerCase().includes('paypal')
+        const isRazorpayMethod = value.toLowerCase().includes('razorpay')
         setIsPayPal(isPayPalMethod)
+        setIsRazorpay(isRazorpayMethod)
+      }
+
+      if (name === 'environment') {
+        const newEnv = value
+        const isPayPalMethod = newData.name.toLowerCase().includes('paypal')
+        const isRazorpayMethod = newData.name.toLowerCase().includes('razorpay')
+        if (isPayPalMethod) {
+          return {
+            ...newData,
+            clientId: newEnv === 'SANDBOX' ? prev.clientId : prev.testClientId,
+            clientSecret:
+              newEnv === 'SANDBOX' ? prev.clientSecret : prev.testClientSecret,
+            testClientId:
+              newEnv === 'SANDBOX' ? prev.testClientId : prev.clientId,
+            testClientSecret:
+              newEnv === 'SANDBOX' ? prev.testClientSecret : prev.clientSecret,
+          }
+        } else if (isRazorpayMethod) {
+          return {
+            ...newData,
+            keyId: newEnv === 'SANDBOX' ? prev.keyId : prev.testKeyId,
+            keySecret:
+              newEnv === 'SANDBOX' ? prev.keySecret : prev.testKeySecret,
+            testKeyId: newEnv === 'SANDBOX' ? prev.testKeyId : prev.keyId,
+            testKeySecret:
+              newEnv === 'SANDBOX' ? prev.testKeySecret : prev.keySecret,
+          }
+        }
       }
 
       return newData
@@ -66,14 +109,27 @@ export default function PaymentMethodForm({
 
     try {
       const isPayPalMethod = formData.name.toLowerCase().includes('paypal')
+      const isRazorpayMethod = formData.name.toLowerCase().includes('razorpay')
       const payload = { ...formData }
 
-      // For PayPal, rename keyId to clientId and keySecret to clientSecret in the payload
       if (isPayPalMethod) {
-        payload.clientId = payload.keyId
-        payload.clientSecret = payload.keySecret
+        // For PayPal, keep clientId/clientSecret and testClientId/testClientSecret
         delete payload.keyId
         delete payload.keySecret
+      } else if (isRazorpayMethod) {
+        // For Razorpay, keep keyId/keySecret and testKeyId/testKeySecret
+        delete payload.clientId
+        delete payload.clientSecret
+        delete payload.testClientId
+        delete payload.testClientSecret
+      } else {
+        // For non-PayPal/non-Razorpay, keep keyId/keySecret
+        delete payload.clientId
+        delete payload.clientSecret
+        delete payload.testClientId
+        delete payload.testClientSecret
+        delete payload.testKeyId
+        delete payload.testKeySecret
       }
 
       if (isEdit) {
@@ -139,44 +195,191 @@ export default function PaymentMethodForm({
                 </div>
               </div>
 
-              {/* {formData.environment === 'LIVE' && ( */}
-              <div className="space-y-4">
-                <AdminInputRow
-                  label={isPayPal ? 'Client ID' : 'Key ID'}
-                  name={isPayPal ? 'clientId' : 'keyId'}
-                  value={formData.keyId || ''}
-                  onChange={(e) =>
-                    handleChange({
-                      target: {
-                        name: 'keyId',
-                        value: e.target.value,
-                      },
-                    })
-                  }
-                  required
-                  placeholder={isPayPal ? 'Enter client ID' : 'Enter key ID'}
-                  className="w-full"
-                />
-                <AdminInputRow
-                  label={isPayPal ? 'Client Secret' : 'Key Secret'}
-                  name={isPayPal ? 'clientSecret' : 'keySecret'}
-                  value={formData.keySecret || ''}
-                  onChange={(e) =>
-                    handleChange({
-                      target: {
-                        name: 'keySecret',
-                        value: e.target.value,
-                      },
-                    })
-                  }
-                  required
-                  placeholder={
-                    isPayPal ? 'Enter client secret' : 'Enter key secret'
-                  }
-                  className="w-full"
-                />
-              </div>
-              {/* )} */}
+              {/* PayPal: show sandbox/live credential fields */}
+              {isPayPal ? (
+                <>
+                  {formData.environment === 'SANDBOX' ? (
+                    <div className="space-y-4">
+                      <AdminInputRow
+                        label="Client ID (Sandbox)"
+                        name="clientId"
+                        value={formData.clientId}
+                        onChange={(e) =>
+                          handleChange({
+                            target: {
+                              name: 'clientId',
+                              value: e.target.value,
+                            },
+                          })
+                        }
+                        required
+                        placeholder="Enter sandbox client ID"
+                        className="w-full"
+                      />
+                      <AdminInputRow
+                        label="Client Secret (Sandbox)"
+                        name="clientSecret"
+                        value={formData.clientSecret}
+                        onChange={(e) =>
+                          handleChange({
+                            target: {
+                              name: 'clientSecret',
+                              value: e.target.value,
+                            },
+                          })
+                        }
+                        required
+                        placeholder="Enter sandbox client secret"
+                        className="w-full"
+                      />
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <AdminInputRow
+                        label="Client ID (Live)"
+                        name="testClientId"
+                        value={formData.testClientId}
+                        onChange={(e) =>
+                          handleChange({
+                            target: {
+                              name: 'testClientId',
+                              value: e.target.value,
+                            },
+                          })
+                        }
+                        required
+                        placeholder="Enter live client ID"
+                        className="w-full"
+                      />
+                      <AdminInputRow
+                        label="Client Secret (Live)"
+                        name="testClientSecret"
+                        value={formData.testClientSecret}
+                        onChange={(e) =>
+                          handleChange({
+                            target: {
+                              name: 'testClientSecret',
+                              value: e.target.value,
+                            },
+                          })
+                        }
+                        required
+                        placeholder="Enter live client secret"
+                        className="w-full"
+                      />
+                    </div>
+                  )}
+                </>
+              ) : isRazorpay ? (
+                <>
+                  {formData.environment === 'SANDBOX' ? (
+                    <div className="space-y-4">
+                      <AdminInputRow
+                        label="Key ID (Sandbox)"
+                        name="keyId"
+                        value={formData.keyId}
+                        onChange={(e) =>
+                          handleChange({
+                            target: {
+                              name: 'keyId',
+                              value: e.target.value,
+                            },
+                          })
+                        }
+                        required
+                        placeholder="Enter sandbox key ID"
+                        className="w-full"
+                      />
+                      <AdminInputRow
+                        label="Key Secret (Sandbox)"
+                        name="keySecret"
+                        value={formData.keySecret}
+                        onChange={(e) =>
+                          handleChange({
+                            target: {
+                              name: 'keySecret',
+                              value: e.target.value,
+                            },
+                          })
+                        }
+                        required
+                        placeholder="Enter sandbox key secret"
+                        className="w-full"
+                      />
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <AdminInputRow
+                        label="Key ID (Live)"
+                        name="testKeyId"
+                        value={formData.testKeyId}
+                        onChange={(e) =>
+                          handleChange({
+                            target: {
+                              name: 'testKeyId',
+                              value: e.target.value,
+                            },
+                          })
+                        }
+                        required
+                        placeholder="Enter live key ID"
+                        className="w-full"
+                      />
+                      <AdminInputRow
+                        label="Key Secret (Live)"
+                        name="testKeySecret"
+                        value={formData.testKeySecret}
+                        onChange={(e) =>
+                          handleChange({
+                            target: {
+                              name: 'testKeySecret',
+                              value: e.target.value,
+                            },
+                          })
+                        }
+                        required
+                        placeholder="Enter live key secret"
+                        className="w-full"
+                      />
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="space-y-4">
+                  <AdminInputRow
+                    label="Key ID"
+                    name="keyId"
+                    value={formData.keyId || ''}
+                    onChange={(e) =>
+                      handleChange({
+                        target: {
+                          name: 'keyId',
+                          value: e.target.value,
+                        },
+                      })
+                    }
+                    required
+                    placeholder="Enter key ID"
+                    className="w-full"
+                  />
+                  <AdminInputRow
+                    label="Key Secret"
+                    name="keySecret"
+                    value={formData.keySecret || ''}
+                    onChange={(e) =>
+                      handleChange({
+                        target: {
+                          name: 'keySecret',
+                          value: e.target.value,
+                        },
+                      })
+                    }
+                    required
+                    placeholder="Enter key secret"
+                    className="w-full"
+                  />
+                </div>
+              )}
             </>
           )}
 
