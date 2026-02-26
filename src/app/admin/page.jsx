@@ -244,7 +244,7 @@ export default function AdminDashboard() {
               </Suspense>
 
               <button
-                onClick={() => router.push('/admin/orders')}
+                onClick={() => router.push('/admin/customers')}
                 className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors mt-4"
               >
                 View All Customers
@@ -346,7 +346,7 @@ export default function AdminDashboard() {
                 onClick={() => router.push('/admin/products')}
                 className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors mt-4"
               >
-                View All Orders
+                View All Products
               </button>
             </div>
           </div>

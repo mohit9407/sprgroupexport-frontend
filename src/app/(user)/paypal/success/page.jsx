@@ -10,22 +10,18 @@ export default function PayPalSuccess() {
   const searchParams = useSearchParams()
   const [status, setStatus] = useState('processing')
   const [message, setMessage] = useState('Processing your PayPal payment...')
-  const isProcessingRef = useRef(false)
+  // const isProcessingRef = useRef(false)
 
   useEffect(() => {
-    if (isProcessingRef.current) return
+    const token = searchParams.get('token')
+    const payerId = searchParams.get('PayerID')
+
+    if (!token || !payerId) return
+
+    if (window.__paypalProcessing) return
+    window.__paypalProcessing = true
 
     const processPayPalPayment = async () => {
-      isProcessingRef.current = true
-      const token = searchParams.get('token')
-      const payerId = searchParams.get('PayerID')
-
-      if (!token || !payerId) {
-        setStatus('error')
-        setMessage('Invalid PayPal response. Missing required parameters.')
-        return
-      }
-
       try {
         const storedOrderData = localStorage.getItem('pendingPayPalOrder')
         if (!storedOrderData) {
@@ -46,17 +42,10 @@ export default function PayPalSuccess() {
           `Order #${createdOrder._id.slice(-6)} created successfully! Payment received.`,
         )
 
-        try {
-          const captureResponse = await api.post(
-            `/payments/capture/paypal/${paypalOrderId}`,
-            {
-              token,
-              payerId,
-            },
-          )
-        } catch (captureError) {
-          console.error('PayPal capture failed:', captureError)
-        }
+        await api.post(`/payments/capture/paypal/${paypalOrderId}`, {
+          token,
+          payerId,
+        })
 
         localStorage.removeItem('pendingPayPalOrder')
 
@@ -67,23 +56,15 @@ export default function PayPalSuccess() {
 
         setTimeout(() => {
           router.push('/orders')
-        }, 2000)
+        }, 3000)
       } catch (error) {
-        toast.error('Order creation failed. Please contact support.')
-
         setStatus('error')
-        setMessage(
-          'Order creation failed. Please contact support with your PayPal transaction ID.',
-        )
-
-        setTimeout(() => {
-          router.push('/orders')
-        }, 5000)
+        setMessage('Order creation failed. Please contact support.')
       }
     }
 
     processPayPalPayment()
-  }, [searchParams, router])
+  }, [])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
