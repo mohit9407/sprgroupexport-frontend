@@ -783,6 +783,9 @@ export default function OrderFormPage({
                 readOnly
               />
             </div>
+            <small className="text-base mb-1 bg-blue-600 text-white p-0.5 inline">
+              Choose payment method as offline if manually create order
+            </small>
             <FormAdminSelect
               name="paymentMethod"
               label="Payment Method"
@@ -793,6 +796,9 @@ export default function OrderFormPage({
               fullWidth
               required
             />
+            <small className="text-base mb-1 bg-blue-600 text-white p-0.5 inline">
+              Choose payment status as partial if received advance payment
+            </small>
             <FormAdminSelect
               name="paymentStatus"
               label="Payment Status"

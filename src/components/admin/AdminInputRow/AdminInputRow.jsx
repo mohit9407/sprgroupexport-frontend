@@ -76,6 +76,7 @@ export function FormAdminInputRow({
   readOnly = false,
   touchedField = false,
   onBlur,
+  onChange: onParentChange,
   ...rest
 }) {
   const { control } = useFormContext()
@@ -110,6 +111,7 @@ export function FormAdminInputRow({
         // Only update if not readOnly
         if (!readOnly) {
           field.onChange(e)
+          onParentChange?.(e)
         }
       }}
       onBlur={(e) => {

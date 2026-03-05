@@ -16,6 +16,7 @@ import orderStatusReducer from '../features/orderStatus/orderStatusSlice'
 import reviewsReducer from '../features/reviews/reviewsSlice'
 import stockReducer from '../features/stock/stockSlice'
 import caratReducer from '../features/carat/caratSlice'
+import silverReducer from '../features/silver/silverSlice'
 import settingsReducer from '../features/setting/settingSlice'
 import parallaxBannerReducer from '../features/parallax-banner/parallaxBannerSlice'
 import paymentMethodReducer from '../features/paymentMethod/paymentMethodSlice'
@@ -50,6 +51,7 @@ export const store = configureStore({
     reviews: reviewsReducer,
     stock: stockReducer,
     carat: caratReducer,
+    silver: silverReducer,
     gold: goldSlice,
     generalSetting: generalSettingSlice,
     inventory: inventorySlice,
