@@ -75,7 +75,7 @@ const Header = ({ settings = {} }) => {
         )}
 
         {/* Main Header */}
-        <div className="border-b border-gray-200 relative bg-white z-1">
+        <div className="border-b border-gray-200 relative bg-white z-50">
           {/* Top Bar with Contact and Account */}
           <div className="bg-[#BA8B4E] py-1">
             <div className="max-w-7xl mx-auto px-4">
