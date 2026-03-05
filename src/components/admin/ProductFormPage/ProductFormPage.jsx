@@ -14,23 +14,36 @@ import {
   selectCaratData,
   calculateGoldPrice,
 } from '@/features/carat/caratSlice'
-import { FormAdminInputRow } from '../AdminInputRow/AdminInputRow'
+import {
+  fetchSilverPrices,
+  setSelectedPurity,
+} from '@/features/silver/silverSlice'
+import AdminInputRow, {
+  FormAdminInputRow,
+} from '../AdminInputRow/AdminInputRow'
 import { FormAdminSelect } from '../AdminSelect/AdminSelect'
 import FileUploadButton from '../FileUploadButton/FileUploadButton'
+import { buildCategoryTree } from '@/utils/categoryUtils'
 import * as yup from 'yup'
 import AdminTextAreaRow from '@/components/AdminTextAreaRow/AdminTextAreaRow'
+import { HierarchicalCategorySelect } from '@/components/HierarchicalCategoryTree/HierarchicalCategoryTree'
 
-const productSchema = (isEdit = false) => {
+const productSchema = (isGold = false, isSilver = false, isEdit = false) => {
   return yup.object({
     type: yup.string().required('Product type is required'),
     sku: yup.string().required('SKU is required'),
     category: yup.string().required('Category is required'),
     isFeatured: yup.boolean().default(false),
     status: yup.string().required('Status is required'),
-    price: yup
-      .number()
-      .required('Price is required')
-      .min(0, 'Price must be greater than or equal to 0'),
+    price: yup.number().when([], {
+      is: () => !isGold && !isSilver,
+      then: (schema) =>
+        schema
+          .required('Price is required')
+          .min(0, 'Price must be greater than or equal to 0'),
+      otherwise: (schema) =>
+        schema.min(0, 'Price must be greater than or equal to 0'),
+    }),
     minOrderLimit: yup
       .number()
       .min(1, 'Minimum order limit must be at least 1')
@@ -42,18 +55,30 @@ const productSchema = (isEdit = false) => {
       .integer('Stock must be a whole number')
       .default(0),
     productModel: yup.string(),
-    carat: yup.string().when('category', {
-      is: 'gold',
+    carat: yup.string().when([], {
+      is: () => isGold,
       then: (schema) => schema.required('Carat is required for gold products'),
-      otherwise: (schema) => schema,
+      otherwise: (schema) => schema.nullable(),
     }),
-    gram: yup.number().when('category', {
-      is: 'gold',
+    purity: yup.number().when([], {
+      is: () => isSilver,
+      then: (schema) =>
+        schema.required('Purity is required for silver products'),
+      otherwise: (schema) =>
+        schema
+          .nullable()
+          .transform((value) =>
+            value === '' || value === null ? null : Number(value),
+          ),
+    }),
+    gram: yup.number().when([], {
+      is: () => isGold || isSilver,
       then: (schema) =>
         schema
-          .required('Grams are required for gold products')
+          .required('Grams are required for precious metal products')
           .min(0, 'Grams must be a positive number'),
-      otherwise: (schema) => schema.min(0, 'Grams must be a positive number'),
+      otherwise: (schema) =>
+        schema.nullable().min(0, 'Grams must be a positive number'),
     }),
     userExtra: yup.number().min(0, 'Extra cost must be a positive number'),
     color: yup.string(),
@@ -85,6 +110,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
   const { status, error } = useSelector((state) => state.products)
   const [isLoadingCategories, setIsLoadingCategories] = useState(false)
   const [formattedCategories, setFormattedCategories] = useState([])
+  const [hierarchicalCategories, setHierarchicalCategories] = useState([])
 
   // Load categories when component mounts
   useEffect(() => {
@@ -92,17 +118,19 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
       try {
         setIsLoadingCategories(true)
 
-        // First check if we have categories in Redux
         if (allCategories?.data?.length > 0) {
           const categoriesData = Array.isArray(allCategories.data)
             ? allCategories.data
             : allCategories.data.data || []
 
+          const treeData = buildCategoryTree(categoriesData)
+
+          setHierarchicalCategories(treeData)
+
           const formatted = categoriesData.map((category) => ({
             label: category.name,
             value: category._id,
           }))
-
           setFormattedCategories(formatted)
         } else {
           // If no categories in Redux, fetch from API
@@ -112,11 +140,13 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
               ? response.payload.data
               : response.payload.data.data || []
 
+            const treeData = buildCategoryTree(categoriesData)
+            setHierarchicalCategories(treeData)
+
             const formatted = categoriesData.map((category) => ({
               label: category.name,
               value: category._id,
             }))
-
             setFormattedCategories(formatted)
           }
         }
@@ -154,8 +184,28 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
     calculationError,
   } = useSelector(selectCaratData)
 
+  // Get silver data from Redux store
+  const {
+    data: silverData,
+    loading: silverLoading,
+    error: silverError,
+    selectedPurity,
+    silverRate,
+    calculatedPrice: silverCalculatedPrice,
+    isCalculating: silverIsCalculating,
+    calculationError: silverCalculationError,
+  } = useSelector((state) => {
+    return state.silver
+  })
+
+  const [isGoldCategory, setIsGoldCategory] = useState(false)
+  const [isSilverCategory, setIsSilverCategory] = useState(false)
+
   const formMethods = useForm({
-    resolver: yupResolver(productSchema(isEditMode)),
+    resolver: (data, context, options) => {
+      const schema = productSchema(isGoldCategory, isSilverCategory, isEditMode)
+      return yupResolver(schema)(data, context, options)
+    },
     defaultValues: {
       type: 'simple',
       sku: '',
@@ -182,12 +232,13 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
     reValidateMode: 'onChange',
   })
 
-  const { handleSubmit, watch, setValue, reset, getValues } = formMethods
-
-  const [isGoldCategory, setIsGoldCategory] = useState(false)
+  const { handleSubmit, watch, setValue, reset, getValues, trigger } =
+    formMethods
 
   // Watch category changes to determine if gold is selected
   const selectedCategory = watch('category')
+  const purityValue = watch('purity')
+  const selectedGrams = watch('gram')
 
   // Function to handle gold price calculation
   const handleGoldPriceCalculation = useCallback(
@@ -204,46 +255,219 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
     [dispatch],
   )
 
-  useEffect(() => {
-    if (selectedCategory) {
-      const selectedCategoryObj = formattedCategories.find(
-        (cat) => cat.value === selectedCategory,
-      )
-      const isGold = selectedCategoryObj?.label?.toLowerCase() === 'gold'
-      setIsGoldCategory(isGold)
+  // Function to handle silver price calculation
+  const handleSilverPriceCalculation = useCallback(
+    (purity, gram) => {
+      // Convert to numbers if they're strings
+      const purityNum = parseFloat(purity)
+      const gramNum = parseFloat(gram)
 
-      // Reset gold-related fields if category is changed from gold to non-gold (only when adding new product)
-      if (!isGold && !isEditMode) {
-        setValue('carat', '')
-        setValue('gram', 0)
-        setValue('extraCost', 0)
-        setGoldPrice(0)
-        // Reset price if switching away from gold category
-        setValue('price', 0)
-      } else if (
-        isGold &&
-        isEditMode &&
-        defaultValues?.carat &&
-        defaultValues?.gram
-      ) {
-        // If editing and it's a gold product, calculate the initial price
-        handleGoldPriceCalculation(defaultValues.carat, defaultValues.gram)
+      if (!purityNum || !gramNum || gramNum <= 0) {
+        return
       }
-    } else {
+
+      try {
+        const selectedSilver = silverData?.find(
+          (item) => item.purity === purityNum,
+        )
+
+        if (selectedSilver) {
+          const totalPrice = gramNum * selectedSilver.pricePerGram
+          setValue('silverPrice', selectedSilver.pricePerGram)
+          setValue('price', totalPrice, { shouldValidate: true })
+        } else {
+          console.log('No silver found for purity:', purityNum)
+        }
+      } catch (error) {
+        console.error('Failed to calculate silver price:', error)
+        toast.error('Failed to calculate silver price')
+      }
+    },
+    [silverData, setValue],
+  )
+
+  useEffect(() => {
+    if (!selectedCategory) {
       setIsGoldCategory(false)
+      setIsSilverCategory(false)
+      return
     }
-  }, [
-    selectedCategory,
-    formattedCategories,
-    setValue,
-    isEditMode,
-    defaultValues,
-    handleGoldPriceCalculation,
-  ])
+
+    // Recursive search in tree
+    const findInTree = (categories, id) => {
+      for (const category of categories) {
+        if (category._id === id) {
+          return category
+        }
+        if (category.children?.length) {
+          const found = findInTree(category.children, id)
+          if (found) return found
+        }
+      }
+      return null
+    }
+
+    // Function to check if category is under a specific parent in the hierarchy
+    const isUnderParentCategory = (category, parentName) => {
+      if (!category) return false
+
+      // Check if current category name matches
+      if (category.name?.toLowerCase() === parentName.toLowerCase()) {
+        return true
+      }
+
+      // Check if current category contains the parent name
+      if (category.name?.toLowerCase().includes(parentName.toLowerCase())) {
+        return true
+      }
+
+      // Recursively check parent hierarchy
+      const findParent = (categories, childId, path = []) => {
+        for (const cat of categories) {
+          if (cat._id === childId) {
+            return path
+          }
+          if (cat.children?.length) {
+            const result = findParent(cat.children, childId, [...path, cat])
+            if (result) return result
+          }
+        }
+        return null
+      }
+
+      const parentPath = findParent(hierarchicalCategories, category._id)
+      if (parentPath) {
+        return parentPath.some(
+          (parent) =>
+            parent.name?.toLowerCase() === parentName.toLowerCase() ||
+            parent.name?.toLowerCase().includes(parentName.toLowerCase()),
+        )
+      }
+
+      return false
+    }
+
+    const selectedCat = findInTree(hierarchicalCategories, selectedCategory)
+
+    // Check if selected category is under gold or silver hierarchy
+    const isGold = isUnderParentCategory(selectedCat, 'gold')
+    const isSilver = isUnderParentCategory(selectedCat, 'silver')
+
+    // Debug logging
+    console.log('Category Detection Debug:', {
+      selectedCategoryId: selectedCategory,
+      selectedCategoryName: selectedCat?.name,
+      isGold,
+      isSilver,
+      categoryPath: selectedCat
+        ? (() => {
+            const findParent = (categories, childId, path = []) => {
+              for (const cat of categories) {
+                if (cat._id === childId) {
+                  return path
+                }
+                if (cat.children?.length) {
+                  const result = findParent(cat.children, childId, [
+                    ...path,
+                    cat,
+                  ])
+                  if (result) return result
+                }
+              }
+              return null
+            }
+            return findParent(hierarchicalCategories, selectedCat._id)
+          })()
+        : null,
+    })
+
+    // Also check by ID fallback for silver
+    let isSilverByCategory = isSilver
+    if (!isSilver && selectedCat) {
+      // Check if category ID matches known silver category
+      isSilverByCategory =
+        selectedCat._id === '69a1405f151d7d78c50eee99' ||
+        selectedCat.name === 'Silver' ||
+        selectedCat.name === 'silver'
+    }
+
+    const finalIsSilver = isSilverByCategory
+
+    setIsGoldCategory(isGold)
+    setIsSilverCategory(finalIsSilver)
+
+    // Reset fields when not gold or silver (Add mode only)
+    if (!isGold && !finalIsSilver && !isEditMode) {
+      setValue('carat', null, { shouldValidate: false })
+      setValue('purity', null, { shouldValidate: false })
+      setValue('gram', 0)
+      setGoldPrice(0)
+      setValue('price', 0)
+    }
+
+    if (finalIsSilver && !isEditMode) {
+      setValue('carat', null, { shouldValidate: false })
+      setValue('goldPrice', 0)
+    }
+
+    if (isGold && !isEditMode) {
+      setValue('purity', null, { shouldValidate: false })
+      setValue('silverPrice', 0)
+
+      const currentCarat = getValues('carat')
+      if (
+        (!currentCarat || currentCarat === null) &&
+        caratData &&
+        caratData.length > 0
+      ) {
+        const defaultCarat = caratData[0].carat
+        setValue('carat', defaultCarat, { shouldValidate: true })
+        dispatch(
+          setSelectedCarat({
+            carat: caratData[0].carat,
+            pricePerGram: caratData[0].pricePerGram,
+          }),
+        )
+      }
+
+      // Set default gram if empty
+      const currentGram = getValues('gram')
+      if (!currentGram || currentGram === 0 || currentGram === null) {
+        setValue('gram', 0, { shouldValidate: false })
+      }
+    }
+
+    // Edit Mode Price Calculation
+    if (isGold && isEditMode && defaultValues?.carat && defaultValues?.gram) {
+      handleGoldPriceCalculation(defaultValues.carat, defaultValues.gram)
+    }
+
+    if (
+      finalIsSilver &&
+      isEditMode &&
+      defaultValues?.purity &&
+      defaultValues?.gram
+    ) {
+      handleSilverPriceCalculation(defaultValues.purity, defaultValues.gram)
+    }
+  }, [selectedCategory])
+
+  // Re-validate form when gold/silver category changes
+  useEffect(() => {
+    if (!isInitialMount.current) {
+      // Reset form with updated validation schema
+      reset(getValues(), {
+        keepValues: true,
+        keepDirty: true,
+        keepErrors: false,
+      })
+    }
+  }, [isGoldCategory, isSilverCategory, reset, getValues, trigger])
 
   // Fetch carat data on component mount
   useEffect(() => {
     dispatch(fetchCaratData())
+    dispatch(fetchSilverPrices())
   }, [dispatch])
 
   // Set initial carat and gold rate when data is loaded or in edit mode
@@ -297,6 +521,25 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
       toast.error(caratError)
     }
   }, [caratError])
+
+  // Show error if silver data fails to load
+  useEffect(() => {
+    if (silverError) {
+      toast.error(silverError)
+    }
+  }, [silverError, silverLoading, silverData])
+
+  // Handle silver price calculation when purity or grams change
+  useEffect(() => {
+    if (isSilverCategory && purityValue && selectedGrams && selectedGrams > 0) {
+      handleSilverPriceCalculation(purityValue, selectedGrams)
+    }
+  }, [
+    isSilverCategory,
+    purityValue,
+    selectedGrams,
+    handleSilverPriceCalculation,
+  ])
 
   useEffect(() => {
     if (isEditMode && defaultValues) {
@@ -418,12 +661,26 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
     setIsLoading(true)
     const formData = new FormData()
 
+    // Determine metalType based on category
+    let metalType = null
+    if (isGoldCategory) {
+      metalType = 'gold'
+    } else if (isSilverCategory) {
+      metalType = 'silver'
+    }
+
+    // Add metalType to data if applicable
+    const dataWithMetalType = { ...data }
+    if (metalType) {
+      dataWithMetalType.metalType = metalType
+    }
+
     if (isEditMode) {
       // Always include the product ID
       formData.append('_id', productId)
 
       // Include all fields that are present in the form data
-      Object.entries(data).forEach(([key, value]) => {
+      Object.entries(dataWithMetalType).forEach(([key, value]) => {
         // Skip image and sideImages fields as they're handled separately
         if (key === 'image' || key === 'sideImages') return
 
@@ -468,7 +725,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
       }
     } else {
       // For new product, include all fields
-      Object.entries(data).forEach(([key, value]) => {
+      Object.entries(dataWithMetalType).forEach(([key, value]) => {
         if (
           key !== 'image' &&
           key !== 'sideImages' &&
@@ -550,19 +807,29 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
               fullWidth
             />
             {/* Category */}
-            <FormAdminSelect
-              name="category"
-              label="Category"
-              options={formattedCategories}
-              placeholder={
-                isLoadingCategories
-                  ? 'Loading categories...'
-                  : 'Select a category'
-              }
-              isLoading={isLoadingCategories}
-              required
-              fullWidth
-            />
+            <div className="col-span-1 md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Category <span className="text-red-500">*</span>
+              </label>
+              <HierarchicalCategorySelect
+                categories={hierarchicalCategories}
+                value={selectedCategory}
+                onChange={(value) =>
+                  setValue('category', value, { shouldValidate: true })
+                }
+                placeholder={
+                  isLoadingCategories
+                    ? 'Loading categories...'
+                    : 'Select a category'
+                }
+                required
+              />
+              {formMethods.formState.errors.category && (
+                <p className="mt-1 text-sm text-red-600">
+                  {formMethods.formState.errors.category.message}
+                </p>
+              )}
+            </div>
 
             {/* Featured */}
             <div className="col-span-1 flex items-center ml-[185px]">
@@ -597,8 +864,8 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
               fullWidth
             />
 
-            {/* Price - Hidden for gold category */}
-            {!isGoldCategory && (
+            {/* Price - Hidden for gold and silver categories */}
+            {!isGoldCategory && !isSilverCategory && (
               <FormAdminInputRow
                 name="price"
                 label="Price"
@@ -606,7 +873,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                 step="0.01"
                 min="0"
                 placeholder="0.00"
-                required={!isGoldCategory}
+                required={!isGoldCategory && !isSilverCategory}
                 fullWidth
                 startAdornment="$"
               />
@@ -690,7 +957,6 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                         }),
                       )
                     }
-                    setValue('carat', e.target.value, { shouldValidate: true })
                   }}
                 />
 
@@ -719,16 +985,14 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
 
                 {/* Gold Price (Read-only) */}
                 <div>
-                  <FormAdminInputRow
-                    name="goldPrice"
+                  <AdminInputRow
                     label="Gold Price"
                     value={calculatedPrice?.totalPrice?.toFixed(2) || '0.00'}
                     readOnly
                     fullWidth
-                    startAdornment="₹"
-                    className="bg-gray-100"
+                    helperText={`${watch('gram') || 0}g × ₹${goldRate || 0}/g`}
                   />
-                  <p className="mt-1 text-xs text-gray-500 ml-[185px]">
+                  <p className="mt-1 text-sm text-gray-500">
                     {isCalculating ? (
                       'Calculating...'
                     ) : calculationError ? (
@@ -760,11 +1024,131 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                   onChange={(e) => {
                     const userExtra = parseFloat(e.target.value) || 0
                     setValue('userExtra', userExtra, { shouldValidate: true })
-                    // Update total price (gold price + extra cost)
-                    const goldPrice = calculatedPrice?.totalPrice || 0
-                    setValue('price', goldPrice + userExtra, {
-                      shouldValidate: true,
-                    })
+                    // Add userExtra to total price (silver price + extra)
+                    const gramValue = parseFloat(watch('gram') || 0)
+                    const purityValue = parseFloat(watch('purity') || 0)
+                    if (purityValue && gramValue > 0) {
+                      const selectedSilver = silverData?.find(
+                        (item) => item.purity === purityValue,
+                      )
+                      if (selectedSilver) {
+                        const basePrice =
+                          gramValue * selectedSilver.pricePerGram
+                        const totalPrice = basePrice
+                        setValue('price', totalPrice, { shouldValidate: true })
+                      }
+                    }
+                  }}
+                />
+              </>
+            )}
+
+            {/* Silver-related fields - Only show when silver category is selected */}
+            {isSilverCategory && (
+              <>
+                {/* Purity */}
+                <FormAdminSelect
+                  name="purity"
+                  label="Purity"
+                  options={(() => {
+                    if (silverData === null || silverLoading) {
+                      return [
+                        {
+                          label: 'Loading silver data...',
+                          value: '',
+                          disabled: true,
+                        },
+                      ]
+                    }
+
+                    const options = [
+                      { label: 'Select Purity', value: '' },
+                      ...(Array.isArray(silverData)
+                        ? silverData.map((item) => ({
+                            label: `${item.purity}`,
+                            value: item.purity,
+                            pricePerGram: item.pricePerGram,
+                          }))
+                        : []),
+                    ]
+                    return options
+                  })()}
+                  required={isSilverCategory}
+                  fullWidth
+                  disabled={silverLoading || silverData === null}
+                  onChange={(e) => {
+                    const purity = parseFloat(e.target.value)
+                    setValue('purity', purity, { shouldValidate: true })
+                    dispatch(setSelectedPurity(purity))
+                    // Calculate price if grams are already entered
+                    const gramValue = parseFloat(watch('gram') || 0)
+                    if (purity && gramValue > 0) {
+                      handleSilverPriceCalculation(purity, gramValue)
+                    }
+                  }}
+                />
+
+                {/* Grams */}
+                <FormAdminInputRow
+                  name="gram"
+                  label="Grams"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  required={isSilverCategory}
+                  fullWidth
+                  onChange={(e) => {
+                    const gram = parseFloat(e.target.value) || 0
+                    setValue('gram', gram, { shouldValidate: true })
+                    // Calculate price if purity is already selected
+                    const purityValue = parseFloat(watch('purity') || 0)
+                    if (purityValue && gram > 0) {
+                      handleSilverPriceCalculation(purityValue, gram)
+                    }
+                  }}
+                />
+
+                {/* Silver Price (Read-only) */}
+                <div>
+                  <AdminInputRow
+                    label="Silver Price"
+                    value={watch('price')?.toFixed(2) || '0.00'}
+                    readOnly
+                    fullWidth
+                    helperText={`${watch('gram') || 0}g × ₹${silverRate || 0}/g = ₹${((watch('gram') || 0) * (silverRate || 0)).toFixed(2)}`}
+                  />
+                </div>
+
+                {/* Extra Cost */}
+                <FormAdminInputRow
+                  name="userExtra"
+                  label="Extra Cost"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  fullWidth
+                  startAdornment="$"
+                  onChange={(e) => {
+                    const userExtra = parseFloat(e.target.value) || 0
+                    setValue('userExtra', userExtra, { shouldValidate: true })
+                    // Add userExtra to total price (silver price + extra)
+                    const gramValue = parseFloat(watch('gram') || 0)
+                    const purityValue = parseFloat(watch('purity') || 0)
+                    if (purityValue && gramValue > 0) {
+                      const selectedSilver = silverData?.find(
+                        (item) => item.purity === purityValue,
+                      )
+                      if (selectedSilver) {
+                        const basePrice =
+                          gramValue * selectedSilver.pricePerGram
+                        const totalPrice = basePrice
+                        setValue('price', totalPrice, {
+                          shouldValidate: true,
+                        })
+                      }
+                    }
                   }}
                 />
               </>

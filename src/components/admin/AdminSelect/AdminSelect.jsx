@@ -11,6 +11,7 @@ export function AdminSelect({
   options = [],
   error,
   fullWidth,
+  disabled,
 }) {
   return (
     <div className="grid grid-cols-12 gap-4 items-start mb-4">
@@ -27,6 +28,7 @@ export function AdminSelect({
           value={value ?? ''}
           onChange={(e) => onChange(e.target.value)}
           onBlur={onBlur}
+          disabled={disabled}
           className={`w-full rounded border px-3 py-2 text-sm
             ${error ? 'border-red-500' : 'border-gray-300'}
           `}
@@ -46,7 +48,17 @@ export function AdminSelect({
   )
 }
 
-export function FormAdminSelect({ name, label, options, fullWidth, onBlur }) {
+export function FormAdminSelect({
+  name,
+  label,
+  options,
+  fullWidth,
+  onBlur,
+  onChange: onParentChange,
+  required,
+  disabled,
+  ...rest
+}) {
   const {
     control,
     formState: { errors },
@@ -56,19 +68,25 @@ export function FormAdminSelect({ name, label, options, fullWidth, onBlur }) {
     <Controller
       name={name}
       control={control}
+      rules={{ required }}
       render={({ field: { onChange, value, onBlur: onFieldBlur } }) => (
         <AdminSelect
           name={name}
           label={label}
           value={value}
-          onChange={onChange}
+          onChange={(val) => {
+            onChange(val)
+            onParentChange?.({ target: { value: val } })
+          }}
           onBlur={(e) => {
-            onFieldBlur(e);
-            onBlur?.(e);
+            onFieldBlur(e)
+            onBlur?.(e)
           }}
           options={options}
           error={errors[name]?.message}
           fullWidth={fullWidth}
+          disabled={disabled}
+          {...rest}
         />
       )}
     />
