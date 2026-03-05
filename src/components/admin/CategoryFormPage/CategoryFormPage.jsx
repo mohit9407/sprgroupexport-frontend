@@ -17,6 +17,8 @@ import {
   selectAllCategories,
 } from '@/features/categories/categoriesSlice'
 import { getFileNameFromUrl } from '@/utils/stringUtils'
+import { buildCategoryTree } from '@/utils/categoryUtils'
+import { HierarchicalCategorySelect } from '@/components/HierarchicalCategoryTree/HierarchicalCategoryTree'
 
 const createCategorySchema = (isEdit = false) => {
   return yup.object({
@@ -62,8 +64,9 @@ export function CategoryFormPage({
   const [selectedIcon, setSelectedIcon] = useState(null)
   const [existingImage, setExistingImage] = useState(defaultValues?.image || '')
   const [existingIcon, setExistingIcon] = useState(defaultValues?.icon || '')
+  const [hierarchicalCategories, setHierarchicalCategories] = useState([])
   const [parentCategories, setParentCategories] = useState([
-    { label: 'No Perent', value: '' },
+    { label: 'No Parent', value: '' },
   ])
   const imageInputRef = useRef(null)
   const iconInputRef = useRef(null)
@@ -108,11 +111,15 @@ export function CategoryFormPage({
   // Update parent categories when allCategories changes
   useEffect(() => {
     if (allCategories && allCategories.length > 0) {
+      // Build hierarchical tree like ProductFormPage
+      const treeData = buildCategoryTree(allCategories)
+      setHierarchicalCategories(treeData)
+
+      // Also create flat options for FormAdminSelect (fallback)
       const parentCats = allCategories.map((cat) => ({
         label: cat.name,
         value: cat._id,
       }))
-
       setParentCategories([{ label: 'No Parent', value: '' }, ...parentCats])
     }
   }, [allCategories])
@@ -276,13 +283,25 @@ export function CategoryFormPage({
           className="max-w-2xl mx-auto"
         >
           <div className="space-y-4">
-            <FormAdminSelect
-              name="parentId"
-              label="Category"
-              options={parentCategories}
-              helpText="Select perent category or leave as perent"
-              fullWidth
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Parent Category
+              </label>
+              <HierarchicalCategorySelect
+                categories={hierarchicalCategories}
+                value={formProviders.watch('parentId') || ''}
+                onChange={(value) =>
+                  formProviders.setValue('parentId', value, {
+                    shouldValidate: true,
+                  })
+                }
+                placeholder="Select parent category or leave as root"
+              />
+              <p className="mt-1 text-sm text-gray-500">
+                Select parent category or leave as root to create a main
+                category
+              </p>
+            </div>
 
             <FormAdminInputRow
               required

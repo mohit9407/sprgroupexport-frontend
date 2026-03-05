@@ -11,7 +11,7 @@ const Navigation = () => {
   const [activeSubmenu, setActiveSubmenu] = useState(null)
 
   return (
-    <nav className="hidden md:block text-white pb-[20px]">
+    <nav className="hidden md:block text-white pb-[100px]">
       <div className="max-w-7xl mx-auto h-16 justify-center items-center px-4 bg-[#BA8B4E]">
         <ul className="flex justify-start space-x-8 py-3">
           {navItems.map((item) => (
