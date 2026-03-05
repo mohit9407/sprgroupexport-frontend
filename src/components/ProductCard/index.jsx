@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { FiHeart, FiEye, FiShoppingBag, FiCheck } from 'react-icons/fi'
@@ -80,6 +80,7 @@ const ProductCard = ({
   const [isHovered, setIsHovered] = useState(false)
   const [hasError, setHasError] = useState(false)
   const [pendingCartAdd, setPendingCartAdd] = useState(false)
+  const [isClicked, setIsClicked] = useState(false)
   const { status: productDetailsStatus } = useSelector(
     (state) => state.productDetails,
   )
@@ -101,6 +102,30 @@ const ProductCard = ({
       )
     : null
 
+  // Check if product is jewelry for special effects
+  const isJewelry = useMemo(() => {
+    const jewelryKeywords = [
+      'ring',
+      'earring',
+      'earrings',
+      'gold',
+      'jewelry',
+      'necklace',
+      'bracelet',
+      'pendant',
+      'chain',
+    ]
+    const lowerName = (name || '').toLowerCase()
+    const lowerBrand = (brand || '').toLowerCase()
+    const lowerCategory = (categoryName || '').toLowerCase()
+    return jewelryKeywords.some(
+      (keyword) =>
+        lowerName.includes(keyword) ||
+        lowerBrand.includes(keyword) ||
+        lowerCategory.includes(keyword),
+    )
+  }, [name, brand, categoryName])
+
   const handleImageError = () => {
     console.error(`Failed to load image: ${imageUrl}`)
     setHasError(true)
@@ -109,6 +134,8 @@ const ProductCard = ({
   const handleNavigate = (e) => {
     e.preventDefault()
     e.stopPropagation()
+    setIsClicked(true)
+    setTimeout(() => setIsClicked(false), 200)
     // Include product name in URL for better breadcrumbs
     const productSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
     router.push(`/products/${id}?name=${encodeURIComponent(name)}`)
@@ -384,7 +411,9 @@ const ProductCard = ({
         />
       )}
       <div
-        className="w-full max-w-[280px] bg-white p-4 rounded-lg group border border-gray-200 hover:shadow-md transition-shadow duration-300"
+        className={`w-full max-w-[280px] bg-white p-4 rounded-lg group border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden ${
+          isJewelry ? 'hover:shadow-yellow-200/50 hover:border-yellow-300' : ''
+        } ${isClicked ? 'scale-95' : 'hover:scale-[1.02]'}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={stopPropagation}
@@ -411,15 +440,36 @@ const ProductCard = ({
 
             {/* Hover Overlay */}
             <div
-              className={`absolute inset-0 bg-black/20 flex flex-col items-center justify-center gap-6 p-4 transition-all duration-500 transform ${
+              className={`absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex flex-col items-center justify-center gap-6 p-4 transition-all duration-500 transform ${
                 isHovered
                   ? 'opacity-100 translate-y-0'
                   : 'opacity-0 -translate-y-full'
               }`}
             >
+              {/* Jewelry sparkle effect */}
+              {isJewelry && isHovered && (
+                <div className="absolute inset-0 pointer-events-none">
+                  <div className="absolute top-4 left-4 w-2 h-2 bg-yellow-300 rounded-full animate-pulse"></div>
+                  <div className="absolute top-8 right-6 w-1 h-1 bg-yellow-200 rounded-full animate-ping"></div>
+                  <div
+                    className="absolute bottom-6 left-8 w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"
+                    style={{ animationDelay: '0.5s' }}
+                  ></div>
+                  <div
+                    className="absolute bottom-4 right-4 w-1 h-1 bg-yellow-300 rounded-full animate-ping"
+                    style={{ animationDelay: '0.3s' }}
+                  ></div>
+                </div>
+              )}
               <div className="flex gap-4">
                 <button
-                  className={`w-10 h-10 rounded-full flex items-center justify-center ${isWishlisted ? 'text-[#BA8B4E] bg-white border-2 border-[#BA8B4E]' : 'text-white bg-[#BA8B4E] hover:bg-[#a87d45]'} transition-colors ${isHovered ? 'opacity-100' : 'opacity-0'}`}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 transform hover:scale-110 ${
+                    isWishlisted
+                      ? 'text-[#BA8B4E] bg-white border-2 border-[#BA8B4E] shadow-lg'
+                      : isJewelry
+                        ? 'text-white bg-gradient-to-r from-[#D4AF37] to-[#FFD700] hover:from-[#b8941f] hover:to-[#FFC700] shadow-lg'
+                        : 'text-white bg-[#BA8B4E] hover:bg-[#a87d45] shadow-lg'
+                  } ${isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`}
                   onClick={handleWishlistClick}
                 >
                   <FiHeart
@@ -429,10 +479,14 @@ const ProductCard = ({
                 <button
                   onClick={handleNavigate}
                   disabled={productDetailsStatus === 'loading'}
-                  className={`w-10 h-10 rounded-full bg-[#BA8B4E] flex items-center justify-center hover:bg-[#a87d45] transition-colors shadow-lg ${
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 transform hover:scale-110 shadow-lg ${
                     productDetailsStatus === 'loading'
-                      ? 'opacity-70 cursor-not-allowed'
-                      : 'cursor-pointer'
+                      ? 'opacity-70 cursor-not-allowed bg-gray-400'
+                      : isJewelry
+                        ? 'bg-gradient-to-r from-[#D4AF37] to-[#FFD700] hover:from-[#b8941f] hover:to-[#FFC700] text-white'
+                        : 'bg-[#BA8B4E] hover:bg-[#a87d45] text-white'
+                  } ${
+                    productDetailsStatus === 'loading' ? '' : 'cursor-pointer'
                   }`}
                 >
                   {productDetailsStatus === 'loading' ? (
@@ -447,11 +501,13 @@ const ProductCard = ({
                 <button
                   onClick={handleAddToCart}
                   disabled={isAdding || isInCart}
-                  className={`relative ${
+                  className={`relative transition-all duration-300 transform hover:scale-105 shadow-lg cursor-pointer min-w-[140px] ${
                     isInCart
                       ? 'bg-[#BA8B4E] hover:bg-[#a87d45]'
-                      : 'bg-[#BA8B4E] hover:bg-[#a87d45]'
-                  } text-white px-8 py-3 rounded-full text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-lg cursor-pointer min-w-[140px]`}
+                      : isJewelry
+                        ? 'bg-gradient-to-r from-[#D4AF37] to-[#FFD700] hover:from-[#b8941f] hover:to-[#FFC700] text-white'
+                        : 'bg-[#BA8B4E] hover:bg-[#a87d45] text-white'
+                  } text-white px-8 py-3 rounded-full text-sm font-medium flex items-center justify-center gap-2`}
                 >
                   {isAdding ? (
                     <span className="flex items-center">
@@ -500,13 +556,21 @@ const ProductCard = ({
             {categoryName || brand}
           </p>
           <h3
-            className="text-base text-[#2C3E50] mb-2 font-bold hover:text-[#b7853f] transition-colors duration-300 cursor-pointer"
+            className={`text-base text-[#2C3E50] mb-2 font-bold transition-all duration-300 cursor-pointer ${
+              isJewelry
+                ? 'hover:text-[#D4AF37] hover:scale-105'
+                : 'hover:text-[#b7853f]'
+            } ${isClicked ? 'scale-95' : ''}`}
             onClick={handleNavigate}
           >
             {name}
           </h3>
           <div
-            className="text-[#D4AF37] font-semibold"
+            className={`font-semibold transition-all duration-300 ${
+              isJewelry
+                ? 'text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-[#FFD700] hover:from-[#b8941f] hover:to-[#FFC700]'
+                : 'text-[#D4AF37]'
+            }`}
             style={{ fontSize: '1.6rem' }}
           >
             ₹{typeof price === 'number' ? price.toLocaleString('en-IN') : price}

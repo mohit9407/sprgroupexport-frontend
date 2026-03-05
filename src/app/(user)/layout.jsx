@@ -3,6 +3,7 @@
 import { Suspense, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchSettings } from '@/features/setting/settingSlice'
+import { fetchAllCategories } from '@/features/categories/categoriesSlice'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer/Footer'
 
@@ -11,12 +12,19 @@ export default function UserLayout({ children }) {
     (state) => state.settings || { settings: [], status: 'idle' },
   )
   const dispatch = useDispatch()
+  const { data: categories = [], isLoading: categoriesLoading } = useSelector(
+    (state) =>
+      state.categories?.allCategories || { data: [], isLoading: false },
+  )
 
   useEffect(() => {
     if (settingStatus === 'idle') {
       dispatch(fetchSettings())
     }
-  }, [settingStatus, dispatch])
+    if (categories.length === 0 && !categoriesLoading) {
+      dispatch(fetchAllCategories())
+    }
+  }, [settingStatus, dispatch, categories.length, categoriesLoading])
 
   // Show loading state while settings are being fetched
   if (settingStatus === 'loading') {
