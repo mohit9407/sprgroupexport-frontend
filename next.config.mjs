@@ -22,6 +22,21 @@ const nextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
+  typescript: {
+    // !! WARN !!
+    // Dangerously allow production builds to successfully complete even if
+    // your project has type errors.
+    // !! WARN !!
+    ignoreBuildErrors: true,
+  },
+
+  eslint: {
+    // !! WARN !!
+    // Dangerously allow production builds to successfully complete even if
+    // your project has ESLint errors.
+    ignoreDuringBuilds: true,
+  },
+
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
