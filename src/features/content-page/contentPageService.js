@@ -1,4 +1,4 @@
-import api from '@/lib/axios'
+import api from '../../lib/axios'
 
 async function createContentPage(payload) {
   return api.post('/content-pages/create', payload)

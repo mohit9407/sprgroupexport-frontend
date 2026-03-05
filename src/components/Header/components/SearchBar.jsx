@@ -1,78 +1,158 @@
 'use client'
 
-import { useState } from 'react'
-import { FaSearch, FaChevronDown } from 'react-icons/fa'
+import { useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
+import { FaChevronDown, FaChevronRight } from 'react-icons/fa'
+import { useSelector } from 'react-redux'
+import { selectAllCategories } from '@/features/categories/categoriesSlice'
 
 const SearchBar = () => {
   const [showCategories, setShowCategories] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
+  const [expandedParent, setExpandedParent] = useState(null)
+  const [expandedChild, setExpandedChild] = useState(null)
+  const router = useRouter()
+  const allCategories = useSelector(selectAllCategories)
+
+  // Build full category hierarchy with parent -> children -> grandchildren
+  const categoryTree = useMemo(() => {
+    const categories = allCategories?.data || []
+
+    // Create a map of all categories by ID
+    const categoryMap = {}
+    categories.forEach((cat) => {
+      categoryMap[cat._id] = { ...cat, children: [] }
+    })
+
+    // Build tree structure
+    const tree = []
+    categories.forEach((cat) => {
+      if (cat.parent && categoryMap[cat.parent]) {
+        categoryMap[cat.parent].children.push(categoryMap[cat._id])
+      } else if (!cat.parent) {
+        tree.push(categoryMap[cat._id])
+      }
+    })
+
+    return tree
+  }, [allCategories])
+
+  const handleCategoryClick = (category, level, parentId = null) => {
+    // Navigate to shop page with category
+    router.push(`/shop?category=${category._id}`)
+    setShowCategories(false)
+  }
+
+  const handleExpandParent = (parent, e) => {
+    e.stopPropagation()
+    setExpandedParent(expandedParent === parent._id ? null : parent._id)
+    setExpandedChild(null)
+  }
+
+  const handleExpandChild = (child, e) => {
+    e.stopPropagation()
+    setExpandedChild(expandedChild === child._id ? null : child._id)
+  }
 
   return (
     <div className="w-full md:max-w-2xl">
-      <div className="relative flex items-center h-12 bg-white rounded-md shadow-sm overflow-hidden">
+      <div className="relative flex items-center h-12 bg-white rounded-md shadow-sm">
         {/* Categories Dropdown */}
-        <div className="relative flex-shrink-0 h-full">
+        <div className="relative flex-shrink-0 h-full w-full">
           <button
             onClick={() => setShowCategories(!showCategories)}
-            className="h-full bg-[#BA8B4E] text-white text-[14px] font-semibold px-4 flex items-center hover:bg-[#A87D45] transition-colors cursor-pointer"
+            className="h-full w-full bg-[#BA8B4E] text-white text-[14px] font-semibold px-4 flex items-center justify-between hover:bg-[#A87D45] transition-colors rounded-md"
           >
-            ALL CATEGORIES
+            <span>ALL CATEGORIES</span>
             <FaChevronDown
-              className={`ml-2 text-[10px] transition-transform duration-200 ${showCategories ? 'rotate-180' : ''}`}
+              className={`ml-2 text-[10px] transition-transform ${
+                showCategories ? 'rotate-180' : ''
+              }`}
             />
           </button>
 
-          {/* Dropdown Menu */}
           {showCategories && (
-            <div
-              className="absolute left-0 top-full mt-0 w-56 bg-white rounded-b-md shadow-lg z-50 border border-gray-100"
-              onMouseLeave={() => setShowCategories(false)}
-            >
-              <div className="py-1">
-                <a
-                  href="#"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-100"
-                >
-                  All Products
-                </a>
-                <a
-                  href="#"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-100"
-                >
-                  New Arrivals
-                </a>
-                <a
-                  href="#"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-100"
-                >
-                  Best Sellers
-                </a>
-                <a
-                  href="#"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                >
-                  Special Offers
-                </a>
+            <div className="absolute left-0 top-full mt-1 w-80 bg-white rounded-md shadow-xl z-[9999] border max-h-96 overflow-y-auto">
+              <div className="py-2">
+                {categoryTree.map((parent) => (
+                  <div key={parent._id} className="mb-1">
+                    {/* Parent Header - Click text to navigate, arrow to expand */}
+                    <div className="px-4 py-2 bg-gradient-to-r from-[#BA8B4E] to-[#D4AF37] text-white font-bold text-sm uppercase tracking-wider flex items-center justify-between">
+                      <span
+                        className="cursor-pointer hover:opacity-80 flex-1"
+                        onClick={() => handleCategoryClick(parent, 'parent')}
+                      >
+                        {parent.name}
+                      </span>
+                      {parent.children.length > 0 && (
+                        <FaChevronRight
+                          className={`text-xs w-6 h-6 cursor-pointer hover:opacity-80 p-1 transition-transform ${
+                            expandedParent === parent._id ? 'rotate-90' : ''
+                          }`}
+                          onClick={(e) => handleExpandParent(parent, e)}
+                        />
+                      )}
+                    </div>
+
+                    {/* Children - Shown when parent expanded */}
+                    {expandedParent === parent._id &&
+                      parent.children.length > 0 && (
+                        <div className="bg-gray-50">
+                          {parent.children.map((child) => (
+                            <div key={child._id}>
+                              {/* Child Item - Click text to navigate, arrow to expand */}
+                              <div className="px-6 py-2 text-sm text-gray-700 flex items-center justify-between hover:bg-gray-100 border-b border-gray-100">
+                                <span
+                                  className="font-medium cursor-pointer flex-1"
+                                  onClick={() =>
+                                    handleCategoryClick(child, 'child')
+                                  }
+                                >
+                                  {child.name}
+                                </span>
+                                {child.children.length > 0 && (
+                                  <FaChevronRight
+                                    className={`text-xs w-6 h-6 text-gray-400 cursor-pointer p-1 transition-transform ${
+                                      expandedChild === child._id
+                                        ? 'rotate-90'
+                                        : ''
+                                    }`}
+                                    onClick={(e) => handleExpandChild(child, e)}
+                                  />
+                                )}
+                              </div>
+
+                              {/* Grandchildren - Shown when child expanded */}
+                              {expandedChild === child._id &&
+                                child.children.length > 0 && (
+                                  <div className="bg-white pl-8 pr-4 py-1">
+                                    {child.children.map((grandchild) => (
+                                      <a
+                                        key={grandchild._id}
+                                        href={`/shop?category=${grandchild._id}`}
+                                        onClick={(e) => {
+                                          e.preventDefault()
+                                          handleCategoryClick(
+                                            grandchild,
+                                            'grandchild',
+                                          )
+                                        }}
+                                        className="block px-3 py-1.5 text-xs text-gray-600 hover:text-[#BA8B4E] transition-colors border-b border-gray-50"
+                                      >
+                                        {grandchild.name}
+                                      </a>
+                                    ))}
+                                  </div>
+                                )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                  </div>
+                ))}
               </div>
             </div>
           )}
         </div>
-
-        {/* Search Input */}
-        <div className="flex-1 h-full min-w-0">
-          <input
-            type="text"
-            className="w-full h-full pl-3 pr-2 text-sm focus:outline-none placeholder-gray-400"
-            placeholder="Search Products..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-
-        {/* Search Button */}
-        <button className="h-full bg-[#BA8B4E] text-white px-4 flex items-center justify-center hover:bg-[#A87D45] transition-colors cursor-pointer">
-          <FaSearch className="text-base" />
-        </button>
       </div>
     </div>
   )

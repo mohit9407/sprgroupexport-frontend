@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic'
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useSearchParams } from 'next/navigation'
 import { selectAllProducts } from '@/features/products/productsSlice'
 import { useWishlist } from '@/context/WishlistContext'
 import ProductCard from '@/components/ProductCard'
@@ -113,6 +114,7 @@ const mapProducts = (products = [], allCategories = []) => {
 }
 
 function ShopPageContent() {
+  const searchParams = useSearchParams()
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [switchToEmail, setSwitchToEmail] = useState(false)
   const dispatch = useDispatch()
@@ -142,13 +144,38 @@ function ShopPageContent() {
   const [isInitialLoad, setIsInitialLoad] = useState(true)
   const { isInWishlist } = useWishlist()
 
+  // Read category and search from URL on mount and apply filter
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get('category')
+    const searchFromUrl = searchParams.get('search')
+
+    if (categoryFromUrl) {
+      setSelectedCategories([categoryFromUrl])
+    }
+
+    if (categoryFromUrl || searchFromUrl) {
+      // Apply filter immediately with the URL parameters
+      dispatch(
+        fetchProducts({
+          minPrice: priceRange[0],
+          maxPrice: priceRange[1],
+          categories: categoryFromUrl ? [categoryFromUrl] : [],
+          search: searchFromUrl || undefined,
+          sortBy: sortBy,
+          page: 1,
+          limit: itemsPerPage,
+        }),
+      )
+    }
+  }, [searchParams, dispatch, priceRange, sortBy, itemsPerPage])
+
   // Map categories for display
   const categories = useMemo(
     () => mapCategories(allCategories.data || []),
     [allCategories.data],
   )
 
-  // Handle filter changes
+  // Handle filter changes - use ref to always get latest state
   const applyFilters = useCallback(
     (filters = {}) => {
       const newFilters = {
@@ -163,31 +190,67 @@ function ShopPageContent() {
         sortBy: filters.sortBy !== undefined ? filters.sortBy : sortBy,
         page: filters.page !== undefined ? filters.page : 1,
         limit: filters.limit !== undefined ? filters.limit : itemsPerPage,
+        search: filters.search !== undefined ? filters.search : undefined,
       }
-
       dispatch(fetchProducts(newFilters))
     },
     [priceRange, selectedCategories, sortBy, itemsPerPage, dispatch],
   )
 
-  // Apply filters when they change
+  // Apply filters when they change - simplified to avoid stale closure
   useEffect(() => {
-    if (!isInitialLoad) {
+    if (!isInitialLoad && selectedCategories.length > 0) {
       const timer = setTimeout(() => {
-        applyFilters()
-      }, 300) // Small debounce to avoid too many requests
-
+        dispatch(
+          fetchProducts({
+            minPrice: priceRange[0],
+            maxPrice: priceRange[1],
+            categories: selectedCategories,
+            sortBy: sortBy,
+            page: 1,
+            limit: itemsPerPage,
+          }),
+        )
+      }, 300)
       return () => clearTimeout(timer)
-    } else {
-      setIsInitialLoad(false)
     }
   }, [
     priceRange,
     selectedCategories,
     sortBy,
     itemsPerPage,
-    applyFilters,
     isInitialLoad,
+    dispatch,
+  ])
+
+  // Initial load - set flag to false after first render
+  useEffect(() => {
+    if (isInitialLoad) {
+      // Check if we have URL parameters to apply
+      const categoryFromUrl = searchParams.get('category')
+      if (categoryFromUrl && selectedCategories.length === 0) {
+        setSelectedCategories([categoryFromUrl])
+        dispatch(
+          fetchProducts({
+            minPrice: priceRange[0],
+            maxPrice: priceRange[1],
+            categories: [categoryFromUrl],
+            sortBy: sortBy,
+            page: 1,
+            limit: itemsPerPage,
+          }),
+        )
+      }
+      setIsInitialLoad(false)
+    }
+  }, [
+    isInitialLoad,
+    searchParams,
+    dispatch,
+    priceRange,
+    sortBy,
+    itemsPerPage,
+    selectedCategories.length,
   ])
 
   // Initial data fetch
@@ -219,11 +282,12 @@ function ShopPageContent() {
   }
 
   const toggleSubcategory = (subcategoryId) => {
-    setSelectedCategories((prev) =>
-      prev.includes(subcategoryId)
+    setSelectedCategories((prev) => {
+      const newCategories = prev.includes(subcategoryId)
         ? prev.filter((id) => id !== subcategoryId)
-        : [...prev, subcategoryId],
-    )
+        : [...prev, subcategoryId]
+      return newCategories
+    })
   }
 
   const handleResetFilters = () => {
