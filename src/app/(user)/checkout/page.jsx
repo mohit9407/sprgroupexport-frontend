@@ -5,7 +5,11 @@ import { useRouter } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux'
 import { useCart } from '@/context/CartContext'
 import { useAuth } from '@/context/AuthContext'
-import { createOrder, resetOrderState } from '@/features/order/orderSlice'
+import {
+  createOrder,
+  resetOrderState,
+  fetchUserOrders,
+} from '@/features/order/orderSlice'
 import { fetchOrderStatuses } from '@/features/orderStatus/orderStatusSlice'
 import AuthModal from '@/components/Auth/AuthModal'
 import CheckoutSteps from './components/CheckoutSteps'
@@ -87,6 +91,13 @@ export default function CheckoutPage() {
   useEffect(() => {
     dispatch(fetchOrderStatuses())
   }, [dispatch])
+
+  // Fetch user orders when user is authenticated (for first order discount)
+  useEffect(() => {
+    if (user && user.accessToken) {
+      dispatch(fetchUserOrders())
+    }
+  }, [user, dispatch])
 
   // Handle order submission
   // useEffect(() => {

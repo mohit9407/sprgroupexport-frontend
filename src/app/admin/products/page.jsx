@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa'
 import ConfirmationModal from '@/components/admin/ConfirmationModal'
 import toast from 'react-hot-toast'
-import Image from 'next/image'
+import SafeImage from '@/components/SafeImage'
 import { TanstackTable } from '@/components/admin/TanStackTable'
 import { useTableQueryParams } from '@/components/admin/TanStackTable'
 import {
@@ -34,16 +34,13 @@ const getColumns = (router, dispatch, setDeleteModal) => [
       return (
         <div className="w-16 h-16 relative bg-gray-100 flex items-center justify-center rounded">
           {imageUrl ? (
-            <Image
+            <SafeImage
               src={imageUrl}
               alt="Product"
               fill
               className="object-cover rounded"
               sizes="(max-width: 768px) 100vw, 50vw"
-              unoptimized={
-                !imageUrl?.startsWith('/') &&
-                !imageUrl?.startsWith('http://localhost')
-              }
+              fallback="/images/placeholder-product.png"
             />
           ) : (
             <span className="text-gray-400 text-xs">No image</span>

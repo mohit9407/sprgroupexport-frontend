@@ -4,9 +4,9 @@ import {
   TanstackTable,
   useTableQueryParams,
 } from '@/components/admin/TanStackTable'
+import SafeImage from '@/components/SafeImage'
 import { fetchAdminOrders } from '@/features/order/orderSlice'
 import { createColumnHelper } from '@tanstack/react-table'
-import Image from 'next/image'
 import React, { Suspense, useCallback, useEffect, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -60,7 +60,7 @@ function TotalPurchasedContent() {
 
           return (
             <div className="w-16 h-16 relative bg-gray-100 rounded overflow-hidden">
-              <Image
+              <SafeImage
                 src={imageUrl}
                 alt="Product"
                 fill

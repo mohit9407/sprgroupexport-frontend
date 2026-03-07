@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
+import SafeImage from '@/components/SafeImage'
 import {
   FaArrowLeft,
   FaCalendarAlt,
@@ -234,7 +234,7 @@ export default function ProfilePage() {
               <div className="relative group">
                 <div className="relative w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden mb-4">
                   {imagePreview ? (
-                    <Image
+                    <SafeImage
                       src={imagePreview}
                       alt={`${formData.firstName} ${formData.lastName}`}
                       fill

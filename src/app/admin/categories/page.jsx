@@ -10,6 +10,7 @@ import {
   deleteCategory,
 } from '@/features/categories/categoriesSlice'
 import { useRouter } from 'next/navigation'
+import SafeImage from '@/components/SafeImage'
 import { TanstackTable } from '@/components/admin/TanStackTable'
 import ConfirmationModal from '@/components/admin/ConfirmationModal'
 import { useTableQueryParams } from '@/components/admin/TanStackTable'
@@ -40,10 +41,13 @@ const getColumns = (router, handleDeleteClick) => [
       return (
         <div className="w-20 h-20 bg-gray-100 grid place-items-center overflow-hidden">
           {value ? (
-            <img
-              src={value?.thumbnailUrl}
+            <SafeImage
+              src={value?.thumbnailUrl || value?.mediumUrl || value?.largeUrl}
               alt={name}
-              className="object-cover w-full h-full"
+              width={80}
+              height={80}
+              className="object-cover"
+              fallback="/images/placeholder-product.png"
             />
           ) : (
             <span className="text-gray-400 text-sm">No Image</span>

@@ -14,6 +14,20 @@ export const fetchReviews = createAsyncThunk(
   },
 )
 
+export const addReview = createAsyncThunk(
+  'reviews/addReview',
+  async ({ productId, reviewData }, { rejectWithValue }) => {
+    try {
+      const response = await reviewService.addReview(productId, reviewData)
+      return response.data
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to add review',
+      )
+    }
+  },
+)
+
 export const deleteReview = createAsyncThunk(
   'reviews/deleteReview',
   async (
@@ -39,6 +53,7 @@ const reviewsSlice = createSlice({
       data: null,
       pagination: null,
     },
+    addReview: {},
     deleteReview: {},
   },
   reducers: {},
@@ -57,6 +72,21 @@ const reviewsSlice = createSlice({
         state.allReviews.isLoading = false
         state.allReviews.isError = true
         state.allReviews.message = action.payload
+      })
+
+      // Add review
+      .addCase(addReview.pending, (state) => {
+        state.addReview.isLoading = true
+      })
+      .addCase(addReview.fulfilled, (state, action) => {
+        state.addReview.isLoading = false
+        state.addReview.isSuccess = true
+        state.addReview.data = action.payload
+      })
+      .addCase(addReview.rejected, (state, action) => {
+        state.addReview.isLoading = false
+        state.addReview.isError = true
+        state.addReview.message = action.payload
       })
 
       // Delete review

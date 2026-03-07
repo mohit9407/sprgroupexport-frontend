@@ -6,6 +6,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { useRouter } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux'
 import { toast } from '@/utils/toastConfig'
+import SafeImage from '@/components/SafeImage'
 import { createProduct, updateProduct } from '@/features/products/productsSlice'
 import { fetchAllCategories } from '@/features/categories/categoriesSlice'
 import {
@@ -1180,10 +1181,17 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                 {existingImage && !selectedImage && (
                   <div className="mb-4">
                     <p className="text-sm text-gray-500 mb-2">Current Image:</p>
-                    <img
-                      src={existingImage.thumbnailUrl}
+                    <SafeImage
+                      src={
+                        existingImage.thumbnailUrl ||
+                        existingImage.mediumUrl ||
+                        existingImage.largeUrl
+                      }
                       alt="Current product"
-                      className="h-32 w-32 object-cover rounded"
+                      width={128}
+                      height={128}
+                      className="object-cover rounded"
+                      fallback="/images/placeholder-product.png"
                     />
                   </div>
                 )}
@@ -1220,15 +1228,13 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                       {selectedSideImages.map((img, index) => (
                         <div key={index} className="relative group">
                           <div className="relative">
-                            <img
+                            <SafeImage
                               src={img.thumbnailUrl || img.mediumUrl || img}
                               alt={`Side ${index + 1}`}
-                              className="h-24 w-24 object-cover rounded border"
-                              onError={(e) => {
-                                e.target.onerror = null
-                                e.target.src =
-                                  img.mediumUrl || img.largeUrl || img
-                              }}
+                              width={96}
+                              height={96}
+                              className="object-cover rounded border"
+                              fallback="/images/placeholder-product.png"
                             />
                             {/* Video indicator icon */}
                             {img.type === 'video' && (

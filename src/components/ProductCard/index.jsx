@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import Image from 'next/image'
+import SafeImage from '../SafeImage'
 import { useRouter } from 'next/navigation'
 import { FiHeart, FiEye, FiShoppingBag, FiCheck } from 'react-icons/fi'
 import { useDispatch, useSelector } from 'react-redux'
@@ -80,7 +80,6 @@ const ProductCard = ({
   const [isHovered, setIsHovered] = useState(false)
   const [hasError, setHasError] = useState(false)
   const [pendingCartAdd, setPendingCartAdd] = useState(false)
-  const [isClicked, setIsClicked] = useState(false)
   const { status: productDetailsStatus } = useSelector(
     (state) => state.productDetails,
   )
@@ -102,30 +101,6 @@ const ProductCard = ({
       )
     : null
 
-  // Check if product is jewelry for special effects
-  const isJewelry = useMemo(() => {
-    const jewelryKeywords = [
-      'ring',
-      'earring',
-      'earrings',
-      'gold',
-      'jewelry',
-      'necklace',
-      'bracelet',
-      'pendant',
-      'chain',
-    ]
-    const lowerName = (name || '').toLowerCase()
-    const lowerBrand = (brand || '').toLowerCase()
-    const lowerCategory = (categoryName || '').toLowerCase()
-    return jewelryKeywords.some(
-      (keyword) =>
-        lowerName.includes(keyword) ||
-        lowerBrand.includes(keyword) ||
-        lowerCategory.includes(keyword),
-    )
-  }, [name, brand, categoryName])
-
   const handleImageError = () => {
     console.error(`Failed to load image: ${imageUrl}`)
     setHasError(true)
@@ -134,8 +109,6 @@ const ProductCard = ({
   const handleNavigate = (e) => {
     e.preventDefault()
     e.stopPropagation()
-    setIsClicked(true)
-    setTimeout(() => setIsClicked(false), 200)
     // Include product name in URL for better breadcrumbs
     const productSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
     router.push(`/products/${id}?name=${encodeURIComponent(name)}`)
@@ -270,108 +243,99 @@ const ProductCard = ({
           {/* Image */}
           <div className="w-full max-w-[280px] relative h-48 md:h-64">
             <div className="relative w-full h-full overflow-hidden rounded">
-              {imageUrl !== null ? (
-                <>
-                  <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-110">
-                    <Image
-                      src={imageUrl.mediumUrl}
-                      alt={name}
-                      fill
-                      unoptimized={true}
-                      className="object-cover transition-transform duration-500 group-hover:scale-110"
-                      onError={handleImageError}
-                      sizes="(max-width: 768px) 100vw, 25vw"
-                      priority={false}
-                    />
-                  </div>
-                  {/* Hover Overlay */}
-                  <div
-                    className={`absolute inset-0 bg-black/20 flex flex-col items-center justify-center gap-4 p-4 transition-all duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
+              <SafeImage
+                src={imageUrl?.mediumUrl}
+                alt={name}
+                fill
+                unoptimized={true}
+                className="object-cover transition-transform duration-500 group-hover:scale-110"
+                onError={handleImageError}
+                sizes="(max-width: 768px) 100vw, 25vw"
+                priority={false}
+                fallback="/images/placeholder-product.png"
+              />
+              {/* Hover Overlay */}
+              <div
+                className={`absolute inset-0 bg-black/20 flex flex-col items-center justify-center gap-4 p-4 transition-all duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
+              >
+                <div className="flex gap-3">
+                  <button
+                    className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      isWishlisted
+                        ? 'text-[#BA8B4E] bg-white border-2 border-[#BA8B4E]'
+                        : 'text-white bg-[#BA8B4E] hover:bg-[#a87d45]'
+                    } transition-colors`}
+                    onClick={handleWishlistClick}
                   >
-                    <div className="flex gap-3">
-                      <button
-                        className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          isWishlisted
-                            ? 'text-[#BA8B4E] bg-white border-2 border-[#BA8B4E]'
-                            : 'text-white bg-[#BA8B4E] hover:bg-[#a87d45]'
-                        } transition-colors`}
-                        onClick={handleWishlistClick}
-                      >
-                        <FiHeart
-                          className={`text-lg ${isWishlisted ? 'fill-current' : ''}`}
-                        />
-                      </button>
-                      <button
-                        onClick={handleNavigate}
-                        disabled={productDetailsStatus === 'loading'}
-                        className={`w-10 h-10 rounded-full bg-[#BA8B4E] flex items-center justify-center hover:bg-[#a87d45] transition-colors shadow-lg ${
-                          productDetailsStatus === 'loading'
-                            ? 'opacity-70 cursor-not-allowed'
-                            : 'cursor-pointer'
-                        }`}
-                      >
-                        {productDetailsStatus === 'loading' ? (
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        ) : (
-                          <FiEye className="text-white text-lg" />
-                        )}
-                      </button>
-                    </div>
-                    <div className="relative group/button">
-                      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4/5 h-3 bg-pink-200/30 rounded-full blur-sm group-hover/button:blur-md transition-all duration-300"></div>
-                      <button
-                        onClick={handleAddToCart}
-                        disabled={isAdding || isInCart}
-                        className={`relative ${
-                          isInCart
-                            ? 'bg-[#BA8B4E] hover:bg-[#a87d45]'
-                            : 'bg-[#BA8B4E] hover:bg-[#a87d45]'
-                        } text-white px-6 py-2 rounded-full text-sm font-medium flex items-center justify-center gap-2 transition-all shadow-lg cursor-pointer min-w-[140px]`}
-                      >
-                        {isAdding ? (
-                          <span className="flex items-center">
-                            <svg
-                              className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                            >
-                              <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"
-                              ></circle>
-                              <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                              ></path>
-                            </svg>
-                            Adding...
-                          </span>
-                        ) : isInCart ? (
-                          <span className="flex items-center">
-                            <FiCheck className="text-white mr-1" size={18} />
-                            Added
-                          </span>
-                        ) : (
-                          <>
-                            <FiShoppingBag className="text-white" size={16} />
-                            ADD TO CART
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-                  <span className="text-gray-500">Image not available</span>
+                    <FiHeart
+                      className={`text-lg ${isWishlisted ? 'fill-current' : ''}`}
+                    />
+                  </button>
+                  <button
+                    onClick={handleNavigate}
+                    disabled={productDetailsStatus === 'loading'}
+                    className={`w-10 h-10 rounded-full bg-[#BA8B4E] flex items-center justify-center hover:bg-[#a87d45] transition-colors shadow-lg ${
+                      productDetailsStatus === 'loading'
+                        ? 'opacity-70 cursor-not-allowed'
+                        : 'cursor-pointer'
+                    }`}
+                  >
+                    {productDetailsStatus === 'loading' ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <FiEye className="text-white text-lg" />
+                    )}
+                  </button>
                 </div>
-              )}
+                <div className="relative group/button">
+                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4/5 h-3 bg-pink-200/30 rounded-full blur-sm group-hover/button:blur-md transition-all duration-300"></div>
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={isAdding || isInCart}
+                    className={`relative ${
+                      isInCart
+                        ? 'bg-[#BA8B4E] hover:bg-[#a87d45]'
+                        : 'bg-[#BA8B4E] hover:bg-[#a87d45]'
+                    } text-white px-6 py-2 rounded-full text-sm font-medium flex items-center justify-center gap-2 transition-all shadow-lg cursor-pointer min-w-[140px]`}
+                  >
+                    {isAdding ? (
+                      <span className="flex items-center">
+                        <svg
+                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        Adding...
+                      </span>
+                    ) : isInCart ? (
+                      <span className="flex items-center">
+                        <FiCheck className="text-white mr-1" size={18} />
+                        Added
+                      </span>
+                    ) : (
+                      <>
+                        <FiShoppingBag className="text-white" size={16} />
+                        ADD TO CART
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -411,9 +375,7 @@ const ProductCard = ({
         />
       )}
       <div
-        className={`w-full max-w-[280px] bg-white p-4 rounded-lg group border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden ${
-          isJewelry ? 'hover:shadow-yellow-200/50 hover:border-yellow-300' : ''
-        } ${isClicked ? 'scale-95' : 'hover:scale-[1.02]'}`}
+        className="w-full max-w-[280px] bg-white p-4 rounded-lg group border border-gray-200 hover:shadow-md transition-shadow duration-300"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={stopPropagation}
@@ -421,131 +383,98 @@ const ProductCard = ({
         {/* Image Container */}
         <div className="relative w-full pt-[100%] mb-4 overflow-hidden rounded">
           <div className="absolute inset-0 overflow-hidden">
-            {imageUrl !== null ? (
-              <Image
-                src={imageUrl.mediumUrl}
-                alt={name}
-                fill
-                unoptimized={true}
-                className={`object-cover transition-transform duration-500 ${isHovered ? 'scale-110' : 'scale-100'}`}
-                onError={handleImageError}
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                priority={false}
-              />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-                <span className="text-gray-500">Image not available</span>
-              </div>
-            )}
-
-            {/* Hover Overlay */}
-            <div
-              className={`absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex flex-col items-center justify-center gap-6 p-4 transition-all duration-500 transform ${
-                isHovered
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 -translate-y-full'
-              }`}
-            >
-              {/* Jewelry sparkle effect */}
-              {isJewelry && isHovered && (
-                <div className="absolute inset-0 pointer-events-none">
-                  <div className="absolute top-4 left-4 w-2 h-2 bg-yellow-300 rounded-full animate-pulse"></div>
-                  <div className="absolute top-8 right-6 w-1 h-1 bg-yellow-200 rounded-full animate-ping"></div>
-                  <div
-                    className="absolute bottom-6 left-8 w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"
-                    style={{ animationDelay: '0.5s' }}
-                  ></div>
-                  <div
-                    className="absolute bottom-4 right-4 w-1 h-1 bg-yellow-300 rounded-full animate-ping"
-                    style={{ animationDelay: '0.3s' }}
-                  ></div>
-                </div>
-              )}
-              <div className="flex gap-4">
-                <button
-                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 transform hover:scale-110 ${
-                    isWishlisted
-                      ? 'text-[#BA8B4E] bg-white border-2 border-[#BA8B4E] shadow-lg'
-                      : isJewelry
-                        ? 'text-white bg-gradient-to-r from-[#D4AF37] to-[#FFD700] hover:from-[#b8941f] hover:to-[#FFC700] shadow-lg'
-                        : 'text-white bg-[#BA8B4E] hover:bg-[#a87d45] shadow-lg'
-                  } ${isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`}
-                  onClick={handleWishlistClick}
-                >
-                  <FiHeart
-                    className={`text-lg ${isWishlisted ? 'fill-current' : ''}`}
-                  />
-                </button>
-                <button
-                  onClick={handleNavigate}
-                  disabled={productDetailsStatus === 'loading'}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 transform hover:scale-110 shadow-lg ${
-                    productDetailsStatus === 'loading'
-                      ? 'opacity-70 cursor-not-allowed bg-gray-400'
-                      : isJewelry
-                        ? 'bg-gradient-to-r from-[#D4AF37] to-[#FFD700] hover:from-[#b8941f] hover:to-[#FFC700] text-white'
-                        : 'bg-[#BA8B4E] hover:bg-[#a87d45] text-white'
-                  } ${
-                    productDetailsStatus === 'loading' ? '' : 'cursor-pointer'
-                  }`}
-                >
-                  {productDetailsStatus === 'loading' ? (
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  ) : (
-                    <FiEye className="text-white text-lg" />
-                  )}
-                </button>
-              </div>
-              <div className="relative transform transition-transform duration-300 group">
-                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4/5 h-3 bg-pink-200/30 rounded-full blur-sm group-hover:blur-md transition-all duration-300"></div>
-                <button
-                  onClick={handleAddToCart}
-                  disabled={isAdding || isInCart}
-                  className={`relative transition-all duration-300 transform hover:scale-105 shadow-lg cursor-pointer min-w-[140px] ${
-                    isInCart
-                      ? 'bg-[#BA8B4E] hover:bg-[#a87d45]'
-                      : isJewelry
-                        ? 'bg-gradient-to-r from-[#D4AF37] to-[#FFD700] hover:from-[#b8941f] hover:to-[#FFC700] text-white'
-                        : 'bg-[#BA8B4E] hover:bg-[#a87d45] text-white'
-                  } text-white px-8 py-3 rounded-full text-sm font-medium flex items-center justify-center gap-2`}
-                >
-                  {isAdding ? (
-                    <span className="flex items-center">
-                      <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      Adding...
-                    </span>
-                  ) : isInCart ? (
-                    <span className="flex items-center">
-                      <FiCheck className="text-white mr-1" size={18} />
-                      Added
-                    </span>
-                  ) : (
-                    <>
-                      <FiShoppingBag className="text-white" size={16} />
-                      ADD TO CART
-                    </>
-                  )}
-                </button>
-              </div>
+            <SafeImage
+              src={imageUrl?.mediumUrl}
+              alt={name}
+              fill
+              unoptimized={true}
+              className={`object-cover transition-transform duration-500 ${isHovered ? 'scale-110' : 'scale-100'}`}
+              onError={handleImageError}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              priority={false}
+              fallback="/images/placeholder-product.png"
+            />
+          </div>
+          {/* Hover Overlay */}
+          <div
+            className={`absolute inset-0 bg-black/20 flex flex-col items-center justify-center gap-6 p-4 transition-all duration-500 transform ${
+              isHovered
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 -translate-y-full'
+            }`}
+          >
+            <div className="flex gap-4">
+              <button
+                className={`w-10 h-10 rounded-full flex items-center justify-center ${isWishlisted ? 'text-[#BA8B4E] bg-white border-2 border-[#BA8B4E]' : 'text-white bg-[#BA8B4E] hover:bg-[#a87d45]'} transition-colors`}
+                onClick={handleWishlistClick}
+              >
+                <FiHeart
+                  className={`text-lg ${isWishlisted ? 'fill-current' : ''}`}
+                />
+              </button>
+              <button
+                onClick={handleNavigate}
+                disabled={productDetailsStatus === 'loading'}
+                className={`w-10 h-10 rounded-full bg-[#BA8B4E] flex items-center justify-center hover:bg-[#a87d45] transition-colors shadow-lg ${
+                  productDetailsStatus === 'loading'
+                    ? 'opacity-70 cursor-not-allowed'
+                    : 'cursor-pointer'
+                }`}
+              >
+                {productDetailsStatus === 'loading' ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <FiEye className="text-white text-lg" />
+                )}
+              </button>
+            </div>
+            <div className="relative transform transition-transform duration-300 group">
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4/5 h-3 bg-pink-200/30 rounded-full blur-sm group-hover:blur-md transition-all duration-300"></div>
+              <button
+                onClick={handleAddToCart}
+                disabled={isAdding || isInCart}
+                className={`relative ${
+                  isInCart
+                    ? 'bg-[#BA8B4E] hover:bg-[#a87d45]'
+                    : 'bg-[#BA8B4E] hover:bg-[#a87d45]'
+                } text-white px-8 py-3 rounded-full text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-lg cursor-pointer min-w-[140px]`}
+              >
+                {isAdding ? (
+                  <span className="flex items-center">
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Adding...
+                  </span>
+                ) : isInCart ? (
+                  <span className="flex items-center">
+                    <FiCheck className="text-white mr-1" size={18} />
+                    Added
+                  </span>
+                ) : (
+                  <>
+                    <FiShoppingBag className="text-white" size={16} />
+                    ADD TO CART
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
@@ -556,21 +485,13 @@ const ProductCard = ({
             {categoryName || brand}
           </p>
           <h3
-            className={`text-base text-[#2C3E50] mb-2 font-bold transition-all duration-300 cursor-pointer ${
-              isJewelry
-                ? 'hover:text-[#D4AF37] hover:scale-105'
-                : 'hover:text-[#b7853f]'
-            } ${isClicked ? 'scale-95' : ''}`}
+            className="text-base text-[#2C3E50] mb-2 font-bold hover:text-[#b7853f] transition-colors duration-300 cursor-pointer"
             onClick={handleNavigate}
           >
             {name}
           </h3>
           <div
-            className={`font-semibold transition-all duration-300 ${
-              isJewelry
-                ? 'text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-[#FFD700] hover:from-[#b8941f] hover:to-[#FFC700]'
-                : 'text-[#D4AF37]'
-            }`}
+            className="text-[#D4AF37] font-semibold"
             style={{ fontSize: '1.6rem' }}
           >
             ₹{typeof price === 'number' ? price.toLocaleString('en-IN') : price}

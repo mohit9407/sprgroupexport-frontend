@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
-import Image from 'next/image'
 import { FaArrowRightLong, FaArrowLeftLong } from 'react-icons/fa6'
+import SafeImage from '../SafeImage'
 
 const Hero = () => {
   // Define image sources
@@ -77,7 +77,7 @@ const Hero = () => {
             }`}
           >
             <div className="relative w-full h-full">
-              <Image
+              <SafeImage
                 src={slide.src}
                 alt={slide.title}
                 fill

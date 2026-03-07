@@ -69,14 +69,18 @@ export default function EditCategoryPage() {
     return <div>Category not found</div>
   }
 
+  console.log('Category data from API:', category)
+
   // Prepare default values for the form
   const defaultValues = {
-    parentId: category.parent || '',
+    parent: category.parent || '',
     name: category.name || '',
     status: category.status || 'active',
     image: category.image || '',
     icon: category.icon || '',
   }
+
+  console.log('defaultValues======', defaultValues)
 
   return (
     <CategoryFormPage

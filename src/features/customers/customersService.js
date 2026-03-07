@@ -12,12 +12,15 @@ const getCustomer = async (id) => {
 }
 
 const addNewCustomer = async (payload) => {
-  return await api.post('/auth/signup', payload)
+  const adminPayload = {
+    ...payload,
+  }
+  return await api.post('/auth/admin/add-user', adminPayload)
 }
 
 const updateCustomer = async (id, payload) => {
   if (!id) return
-  return await api.put('/auth/edit-profile', payload)
+  return await api.put(`/auth/admin/edit-user/${id}`, payload)
 }
 
 const deleteCustomer = async (id) => {

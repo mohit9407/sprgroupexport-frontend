@@ -2,13 +2,13 @@
 
 import ConfirmationModal from '@/components/admin/ConfirmationModal'
 import { TanstackTable } from '@/components/admin/TanStackTable'
+import SafeImage from '@/components/SafeImage'
 import {
   deleteSliderImages,
   fetchSliderImages,
 } from '@/features/slider-images/sliderImagesSlice'
 import { toast } from '@/utils/toastConfig'
 import { createColumnHelper } from '@tanstack/react-table'
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import React, {
   Suspense,
@@ -83,7 +83,7 @@ function SlideImageTableContent() {
           return (
             <div className="w-16 h-16 relative bg-gray-100 flex items-center justify-center rounded">
               {imageUrl ? (
-                <Image
+                <SafeImage
                   src={imageUrl}
                   alt="sliderImage"
                   fill

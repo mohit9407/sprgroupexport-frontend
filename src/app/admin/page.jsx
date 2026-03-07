@@ -17,11 +17,11 @@ import {
   PackageIcon,
   ArrowRight,
 } from 'lucide-react'
-import Image from 'next/image'
 import AddedSaleReportChartWithRecharts from '@/components/admin/AddedSaleReportChart/AddedSaleReportChartWithRecharts'
 import { useMemo } from 'react'
 import { createColumnHelper } from '@tanstack/react-table'
 import { TanstackTable } from '@/components/admin/TanStackTable'
+import SafeImage from '@/components/SafeImage'
 
 const columnHelper = createColumnHelper()
 
@@ -320,7 +320,7 @@ export default function AdminDashboard() {
                   <div key={index} className="text-center">
                     <div className="bg-gray-100 rounded-lg p-3 mb-2">
                       <div className="w-12 h-12 bg-gray-300 rounded mx-auto">
-                        <Image
+                        <SafeImage
                           src={
                             product.image.thumbnailUrl ||
                             '/placeholder-product.jpg'

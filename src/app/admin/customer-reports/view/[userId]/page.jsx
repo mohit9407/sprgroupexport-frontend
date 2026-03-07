@@ -15,7 +15,7 @@ import {
   FiPackage,
   FiTag,
 } from 'react-icons/fi'
-import Image from 'next/image'
+import SafeImage from '@/components/SafeImage'
 import { motion, AnimatePresence } from 'framer-motion'
 import { fetchProducts } from '@/features/products/productsSlice'
 import { fetchAllCategories } from '@/features/categories/categoriesSlice'
@@ -227,22 +227,20 @@ export default function CustomerOrdersPage() {
                                 className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg"
                               >
                                 {product?.image ? (
-                                  <Image
+                                  <SafeImage
                                     src={
                                       product.image?.thumbnailUrl ||
                                       product.image?.mediumUrl
                                     }
-                                    alt={product.productName || 'Product'}
+                                    alt={product.name || 'Product'}
                                     width={60}
                                     height={60}
-                                    className="rounded-lg object-cover"
+                                    className="object-cover rounded"
+                                    fallback="/images/placeholder-product.png"
                                   />
                                 ) : (
-                                  <div className="w-[60px] h-[60px] bg-gray-200 rounded-lg flex items-center justify-center">
-                                    <FiPackage
-                                      className="text-gray-400"
-                                      size={24}
-                                    />
+                                  <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-gray-500 text-xs">
+                                    No Image
                                   </div>
                                 )}
                                 <div className="flex-1">
