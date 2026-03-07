@@ -30,15 +30,6 @@ const CatalogDropdown = ({
   // Build hierarchical structure when categories change
   useEffect(() => {
     if (allCategories?.data && allCategories.data.length > 0) {
-      console.log(
-        'All raw categories:',
-        allCategories.data.map((c) => ({
-          id: c._id,
-          name: c.name,
-          parent: c.parent,
-        })),
-      )
-
       const buildCategoryTree = (categories = []) => {
         const categoryMap = {}
         const rootCategories = []
@@ -71,10 +62,6 @@ const CatalogDropdown = ({
       }
 
       const treeData = buildCategoryTree(allCategories.data)
-      console.log(
-        'Final category tree structure:',
-        JSON.stringify(treeData, null, 2),
-      )
       setHierarchicalCategories(treeData)
     }
   }, [allCategories?.data])
@@ -154,9 +141,6 @@ const CatalogDropdown = ({
     const displayName =
       level > 0 && parentName ? `${category.name}` : category.name
 
-    console.log(
-      `Rendering: ${category.name} (ID: ${category._id}, level: ${level}, hasChildren: ${hasChildren}, parent: ${parentName})`,
-    )
     if (hasChildren) {
       console.log(
         `  Children: ${category.children.map((c) => c.name).join(', ')}`,
@@ -168,9 +152,6 @@ const CatalogDropdown = ({
         key={category._id}
         className="relative group"
         onMouseEnter={() => {
-          console.log(
-            `Mouse enter: ${category.name} (ID: ${category._id}, level: ${level})`,
-          )
           // Clear any existing timeout
           if (timeoutId) {
             clearTimeout(timeoutId)
@@ -264,7 +245,6 @@ const CatalogDropdown = ({
               zIndex: 50 + level, // Ensure deeper levels appear on top
             }}
             onMouseEnter={() => {
-              console.log(`Submenu mouse enter: ${category.name}`)
               // Build the complete path for this submenu
               const pathToCategory = []
               let currentCategory = category

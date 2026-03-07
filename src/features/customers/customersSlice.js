@@ -19,7 +19,17 @@ export const getCustomer = createAsyncThunk(
   async ({ id }, { rejectWithValue, dispatch }) => {
     try {
       const response = await customerAddressService.getCustomer(id)
-      dispatch(getAllCustomers())
+      // Dispatch getAllCustomers with default pagination parameters
+      dispatch(
+        getAllCustomers({
+          page: 1,
+          limit: 10,
+          search: undefined,
+          sortBy: undefined,
+          sortOrder: undefined,
+          filterBy: undefined,
+        }),
+      )
       return response
     } catch (error) {
       return rejectWithValue(
@@ -31,10 +41,22 @@ export const getCustomer = createAsyncThunk(
 
 export const addNewCustomer = createAsyncThunk(
   'customer/addNewCustomer',
-  async (_, { rejectWithValue, dispatch }) => {
+  async (payload, { rejectWithValue, dispatch }) => {
     try {
-      const response = await customerAddressService.addNewCustomer()
-      dispatch(getAllCustomers())
+      // Use the new admin endpoint for user creation
+      const response = await customerAddressService.addNewCustomer(payload)
+
+      // Dispatch getAllCustomers with default pagination parameters
+      dispatch(
+        getAllCustomers({
+          page: 1,
+          limit: 10,
+          search: undefined,
+          sortBy: undefined,
+          sortOrder: undefined,
+          filterBy: undefined,
+        }),
+      )
       return response.data
     } catch (error) {
       return rejectWithValue(

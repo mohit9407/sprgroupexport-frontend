@@ -1,7 +1,6 @@
 'use client'
 
 import { useMemo, Suspense, useCallback, useEffect, useState } from 'react'
-import Image from 'next/image'
 import { createColumnHelper } from '@tanstack/react-table'
 import { useSelector, useDispatch } from 'react-redux'
 
@@ -16,6 +15,7 @@ import {
   selectOutOfStockStatus,
   selectOutOfStockPagination,
 } from '@/features/stock/stockSlice'
+import SafeImage from '@/components/SafeImage'
 
 const columnHelper = createColumnHelper()
 
@@ -50,7 +50,7 @@ function OutOfStockContent() {
           return (
             <div className="w-16 h-16 bg-gray-100 grid place-items-center overflow-hidden">
               {imageUrl ? (
-                <Image
+                <SafeImage
                   src={imageUrl}
                   alt={info.row.original.productName || 'Product'}
                   width={80}

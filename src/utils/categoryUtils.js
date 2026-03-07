@@ -170,8 +170,8 @@ export const getCategoryPath = (categories, categoryId) => {
     const category = categoryMap[id]
     if (!category) return ''
 
-    if (category.parentId && categoryMap[category.parentId]) {
-      return `${buildPath(category.parentId)} > ${category.name}`
+    if (category.parent && categoryMap[category.parent]) {
+      return `${buildPath(category.parent)} > ${category.name}`
     }
     return category.name
   }

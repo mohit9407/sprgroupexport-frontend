@@ -25,6 +25,7 @@ import { useWishlist } from '@/context/WishlistContext'
 import { useAuth } from '@/context/AuthContext'
 import AuthModal from '@/components/Auth/AuthModal'
 import RelatedProducts from '@/components/RelatedProducts'
+import ReviewForm from '@/components/ReviewForm/ReviewForm'
 
 export default function ProductDetails() {
   const dispatch = useDispatch()
@@ -37,12 +38,13 @@ export default function ProductDetails() {
 
   const [quantity, setQuantity] = useState(1)
   const [showAuthModal, setShowAuthModal] = useState(false)
-  const [pendingAction, setPendingAction] = useState(null) // 'addToCart' or 'buyNow'
+  const [pendingAction, setPendingAction] = useState(null) // 'addToCart', 'buyNow', or 'addReview'
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [selectedSize, setSelectedSize] = useState(null)
   const [selectedColor, setSelectedColor] = useState(null)
   const [activeTab, setActiveTab] = useState('details')
   const [showOffersModal, setShowOffersModal] = useState(false)
+  const [showReviewForm, setShowReviewForm] = useState(false)
 
   // Get product details from Redux store
   const {
@@ -223,6 +225,13 @@ export default function ProductDetails() {
     }
   }
 
+  const handleReviewAdded = () => {
+    // Refresh product details to show new review
+    if (productId) {
+      dispatch(fetchProductDetails(productId))
+    }
+  }
+
   // Handle loading and error states
   if (isLoading || !product) {
     return (
@@ -270,6 +279,8 @@ export default function ProductDetails() {
               // For Buy Now, we don't need to add to cart
               // Just redirect to checkout which will handle the direct checkout item
               router.push('/checkout')
+            } else if (pendingAction === 'addReview') {
+              setShowReviewForm(true)
             }
             setPendingAction(null)
           }}
@@ -491,6 +502,33 @@ export default function ProductDetails() {
                   </div>
                 ) : (
                   <div className="space-y-6">
+                    {/* Add Review Button */}
+                    <div className="flex justify-end">
+                      <button
+                        onClick={() => {
+                          if (user) {
+                            setShowReviewForm(true)
+                          } else {
+                            setPendingAction('addReview')
+                            setShowAuthModal(true)
+                          }
+                        }}
+                        className="px-4 py-2 bg-[#BA8B4E] text-white rounded-md hover:bg-[#8B6B3E] transition-colors"
+                      >
+                        Write a Review
+                      </button>
+                    </div>
+
+                    {/* Review Form */}
+                    {showReviewForm && (
+                      <ReviewForm
+                        productId={productId}
+                        onReviewAdded={handleReviewAdded}
+                        onClose={() => setShowReviewForm(false)}
+                      />
+                    )}
+
+                    {/* Existing Reviews */}
                     {product?.reviews?.length > 0 ? (
                       product.reviews.map((review, index) => (
                         <div
@@ -516,6 +554,19 @@ export default function ProductDetails() {
             offers={offers}
             onClose={() => setShowOffersModal(false)}
           />
+        )}
+
+        {/* Review Form Modal */}
+        {showReviewForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <ReviewForm
+                productId={productId}
+                onReviewAdded={handleReviewAdded}
+                onClose={() => setShowReviewForm(false)}
+              />
+            </div>
+          </div>
         )}
 
         {/* Why It's Special Section */}

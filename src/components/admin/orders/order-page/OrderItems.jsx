@@ -1,5 +1,5 @@
 import React from 'react'
-import Image from 'next/image'
+import SafeImage from '@/components/SafeImage'
 
 const OrderItems = ({ loadingDetails, products, order }) => {
   return (
@@ -22,7 +22,7 @@ const OrderItems = ({ loadingDetails, products, order }) => {
           products.map((product) => (
             <div key={product._id || product.orderItemId} className="p-4 flex">
               <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-md border border-gray-200 relative">
-                <Image
+                <SafeImage
                   src={
                     product.images?.[0]?.thumbnailUrl ||
                     '/images/placeholder-product.png'

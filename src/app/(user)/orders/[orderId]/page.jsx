@@ -16,9 +16,9 @@ import {
   FiCheckCircle,
   FiShoppingBag,
 } from 'react-icons/fi'
-import Image from 'next/image'
 import Link from 'next/link'
 import { toast } from '@/utils/toastConfig'
+import SafeImage from '@/components/SafeImage'
 
 export default function OrderDetailsPage() {
   const { orderId } = useParams()
@@ -285,7 +285,7 @@ export default function OrderDetailsPage() {
                       <div className="flex">
                         <div className="flex-shrink-0 h-24 w-24 rounded-md overflow-hidden border border-gray-200">
                           {product.image ? (
-                            <Image
+                            <SafeImage
                               src={product.image.thumbnailUrl}
                               alt={product.name || 'Product image'}
                               width={96}

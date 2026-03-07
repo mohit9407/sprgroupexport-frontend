@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Image from 'next/image'
+import SafeImage from '@/components/SafeImage'
 import AdminAddImageModal from '@/components/AdminAddImageModal'
 import api from '@/lib/axios'
 import toast from 'react-hot-toast'
@@ -173,12 +173,13 @@ export default function MediaListPage() {
                       </div>
                     </>
                   ) : (
-                    <Image
+                    <SafeImage
                       src={img.thumbnailUrl || img.largeUrl}
                       alt=""
                       width={200}
                       height={100}
                       className="max-h-28 object-contain"
+                      fallback="/images/placeholder-media.png"
                     />
                   )}
                 </div>

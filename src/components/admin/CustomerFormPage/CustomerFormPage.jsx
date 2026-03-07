@@ -27,6 +27,7 @@ const getCustomerSchema = (isPasswordRequired = true) => {
   return yup.object({
     firstName: yup.string().required('First name is required'),
     lastName: yup.string().required('Last name is required'),
+    gender: yup.string().required('Gender is required'),
 
     dob: yup
       .date()
@@ -44,6 +45,7 @@ const getCustomerSchema = (isPasswordRequired = true) => {
     password: isPasswordRequired
       ? passwordSchema.required('Password is required')
       : passwordSchema.notRequired(),
+    status: yup.string().required('Status is required'),
   })
 }
 
@@ -70,7 +72,21 @@ export function CustomerFormPage({
   })
 
   const setFieldErrorFromAPI = (errors) => {
-    formProviders.setError(errors)
+    // Ensure errors is an object and iterate through each field
+    if (errors && typeof errors === 'object') {
+      Object.keys(errors).forEach((fieldName) => {
+        const errorMessage = errors[fieldName]
+        if (errorMessage) {
+          // setError expects: setError(fieldName, { message: errorMessage })
+          formProviders.setError(fieldName, {
+            message:
+              typeof errorMessage === 'string'
+                ? errorMessage
+                : 'Validation error',
+          })
+        }
+      })
+    }
   }
 
   const handleChangePassword = (isChange) => {

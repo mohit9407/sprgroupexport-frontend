@@ -4,9 +4,9 @@ import {
   TanstackTable,
   useTableQueryParams,
 } from '@/components/admin/TanStackTable'
+import SafeImage from '@/components/SafeImage'
 import { fetchAllProduct } from '@/features/products/productsSlice'
 import { createColumnHelper } from '@tanstack/react-table'
-import Image from 'next/image'
 import { Suspense, useCallback, useEffect, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -59,7 +59,7 @@ function ProductLikedContent() {
           return (
             <div className="w-16 h-16 relative bg-gray-100 flex items-center justify-center rounded">
               {imageUrl ? (
-                <Image
+                <SafeImage
                   src={imageUrl}
                   alt="Product"
                   fill

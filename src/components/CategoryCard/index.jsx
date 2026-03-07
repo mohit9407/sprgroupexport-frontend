@@ -1,4 +1,4 @@
-import Image from 'next/image'
+import SafeImage from '../SafeImage'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 
@@ -37,7 +37,7 @@ const CategoryCard = ({ title, imageUrl, href = '#', className = '' }) => {
           )}
 
           {!hasError && imageUrl ? (
-            <Image
+            <SafeImage
               src={imageUrl}
               alt={title || 'Category image'}
               fill

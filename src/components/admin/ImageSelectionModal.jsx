@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import ButtonLoader from './ButtonLoader'
 import Modal from './Modal'
 import api from '@/lib/axios'
-import Image from 'next/image'
+import SafeImage from '@/components/SafeImage'
 import dynamic from 'next/dynamic'
 
 export default function ImageSelectionModal({
@@ -145,12 +145,13 @@ export default function ImageSelectionModal({
                       </div>
                     </>
                   ) : (
-                    <Image
+                    <SafeImage
                       src={image.thumbnailUrl || image.largeUrl}
                       alt=""
                       width={200}
-                      height={100}
-                      className="max-h-28 object-contain"
+                      height={120}
+                      className="object-cover rounded"
+                      fallback="/images/placeholder-media.png"
                     />
                   )}
                   {isSelected && (

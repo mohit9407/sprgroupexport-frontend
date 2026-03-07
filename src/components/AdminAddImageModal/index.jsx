@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import Image from 'next/image'
+import SafeImage from '@/components/SafeImage'
 import api from '@/lib/axios'
 
 export default function MediaUploadModal({ open, onClose, onNewImagesAdd }) {
@@ -152,11 +152,11 @@ export default function MediaUploadModal({ open, onClose, onNewImagesAdd }) {
                     controls={false}
                   />
                 ) : (
-                  <Image
+                  <SafeImage
                     src={item.preview}
                     alt=""
                     fill
-                    className="object-contain"
+                    unoptimized={true}
                   />
                 )}
 
