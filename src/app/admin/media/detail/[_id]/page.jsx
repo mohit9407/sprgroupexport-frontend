@@ -1,5 +1,5 @@
+import SafeImage from '@/components/SafeImage'
 import api from '@/lib/axios'
-import Image from 'next/image'
 import React from 'react'
 
 const getImageDetails = async (id) => {
@@ -84,7 +84,7 @@ const page = async ({ params }) => {
         <>
           <h2 className="text-2xl font-semibold">{`ACTUAL (${image.largeHeight} X ${image.largeWidth})`}</h2>
           <div className="p-1 mb-4 border-2 border-gray-300 rounded-md grid place-items-center">
-            <Image
+            <SafeImage
               src={image.largeUrl}
               alt=""
               width={image.largeWidth}

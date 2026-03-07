@@ -4,10 +4,10 @@ import { useState, useEffect, useMemo } from 'react'
 import { useCart } from '@/context/CartContext'
 import { useSelector } from 'react-redux'
 import { FiShoppingBag, FiPlus, FiMinus, FiTrash2 } from 'react-icons/fi'
-import Image from 'next/image'
 import Link from 'next/link'
 import ConfirmationModal from '@/components/admin/ConfirmationModal'
 import { toast, Toaster } from '@/utils/toastConfig'
+import SafeImage from '@/components/SafeImage'
 
 export default function CartPage() {
   const {
@@ -170,7 +170,7 @@ export default function CartPage() {
                       className="flex items-center w-full"
                     >
                       <div className="w-20 h-20 relative flex-shrink-0">
-                        <Image
+                        <SafeImage
                           src={
                             item.product?.image?.thumbnailUrl ||
                             '/placeholder-product.jpg'

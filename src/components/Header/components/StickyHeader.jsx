@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import {
   FaSearch,
   FaRegHeart,
@@ -14,6 +13,7 @@ import { useWishlist } from '@/context/WishlistContext'
 import { navItems } from '@/utils/navigation'
 import CatalogDropdown from './CatalogDropdown'
 import AccountDropdown from './AccountDropdown'
+import SafeImage from '@/components/SafeImage'
 
 const StickyHeader = () => {
   const { cartCount } = useCart()
@@ -68,7 +68,7 @@ const StickyHeader = () => {
         <div className="flex items-center justify-between h-[85px]">
           {/* Logo */}
           <Link href="/" className="flex-shrink-0 h-full flex items-center">
-            <Image
+            <SafeImage
               src="/spr_logo.png"
               alt="SPR Group of Export"
               width={120}

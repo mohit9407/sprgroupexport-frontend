@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import Image from 'next/image'
 import Link from 'next/link'
+import SafeImage from '@/components/SafeImage'
 
 export default function OrderSummary({
   cartItems = [],
@@ -73,7 +73,7 @@ export default function OrderSummary({
           >
             <div className="relative w-16 h-16 bg-gray-100 rounded-md overflow-hidden mr-4">
               {item.image && (
-                <Image
+                <SafeImage
                   src={item.image.thumbnailUrl}
                   alt={item.name}
                   layout="fill"

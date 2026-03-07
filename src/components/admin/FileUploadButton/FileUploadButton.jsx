@@ -1,6 +1,7 @@
 'use client'
 
 import { forwardRef, useState, useMemo } from 'react'
+import SafeImage from '@/components/SafeImage'
 import ImageSelectionModal from '../ImageSelectionModal'
 
 const FileUploadButton = forwardRef(
@@ -37,10 +38,13 @@ const FileUploadButton = forwardRef(
         {!multiSelect ? (
           selectedItem?.thumbnailUrl && (
             <div className="mb-2">
-              <img
+              <SafeImage
                 src={selectedItem.thumbnailUrl}
                 alt="Selected Image"
                 className="h-16 w-16 object-cover rounded border"
+                width={64}
+                height={64}
+                fallback="/images/placeholder-product.png"
               />
             </div>
           )
@@ -48,10 +52,13 @@ const FileUploadButton = forwardRef(
           <div className="mb-2 flex flex-wrap gap-2">
             {selectedItems?.map((item, index) => (
               <div key={item._id || index} className="relative">
-                <img
+                <SafeImage
                   src={item.thumbnailUrl}
                   alt={`Selected ${index + 1}`}
                   className="h-16 w-16 object-cover rounded border"
+                  width={64}
+                  height={64}
+                  fallback="/images/placeholder-product.png"
                 />
                 <span className="absolute -top-2 -right-2 bg-cyan-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                   {index + 1}
@@ -75,14 +82,14 @@ const FileUploadButton = forwardRef(
             onClick={() => setShowModal(true)}
             className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500"
           >
-            {value || (multiSelect && selectedItems?.length > 0) 
-            ? `Change ${label}` 
-            : label}
-          {multiSelect && selectedItems?.length > 0 && (
-            <span className="ml-1 bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">
-              {selectedItems.length} selected
-            </span>
-          )}
+            {value || (multiSelect && selectedItems?.length > 0)
+              ? `Change ${label}`
+              : label}
+            {multiSelect && selectedItems?.length > 0 && (
+              <span className="ml-1 bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">
+                {selectedItems.length} selected
+              </span>
+            )}
           </button>
 
           {value && (

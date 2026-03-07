@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FaChevronRight } from 'react-icons/fa'
 
 export const CategoryFilter = ({
@@ -31,6 +31,27 @@ export const CategoryFilter = ({
     e.stopPropagation()
     toggleSubcategory(grandchildId)
   }
+
+  useEffect(() => {
+    categories.forEach((parent) => {
+      parent.children?.forEach((child) => {
+        child.children?.forEach((grandchild) => {
+          if (selectedCategories.includes(grandchild._id)) {
+            setExpandedParent(parent._id)
+            setExpandedChild(child._id)
+          }
+        })
+
+        if (selectedCategories.includes(child._id)) {
+          setExpandedParent(parent._id)
+        }
+      })
+
+      if (selectedCategories.includes(parent._id)) {
+        setExpandedParent(parent._id)
+      }
+    })
+  }, [selectedCategories, categories])
 
   return (
     <div className="mb-6">

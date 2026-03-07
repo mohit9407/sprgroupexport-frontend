@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
+import SafeImage from '../SafeImage'
 
 const ProductImages = ({ images, productName, sideImages = [] }) => {
   const [selectedImage, setSelectedImage] = useState(0)
@@ -131,7 +132,7 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
                   />
                 </>
               ) : (
-                <Image
+                <SafeImage
                   src={
                     allImages[selectedImage]?.url || allImages[selectedImage]
                   }
@@ -162,7 +163,7 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
                   aria-label={`View ${img.type === 'video' ? 'video' : 'image'} ${index + 1}`}
                 >
                   <div className="relative w-full h-full p-1">
-                    <Image
+                    <SafeImage
                       src={
                         img.type === 'video' ? img.thumbnailUrl : img.url || img
                       }
@@ -250,7 +251,7 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
                 />
               </>
             ) : (
-              <Image
+              <SafeImage
                 src={allImages[selectedImage]?.url || allImages[selectedImage]}
                 alt={productName}
                 fill
@@ -343,7 +344,7 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
                   aria-label={`Select ${img.type === 'video' ? 'video' : 'image'} ${index + 1}`}
                 >
                   <div className="relative w-full h-full p-1">
-                    <Image
+                    <SafeImage
                       src={imgSrc}
                       alt={
                         img.description ||
