@@ -354,34 +354,6 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
     const isGold = isUnderParentCategory(selectedCat, 'gold')
     const isSilver = isUnderParentCategory(selectedCat, 'silver')
 
-    // Debug logging
-    console.log('Category Detection Debug:', {
-      selectedCategoryId: selectedCategory,
-      selectedCategoryName: selectedCat?.name,
-      isGold,
-      isSilver,
-      categoryPath: selectedCat
-        ? (() => {
-            const findParent = (categories, childId, path = []) => {
-              for (const cat of categories) {
-                if (cat._id === childId) {
-                  return path
-                }
-                if (cat.children?.length) {
-                  const result = findParent(cat.children, childId, [
-                    ...path,
-                    cat,
-                  ])
-                  if (result) return result
-                }
-              }
-              return null
-            }
-            return findParent(hierarchicalCategories, selectedCat._id)
-          })()
-        : null,
-    })
-
     // Also check by ID fallback for silver
     let isSilverByCategory = isSilver
     if (!isSilver && selectedCat) {

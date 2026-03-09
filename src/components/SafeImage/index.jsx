@@ -19,15 +19,15 @@ const SafeImage = ({
     } else {
       setIsImageError(true)
       console.error(
-        'Unable to access image after 3 attempts: ',
+        'Unable to access image after 3 attempts:',
         src,
-        '\nShowing fallback image: ',
+        '\nShowing fallback image:',
         fallback,
       )
     }
   }
 
-  // Don't render Image component if src is null/undefined and no fallback
+  // If no src and no fallback
   if (!src && !fallback) {
     return (
       <div className="bg-gray-200 flex items-center justify-center text-gray-500 text-sm">
@@ -36,33 +36,11 @@ const SafeImage = ({
     )
   }
 
-  // Convert relative URLs to absolute URLs for development
+  // Use fallback if image fails
   let imageSrc = isImageError || !src ? fallback : src
 
-  // Handle old Vercel Blob URLs - convert to local URLs
-  if (
-    imageSrc.includes('vercel-storage.com') ||
-    imageSrc.includes('blob.vercel-storage.com')
-  ) {
-    // Extract the file path from Vercel URL
-    // Example: https://vos43ibt37cj25fd.public.blob.vercel-storage.com/media/thumbnail/filename.jpg
-    const urlParts = imageSrc.split('/')
-    const mediaIndex = urlParts.findIndex((part) => part === 'media')
-
-    if (mediaIndex !== -1 && urlParts.length > mediaIndex + 1) {
-      // Reconstruct as local URL
-      const localPath = '/uploads/' + urlParts.slice(mediaIndex).join('/')
-      imageSrc = `${API_BASE_URL}${localPath}`
-      console.log(
-        'SafeImage: Converting Vercel URL:',
-        src,
-        'to local URL:',
-        imageSrc,
-      )
-    }
-  }
-  // If it's a relative URL (starts with /uploads/), convert to absolute URL
-  else if (imageSrc.startsWith('/uploads/')) {
+  // Convert relative uploads path to full API URL
+  if (imageSrc?.startsWith('/uploads/')) {
     imageSrc = `${API_BASE_URL}${imageSrc}`
   }
 
