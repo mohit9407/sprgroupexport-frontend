@@ -318,27 +318,33 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-2 gap-4">
                 {productsData.map((product, index) => (
                   <div key={index} className="text-center">
-                    <div className="bg-gray-100 rounded-lg p-3 mb-2">
-                      <div className="w-12 h-12 bg-gray-300 rounded mx-auto">
-                        <SafeImage
-                          src={
-                            product.image.thumbnailUrl ||
-                            '/placeholder-product.jpg'
-                          }
-                          width={96}
-                          alt="image"
-                          height={96}
-                          className="w-full h-full object-cover"
-                          priority
-                        />
+                    <div className="bg-gray-100 rounded-lg p-3 mb-2 items-center">
+                      <div className=" flex gapt-3">
+                        <div className="relative w-16 h-16 bg-gray-100 rounded-md overflow-hidden mr-4">
+                          <SafeImage
+                            src={
+                              product?.image?.thumbnailUrl ||
+                              product?.image ||
+                              '/placeholder-product.jpg'
+                            }
+                            alt={
+                              product?.name || product?.productName || 'Product'
+                            }
+                            fill
+                            className="object-cover rounded hover:opacity-90 transition-opacity"
+                            unoptimized={true}
+                          />
+                        </div>
+                        <div className="flex flex-col">
+                          <p className="text-xs text-gray-600 truncate">
+                            {product.name}
+                          </p>
+                          <p className="text-sm font-semibold text-gray-900 mt-1">
+                            ₹{product.price}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                    <p className="text-xs text-gray-600 truncate">
-                      {product.name}
-                    </p>
-                    <p className="text-sm font-semibold text-gray-900">
-                      ₹{product.price}
-                    </p>
                   </div>
                 ))}
               </div>
