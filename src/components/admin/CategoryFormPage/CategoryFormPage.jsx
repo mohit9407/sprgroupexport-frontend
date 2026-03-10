@@ -84,7 +84,7 @@ export function CategoryFormPage({
     },
     mode: 'onBlur',
     reValidateMode: 'onChange',
-    shouldUnregister: true,
+    shouldUnregister: false,
   })
 
   // Set initial values when defaultValues changes (for edit mode)
@@ -99,6 +99,14 @@ export function CategoryFormPage({
       })
       if (defaultValues.image) setExistingImage(defaultValues.image)
       if (defaultValues.icon) setExistingIcon(defaultValues.icon)
+
+      // Set selected items for FileUploadButton if image/icon exists
+      if (defaultValues.image && typeof defaultValues.image === 'object') {
+        setSelectedImage(defaultValues.image)
+      }
+      if (defaultValues.icon && typeof defaultValues.icon === 'object') {
+        setSelectedIcon(defaultValues.icon)
+      }
     }
   }, [isEditMode, defaultValues, formProviders])
 
