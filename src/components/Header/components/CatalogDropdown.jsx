@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { FaChevronDown } from 'react-icons/fa'
 import { useSelector, useDispatch } from 'react-redux'
 import {
@@ -19,6 +20,7 @@ const CatalogDropdown = ({
   const [hierarchicalCategories, setHierarchicalCategories] = useState([])
   const [timeoutId, setTimeoutId] = useState(null)
   const dispatch = useDispatch()
+  const router = useRouter()
 
   const allCategories = useSelector(selectAllCategories)
 
@@ -113,15 +115,16 @@ const CatalogDropdown = ({
   }
 
   const handleCategoryClick = (category, e) => {
-    // Prevent default link behavior for categories with children
+    // For categories with children, navigate to the main category page
     if (category.children && category.children.length > 0) {
       e.preventDefault()
+      router.push(`/shop?category=${category._id}`)
       return
     }
 
     // For leaf categories (no children), redirect to shop page with category filter
     e.preventDefault()
-    window.location.href = `/shop?category=${category._id}`
+    router.push(`/shop?category=${category._id}`)
   }
 
   const renderCategory = (category, level = 0) => {
