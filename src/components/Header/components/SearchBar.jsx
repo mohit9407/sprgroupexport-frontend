@@ -71,12 +71,12 @@ const SearchBar = () => {
           </button>
 
           {showCategories && (
-            <div className="absolute left-0 top-full mt-1 w-80 bg-white rounded-md shadow-xl z-[9999] border max-h-96 overflow-y-auto">
+            <div className="absolute left-0 top-full mt-1 w-full bg-white rounded-md shadow-xl z-[9999] border max-h-96 overflow-y-auto">
               <div className="py-2">
                 {categoryTree.map((parent) => (
                   <div key={parent._id} className="mb-1">
                     {/* Parent Header - Click text to navigate, arrow to expand */}
-                    <div className="px-4 py-2 bg-gradient-to-r from-[#BA8B4E] to-[#D4AF37] text-white font-bold text-sm uppercase tracking-wider flex items-center justify-between">
+                    <div className="px-4 py-2 bg-gradient-to-r from-[#4dbbd4] to-[#BA8B4E] text-white font-bold text-sm uppercase tracking-wider flex items-center justify-between rounded-lg">
                       <span
                         className="cursor-pointer hover:opacity-80 flex-1"
                         onClick={() => handleCategoryClick(parent, 'parent')}
@@ -100,7 +100,7 @@ const SearchBar = () => {
                           {parent.children.map((child) => (
                             <div key={child._id}>
                               {/* Child Item - Click text to navigate, arrow to expand */}
-                              <div className="px-6 py-2 text-sm text-gray-700 flex items-center justify-between hover:bg-gray-100 border-b border-gray-100">
+                              <div className="px-6 py-2 text-sm text-gray-700 flex items-center justify-between hover:bg-gray-200 border-b border-gray-100">
                                 <span
                                   className="font-medium cursor-pointer flex-1"
                                   onClick={() =>
