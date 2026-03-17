@@ -87,6 +87,7 @@ export default function EditContentPage({ params }) {
             pageName: currentPage.pageName,
             description: currentPage.description,
             status: currentPage.status,
+            pageImage: currentPage.pageImage || null,
           }}
         />
       )}

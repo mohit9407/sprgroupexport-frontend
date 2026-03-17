@@ -12,9 +12,11 @@ import {
 } from '@/features/content-page/contentPageSlice'
 import dynamic from 'next/dynamic'
 import 'react-quill/dist/quill.snow.css'
+import { useState } from 'react'
 
 import { FormAdminInputRow } from '@/components/admin/AdminInputRow'
 import { FormAdminSelect } from '@/components/admin/AdminSelect'
+import FileUploadButton from '@/components/admin/FileUploadButton/FileUploadButton'
 
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false })
 
@@ -25,6 +27,7 @@ const pageSchema = yup.object({
   pageName: yup.string().required('Page name is required'),
   description: yup.string().required('Description is required'),
   status: yup.boolean().required('Status is required'),
+  pageImage: yup.mixed().nullable(),
 })
 
 /* ================= COMPONENT ================= */
@@ -38,6 +41,9 @@ export default function ContentForm({
   const isEditMode = mode === 'edit'
   const router = useRouter()
   const dispatch = useDispatch()
+  const [selectedImage, setSelectedImage] = useState(
+    defaultValues?.pageImage || null,
+  )
 
   const { createContentPage: createState, updateContentPage: updateState } =
     useSelector((state) => state.contentPage)
@@ -55,12 +61,23 @@ export default function ContentForm({
         defaultValues?.status === undefined
           ? true
           : defaultValues.status === 'active',
+      pageImage: defaultValues?.pageImage || null,
     },
     mode: 'onBlur',
   })
 
   const { handleSubmit, setValue, watch } = formMethods
   const description = watch('description')
+  const pageSlug = watch('pageSlug')
+
+  // Check if current page is About Us
+  const isAboutUsPage =
+    pageSlug === 'about-us' || defaultValues?.pageSlug === 'about-us'
+
+  const handleImageSelect = (image) => {
+    setSelectedImage(image)
+    setValue('pageImage', image, { shouldValidate: true })
+  }
 
   /* ================= SUBMIT ================= */
 
@@ -71,6 +88,7 @@ export default function ContentForm({
         ...values,
         status: values.status ? 'active' : 'inactive',
         htmlDescription: values.description || '', // Ensure htmlDescription is always a string
+        pageImage: values.pageImage || null,
       }
 
       if (isEditMode && id) {
@@ -156,6 +174,25 @@ export default function ContentForm({
                 <p className="mt-1 text-[11px] text-gray-500">
                   Enter the detailed content of the page
                 </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-12 gap-4 items-start">
+              <label className="col-span-12 md:col-span-3 pt-2 text-sm text-right font-bold text-gray-700">
+                Product Image <span className="text-red-500">*</span>
+              </label>
+              <div className="col-span-12 md:col-span-9">
+                {isAboutUsPage && (
+                  <FileUploadButton
+                    id="pageImage"
+                    label="Page Image"
+                    value={selectedImage}
+                    selectedItem={selectedImage}
+                    onImageSelect={handleImageSelect}
+                    accept="image/*"
+                    className="mb-4"
+                  />
+                )}
               </div>
             </div>
 

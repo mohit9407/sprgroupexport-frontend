@@ -61,19 +61,21 @@ function ContentPageContent() {
             >
               <FaEdit className="w-4 h-4" />
             </button>
-            <button
-              className="p-1.5 text-red-600 hover:bg-red-50 rounded-full hover:text-red-700 transition-colors"
-              onClick={(e) => {
-                e.stopPropagation()
-                setDeleteModal({
-                  open: true,
-                  contentPage: row.original,
-                })
-              }}
-              title="Delete Gold"
-            >
-              <FaTrash className="w-4 h-4" />
-            </button>
+            {row.original.pageSlug !== 'about-us' && (
+              <button
+                className="p-1.5 text-red-600 hover:bg-red-50 rounded-full hover:text-red-700 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setDeleteModal({
+                    open: true,
+                    contentPage: row.original,
+                  })
+                }}
+                title="Delete Gold"
+              >
+                <FaTrash className="w-4 h-4" />
+              </button>
+            )}
           </div>
         ),
       }),
