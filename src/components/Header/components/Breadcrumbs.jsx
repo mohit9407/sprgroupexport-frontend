@@ -30,6 +30,8 @@ const Breadcrumbs = ({ productName }) => {
 
       url += `/${segment}`
 
+      const href = segment === 'products' ? '/shop' : url
+
       let label = segment
 
       // If this is an order ID, show "Product Details" instead
@@ -56,7 +58,7 @@ const Breadcrumbs = ({ productName }) => {
 
       breadcrumbs.push({
         label,
-        href: url,
+        href,
         isLast,
       })
     })
