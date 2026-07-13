@@ -963,7 +963,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                     value={calculatedPrice?.totalPrice?.toFixed(2) || '0.00'}
                     readOnly
                     fullWidth
-                    helperText={`${watch('gram') || 0}g × ₹${goldRate || 0}/g`}
+                    helperText={`${watch('gram') || 0}g × $${goldRate || 0}/g`}
                   />
                   <p className="mt-1 text-sm text-gray-500">
                     {isCalculating ? (
@@ -973,7 +973,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                         Error calculating price
                       </span>
                     ) : calculatedPrice ? (
-                      `Calculated: ${calculatedPrice.gram}g × ₹${calculatedPrice.pricePerGram?.toLocaleString('en-IN')}/g`
+                      `Calculated: ${calculatedPrice.gram}g × $${calculatedPrice.pricePerGram?.toLocaleString('en-US')}/g`
                     ) : caratLoading || caratData === null ? (
                       'Loading carat data...'
                     ) : caratError ? (
@@ -1089,7 +1089,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                     value={watch('price')?.toFixed(2) || '0.00'}
                     readOnly
                     fullWidth
-                    helperText={`${watch('gram') || 0}g × ₹${silverRate || 0}/g = ₹${((watch('gram') || 0) * (silverRate || 0)).toFixed(2)}`}
+                    helperText={`${watch('gram') || 0}g × $${silverRate || 0}/g = $${((watch('gram') || 0) * (silverRate || 0)).toFixed(2)}`}
                   />
                 </div>
 

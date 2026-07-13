@@ -20,10 +20,15 @@ async function deleteGold(id) {
   return await api.delete('gold/delete/' + id)
 }
 
+async function refreshGoldPrices() {
+  return await api.post('gold/refresh')
+}
+
 export const goldService = {
   createGold,
   getAllGold,
   getGoldById,
   updateGold,
   deleteGold,
+  refreshGoldPrices,
 }

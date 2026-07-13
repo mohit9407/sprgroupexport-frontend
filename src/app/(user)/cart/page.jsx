@@ -200,7 +200,7 @@ export default function CartPage() {
                       Price:
                     </span>
                     <span className="font-medium">
-                      ₹{(item.price || item.product?.price)?.toLocaleString()}
+                      ${(item.price || item.product?.price)?.toLocaleString()}
                     </span>
                   </div>
 
@@ -291,7 +291,7 @@ export default function CartPage() {
                   <div className="col-span-2">
                     <div className="flex items-center justify-end gap-2">
                       <div className="font-medium min-w-[100px] text-right">
-                        ₹
+                        $
                         {(
                           (item.price || item.product?.price) *
                           (item.quantity || 1)
@@ -367,7 +367,7 @@ export default function CartPage() {
               <div className="flex justify-between">
                 <span className="text-gray-600">Subtotal</span>
                 <span className="font-medium">
-                  ₹{subtotal.toLocaleString()}
+                  ${subtotal.toLocaleString()}
                 </span>
               </div>
 
@@ -376,7 +376,7 @@ export default function CartPage() {
                   Discount{isFirstOrder && ' (5% First Order)'}
                 </span>
                 <span className="text-green-600 ml-2">
-                  -₹{discount.toLocaleString()}
+                  -${discount.toLocaleString()}
                 </span>
               </div>
 
@@ -384,7 +384,7 @@ export default function CartPage() {
 
               <div className="flex justify-between text-lg font-semibold">
                 <span>Total</span>
-                <span>₹{total.toLocaleString()}</span>
+                <span>${total.toLocaleString()}</span>
               </div>
 
               {/* <div className="mt-6">

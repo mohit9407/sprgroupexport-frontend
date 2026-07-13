@@ -6,11 +6,40 @@ export const fetchGold = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await goldService.getAllGold()
-      const data = response.data.data || response.data
-      return data
+      // axios interceptor already unwraps response.data
+      const list = Array.isArray(response?.data)
+        ? response.data
+        : Array.isArray(response)
+          ? response
+          : []
+      const currency = response?.currency || list[0]?.currency || 'USD'
+      return {
+        currency,
+        data: [...list].sort((a, b) => (b.carat || 0) - (a.carat || 0)),
+      }
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 'Failed to fetch gold',
+      )
+    }
+  },
+)
+
+export const refreshGoldPrices = createAsyncThunk(
+  'gold/refreshGoldPrices',
+  async (_, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await goldService.refreshGoldPrices()
+      if (response?.success === false) {
+        return rejectWithValue(
+          response?.message || 'Failed to refresh gold prices',
+        )
+      }
+      // Always re-fetch list so UI matches DB (refresh payload nesting can vary)
+      return await dispatch(fetchGold()).unwrap()
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to refresh gold prices',
       )
     }
   },
@@ -75,11 +104,12 @@ export const deleteGold = createAsyncThunk(
 const goldSlice = createSlice({
   name: 'gold',
   initialState: {
-    allGold: { data: [], isLoading: false, error: null },
+    allGold: { data: [], currency: 'USD', isLoading: false, error: null },
     getGoldById: { data: null, isLoading: false, error: null },
     createGold: { isLoading: false, error: null },
     updateGold: { isLoading: false, error: null },
     deleteGold: { isLoading: false, error: null },
+    refreshGold: { isLoading: false, error: null },
   },
   reducers: {
     clearGoldById: (state) => {
@@ -94,7 +124,8 @@ const goldSlice = createSlice({
     })
     builder.addCase(fetchGold.fulfilled, (state, action) => {
       state.allGold.isLoading = false
-      state.allGold.data = action.payload
+      state.allGold.data = action.payload?.data || []
+      state.allGold.currency = action.payload?.currency || 'USD'
     })
     builder.addCase(fetchGold.rejected, (state, action) => {
       state.allGold.isLoading = false
@@ -156,6 +187,21 @@ const goldSlice = createSlice({
     builder.addCase(deleteGold.rejected, (state, action) => {
       state.deleteGold.isLoading = false
       state.deleteGold.error = action.payload
+    })
+
+    builder.addCase(refreshGoldPrices.pending, (state) => {
+      state.refreshGold.isLoading = true
+      state.refreshGold.error = null
+    })
+    builder.addCase(refreshGoldPrices.fulfilled, (state, action) => {
+      state.refreshGold.isLoading = false
+      state.allGold.data = action.payload?.data || []
+      state.allGold.currency =
+        action.payload?.currency || state.allGold.currency
+    })
+    builder.addCase(refreshGoldPrices.rejected, (state, action) => {
+      state.refreshGold.isLoading = false
+      state.refreshGold.error = action.payload
     })
   },
 })

@@ -6,7 +6,13 @@ export const fetchSilver = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const res = await silverService.getAllSilver()
-      return res
+      // axios interceptor already unwraps response.data
+      const list = Array.isArray(res?.data)
+        ? res.data
+        : Array.isArray(res)
+          ? res
+          : []
+      return [...list].sort((a, b) => (b.purity || 0) - (a.purity || 0))
     } catch (err) {
       return rejectWithValue(
         err.response?.data?.message || 'Failed to fetch silver',
@@ -20,7 +26,12 @@ export const fetchSilverPrices = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const res = await silverService.fetchSilverPrices()
-      return res
+      const list = Array.isArray(res?.data)
+        ? res.data
+        : Array.isArray(res)
+          ? res
+          : []
+      return [...list].sort((a, b) => (b.purity || 0) - (a.purity || 0))
     } catch (err) {
       return rejectWithValue(
         err.response?.data?.message || 'Failed to fetch silver prices',
@@ -125,7 +136,7 @@ const silverSlice = createSlice({
       })
       .addCase(fetchSilver.fulfilled, (state, action) => {
         state.loading = false
-        state.data = action.payload.data
+        state.data = action.payload
       })
       .addCase(fetchSilver.rejected, (state, action) => {
         state.loading = false
@@ -138,7 +149,7 @@ const silverSlice = createSlice({
       })
       .addCase(fetchSilverPrices.fulfilled, (state, action) => {
         state.loading = false
-        state.data = action.payload.data
+        state.data = action.payload
       })
       .addCase(fetchSilverPrices.rejected, (state, action) => {
         state.loading = false

@@ -38,7 +38,7 @@ const OrderItems = ({ loadingDetails, products, order }) => {
                   <div className="flex justify-between text-base font-medium text-gray-900">
                     <h3>{product.name}</h3>
                     <p className="ml-4">
-                      ₹
+                      $
                       {product.salePrice
                         ? product.salePrice.toFixed(2)
                         : '0.00'}
@@ -76,7 +76,7 @@ const OrderItems = ({ loadingDetails, products, order }) => {
         <div className="flex justify-between text-base font-medium text-gray-900">
           <p>Subtotal</p>
           <p>
-            ₹
+            $
             {products
               .reduce(
                 (acc, product) =>
@@ -88,15 +88,15 @@ const OrderItems = ({ loadingDetails, products, order }) => {
         </div>
         <div className="flex justify-between text-sm text-gray-600 mt-1">
           <p>Shipping</p>
-          <p>₹{order.shipping?.toFixed(2) || '0.00'}</p>
+          <p>${order.shipping?.toFixed(2) || '0.00'}</p>
         </div>
         <div className="flex justify-between text-sm text-gray-600 mt-1">
           <p>Tax</p>
-          <p>₹{order.tax?.toFixed(2) || '0.00'}</p>
+          <p>${order.tax?.toFixed(2) || '0.00'}</p>
         </div>
         <div className="flex justify-between text-lg font-bold mt-3 pt-3 border-t border-gray-200">
           <p>Total</p>
-          <p>₹{order.total?.toFixed(2) || '0.00'}</p>
+          <p>${order.total?.toFixed(2) || '0.00'}</p>
         </div>
       </div>
     </div>

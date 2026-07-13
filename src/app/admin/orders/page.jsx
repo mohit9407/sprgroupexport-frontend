@@ -111,12 +111,24 @@ function OrdersPageContent() {
       columnHelper.accessor('paidAmount', {
         header: 'Paid Amount',
         enableSorting: false,
-        cell: ({ getValue }) => `₹${getValue() ?? 0}`,
+        cell: ({ getValue }) => `$${getValue() ?? 0}`,
       }),
       columnHelper.accessor('remainingAmount', {
         header: 'Remaining Amount',
         enableSorting: false,
-        cell: ({ getValue }) => `₹${getValue() ?? 0}`,
+        cell: ({ getValue }) => `$${getValue() ?? 0}`,
+      }),
+      columnHelper.accessor('installinkId', {
+        header: 'Insta',
+        enableSorting: false,
+        cell: (info) => {
+          const value = info.getValue()
+          return value ? (
+            <span className="text-sm">{value}</span>
+          ) : (
+            <span className="text-gray-400">-</span>
+          )
+        },
       }),
       columnHelper.display({
         id: 'action',
@@ -280,6 +292,7 @@ function OrdersPageContent() {
           isAdminOrderCreated: order.isAdminOrderCreated,
           paidAmount: order.paidAmount,
           remainingAmount: order.remainingAmount,
+          installinkId: order.installinkId,
         }
       }),
     [orders, orderStatuses],

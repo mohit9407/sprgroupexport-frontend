@@ -203,7 +203,7 @@ export default function CustomerOrdersPage() {
                       <p className="text-sm text-gray-500">Total</p>
                       <p className="font-medium flex items-center">
                         <FaRupeeSign size={12} />
-                        {(order.total || 0).toLocaleString('en-IN')}
+                        {(order.total || 0).toLocaleString('en-US')}
                       </p>
                     </div>
                   </div>
