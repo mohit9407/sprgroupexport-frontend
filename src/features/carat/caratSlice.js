@@ -25,25 +25,17 @@ export const fetchCaratData = createAsyncThunk(
     try {
       const response = await api.get('/gold/latest')
 
-      // Ensure we return a consistent structure
-      if (Array.isArray(response.data)) {
-        return {
-          data: response.data,
-        }
+      let list = []
+      if (Array.isArray(response)) {
+        list = response
+      } else if (Array.isArray(response?.data)) {
+        list = response.data
       }
 
-      // Handle case where response is not an array
-      if (
-        response.data &&
-        response.data.data &&
-        Array.isArray(response.data.data)
-      ) {
-        return {
-          data: response.data.data,
-        }
-      }
+      // Direct GoldAPI gram prices per carat (no frontend carat math)
+      list = [...list].sort((a, b) => (b.carat || 0) - (a.carat || 0))
 
-      return { data: [] }
+      return { data: list }
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 'Failed to fetch carat data',
@@ -57,10 +49,17 @@ export const calculateGoldPrice = createAsyncThunk(
   'carat/calculateGoldPrice',
   async ({ carat, gram }, { rejectWithValue }) => {
     try {
+      // axios interceptor already unwraps response.data
       const response = await api.get(
         `/gold/calculate-price?carat=${carat}&gram=${gram}`,
       )
-      return response.data
+      if (response?.success === false) {
+        return rejectWithValue(
+          response?.message || 'Failed to calculate gold price',
+        )
+      }
+      // Backend stores GoldAPI price_gram_* directly as pricePerGram per carat
+      return response?.data || response
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 'Failed to calculate gold price',

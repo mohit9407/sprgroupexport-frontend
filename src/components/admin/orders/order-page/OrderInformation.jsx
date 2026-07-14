@@ -107,7 +107,7 @@ const OrderInformation = ({
         </div>
         <div>
           <h3 className="font-medium text-gray-700">Shipping Cost</h3>
-          <p className="text-gray-600">₹{order.shipping.toFixed(2)}</p>
+          <p className="text-gray-600">${order.shipping.toFixed(2)}</p>
         </div>
         <div>
           <h3 className="font-medium text-gray-700">paidAmount</h3>
@@ -144,7 +144,7 @@ const OrderInformation = ({
         <div>
           <h3 className="font-medium text-gray-700">remainingAmount</h3>
           <p className="text-gray-600 inline-block bg-yellow-100 px-2 py-1 rounded">
-            ₹{remainingAmount.toFixed(2)}
+            ${remainingAmount.toFixed(2)}
           </p>
         </div>
       </div>

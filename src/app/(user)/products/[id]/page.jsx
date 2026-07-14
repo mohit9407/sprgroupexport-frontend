@@ -308,7 +308,7 @@ export default function ProductDetails() {
             <div className="mb-6">
               <div className="flex items-center gap-2">
                 <span className="text-2xl font-bold text-[#b7853f]">
-                  ₹{product.price?.toLocaleString('en-IN')}
+                  ${product.price?.toLocaleString('en-US')}
                 </span>
                 <span className="text-sm text-gray-500">
                   MRP (Incl. of all taxes)

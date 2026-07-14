@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { useCart } from '@/context/CartContext'
 import ConfirmationModal from '@/components/admin/ConfirmationModal'
 import { paymentService } from '@/services/paymentService'
+import { skydoService } from '@/services/skydoService'
 import { api } from '@/lib/axios'
 import { toast } from '@/utils/toastConfig'
 
@@ -52,12 +53,9 @@ export default function OrderDetail({
             return method.type?.toLowerCase() !== 'cod'
           })
           setPaymentMethods(filteredMethods)
-        } else {
-          console.log('Response is not an array:', response)
         }
       } catch (error) {
         console.error('Failed to fetch payment methods:', error)
-        console.error('Error details:', error.response?.data || error.message)
         // In case of error, still try to set some default payment methods
         setPaymentMethods(
           [
@@ -96,7 +94,6 @@ export default function OrderDetail({
     }
   }
   const handlePaymentMethodChange = (method) => {
-    console.log('method????', method)
     setPaymentMethod(method)
     if (paymentError) setPaymentError('')
     // Notify parent component about the payment method change
@@ -135,7 +132,7 @@ export default function OrderDetail({
     setPaymentError('')
 
     // If PayPal is selected, process payment and redirect
-    if (paymentMethod === 'paypal') {
+    if (paymentMethod?.toLowerCase() === 'paypal') {
       try {
         const shippingCost = Number(shippingMethod?.price) || 0
 
@@ -186,7 +183,7 @@ export default function OrderDetail({
         const response = await api.post('/payments/process/PAYPAL', {
           orderId: tempOrderId, // Temporary order ID
           amount: totalAmount,
-          currency: 'INR',
+          currency: 'USD',
           userId: user._id,
           paymentMethodId: paypalMethodId,
           products: displayItems,
@@ -216,7 +213,78 @@ export default function OrderDetail({
       console.log('Selected current method:', paymentMethod)
     }
 
-    if (paymentMethod === 'razorpay') {
+    // Handle Skydo payment method (moved before Razorpay)
+    if (paymentMethod?.toLowerCase() === 'skydo') {
+      try {
+        const user = JSON.parse(localStorage.getItem('user'))
+        const shippingCost = Number(shippingMethod?.price) || 0
+
+        const totalAmount =
+          displayItems.reduce((total, item) => {
+            return total + item.price * (item.quantity || 1)
+          }, 0) + shippingCost
+
+        // Find Skydo payment method ID
+        const skydoMethodId = paymentMethods.find(
+          (m) => m.type?.toLowerCase() === 'skydo',
+        )?._id
+
+        if (!skydoMethodId) {
+          alert(
+            'Skydo payment method not found. Please select a different payment method.',
+          )
+          return
+        }
+
+        // Call Skydo API to create payment link
+        const skydoResponse = await skydoService.createSkydoPaymentLink({
+          clientName: user?.name || shippingAddress?.fullName || 'Customer',
+          country: shippingAddress?.country || 'United States',
+          currency: 'USD',
+          invoiceAmount: totalAmount,
+          invoiceNumber: `ORD-${Date.now()}`,
+          description: `Order for ${displayItems.map((item) => item.name).join(', ')}`,
+          allowedMethods: ['ACH_DEBIT'],
+        })
+
+        console.log('Skydo payment link created:', skydoResponse)
+
+        // Store Skydo payment link info for email notification
+        localStorage.setItem(
+          'skydoPaymentLink',
+          JSON.stringify({
+            paymentLink: skydoResponse?.paymentLink || skydoResponse?.link,
+            orderId: skydoResponse?.orderId,
+          }),
+        )
+
+        // Proceed with order placement
+        const selectedPaymentMethodId = paymentMethods.find(
+          (m) => m.type?.toLowerCase() === paymentMethod.toLowerCase(),
+        )?._id
+
+        onContinue(
+          {
+            paymentMethod: selectedPaymentMethodId,
+            paymentStatus: '695e0471c424c92fee37713b', // Pending status
+            orderNotes,
+            isSkydoOrder: true, // Flag to trigger email notification
+            installinkId: skydoResponse?.id || null,
+          },
+          'placeOrder',
+        )
+      } catch (error) {
+        console.error('Skydo error:', error)
+        alert(
+          'Failed to create Skydo payment link: ' +
+            (error.message || 'Please try again.'),
+        )
+        return
+      }
+      return
+    }
+
+    if (paymentMethod?.toLowerCase() === 'razorpay') {
       try {
         await loadRazorpayScript()
 
@@ -231,7 +299,7 @@ export default function OrderDetail({
 
         const response = await api.post('/payments/process/RAZORPAY', {
           amount: totalAmount,
-          currency: 'INR',
+          currency: 'USD',
           userId: user._id,
         })
 
@@ -385,7 +453,7 @@ export default function OrderDetail({
                   )}
                   <div className="flex items-center mt-1">
                     <span className="text-sm font-medium text-gray-900">
-                      ₹{item.price?.toLocaleString('en-IN')}
+                      ${item.price?.toLocaleString('en-US')}
                     </span>
                     <span className="mx-2 text-gray-300">|</span>
                     <div className="flex items-center">
@@ -394,10 +462,10 @@ export default function OrderDetail({
                       </span>
                       <span className="mx-2 text-gray-300">|</span>
                       <span className="text-sm font-medium text-gray-900">
-                        ₹
+                        $
                         {(
                           (item.price || 0) * (item.quantity || 1)
-                        ).toLocaleString('en-IN')}
+                        ).toLocaleString('en-US')}
                       </span>
                     </div>
                   </div>
@@ -438,7 +506,7 @@ export default function OrderDetail({
           <div className="flex justify-between items-center">
             <span className="font-bold">Order Total</span>
             <span className="text-[#c89b5a] text-xl font-bold">
-              ₹{orderTotal.toLocaleString('en-IN')}
+              ${orderTotal.toLocaleString('en-US')}
             </span>
           </div>
         </div>
@@ -480,26 +548,32 @@ export default function OrderDetail({
             </div>
           ) : (
             <div className="space-y-3">
-              {filteredPaymentMethods.map((method) => (
-                <div key={method._id} className="flex items-center">
-                  <input
-                    id={method.type?.toLowerCase()}
-                    name="payment-method"
-                    type="radio"
-                    className="h-4 w-4 text-[#c89b5a] focus:ring-[#c89b5a] border-gray-300"
-                    checked={paymentMethod === method.type?.toLowerCase()}
-                    onChange={() => {
-                      handlePaymentMethodChange(method.type?.toLowerCase())
-                    }}
-                  />
-                  <label
-                    htmlFor={method.type?.toLowerCase()}
-                    className="ml-3 block text-sm font-medium text-gray-700"
-                  >
-                    {method.name}
-                  </label>
-                </div>
-              ))}
+              {filteredPaymentMethods.map((method) => {
+                // Use name as fallback if type is incorrect
+                const methodType = method.name?.toLowerCase().includes('skydo')
+                  ? 'skydo'
+                  : (method.type || '').toLowerCase()
+                return (
+                  <div key={method._id} className="flex items-center">
+                    <input
+                      id={methodType}
+                      name="payment-method"
+                      type="radio"
+                      className="h-4 w-4 text-[#c89b5a] focus:ring-[#c89b5a] border-gray-300"
+                      checked={paymentMethod === methodType}
+                      onChange={() => {
+                        handlePaymentMethodChange(methodType)
+                      }}
+                    />
+                    <label
+                      htmlFor={methodType}
+                      className="ml-3 block text-sm font-medium text-gray-700"
+                    >
+                      {method.name}
+                    </label>
+                  </div>
+                )
+              })}
 
               {filteredPaymentMethods.length === 0 && (
                 <div className="text-sm text-gray-600">

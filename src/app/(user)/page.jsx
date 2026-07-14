@@ -14,8 +14,12 @@ import { getGeneralSetting } from '@/features/general-setting/generatSettingSlic
 export default function UserDashboard() {
   const dispatch = useDispatch()
 
-  const { banners = [], status: bannerStatus } = useSelector((state) => state.parallaxBanner)
-  const { data: generalSettings, status: generalSettingsStatus } = useSelector((state) => state.generalSetting)
+  const { banners = [], status: bannerStatus } = useSelector(
+    (state) => state.parallaxBanner,
+  )
+  const { data: generalSettings, status: generalSettingsStatus } = useSelector(
+    (state) => state.generalSetting,
+  )
 
   useEffect(() => {
     if (bannerStatus === 'idle') {
@@ -30,10 +34,10 @@ export default function UserDashboard() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative">
       {/* Hero Section */}
       <Hero />
-      <div className="bg-white h-25 relative z-1" />
+      <div className="bg-white h-25 relative z-10" />
       {banners?.[0] && (
         <StickyBackgroundSections
           sections={{
@@ -48,10 +52,10 @@ export default function UserDashboard() {
           overlayClass="bg-black/30"
         />
       )}
-      <div className="bg-white relative z-1">
+      <div className="bg-white relative z-10">
         <CategorySection title={generalSettings?.productCategorySectionText} />
       </div>
-      <div className="bg-white h-25 relative z-1" />
+      <div className="bg-white h-25 relative z-10" />
       {banners?.[1] && (
         <StickyBackgroundSections
           sections={{
@@ -66,7 +70,7 @@ export default function UserDashboard() {
           overlayClass="bg-black/30"
         />
       )}
-      <div className="bg-white py-12 relative z-1">
+      <div className="bg-white py-12 relative z-10">
         <div className="container mx-auto px-4">
           <SectionHeader
             title={generalSettings?.topSellingSectionText}
@@ -76,10 +80,10 @@ export default function UserDashboard() {
       </div>
 
       {/* New Arrival Section */}
-      <div className="bg-white relative z-1">
+      <div className="bg-white relative z-10">
         <NewArrivalSection title={generalSettings?.newArrivalSectionText} />
       </div>
-      <div className="bg-white h-25 relative z-1" />
+      <div className="bg-white h-25 relative z-10" />
       {banners?.[2] && (
         <StickyBackgroundSections
           sections={{
@@ -94,7 +98,7 @@ export default function UserDashboard() {
           overlayClass="bg-black/30"
         />
       )}
-      <div className="bg-white relative z-1">
+      <div className="bg-white relative z-10">
         <FeaturesSection />
       </div>
     </div>

@@ -75,7 +75,7 @@ function CustomerReportsTableContent() {
       columnHelper.accessor('totalSpent', {
         header: 'Total Spent',
         enableSorting: true,
-        cell: ({ getValue }) => `₹${getValue().toLocaleString('en-IN')}`,
+        cell: ({ getValue }) => `$${getValue().toLocaleString('en-US')}`,
       }),
       columnHelper.display({
         id: 'actions',
