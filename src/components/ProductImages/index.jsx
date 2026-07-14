@@ -140,7 +140,6 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
                   fill
                   style={{ objectFit: 'contain' }}
                   className="object-contain"
-                  unoptimized={process.env.NODE_ENV !== 'production'}
                   priority
                 />
               )}
@@ -174,7 +173,6 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
                       fill
                       style={{ objectFit: 'cover' }}
                       className="w-full h-full"
-                      unoptimized={process.env.NODE_ENV !== 'production'}
                     />
                   </div>
                 </button>
@@ -258,7 +256,6 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
                 style={{ objectFit: 'contain' }}
                 className="object-contain transition-opacity duration-300"
                 priority
-                unoptimized={process.env.NODE_ENV !== 'production'}
               />
             )}
             {isHovered && (
@@ -353,7 +350,6 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
                       fill
                       style={{ objectFit: 'cover' }}
                       className="w-full h-full"
-                      unoptimized={process.env.NODE_ENV !== 'production'}
                     />
                     {img.type === 'video' && (
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

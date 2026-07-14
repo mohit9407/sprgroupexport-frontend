@@ -84,7 +84,6 @@ const Hero = () => {
                 priority={index === 0}
                 sizes="100vw"
                 quality={75}
-                unoptimized={process.env.NODE_ENV !== 'production'}
               />
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>

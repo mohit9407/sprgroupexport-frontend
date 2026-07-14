@@ -44,17 +44,7 @@ const SafeImage = ({
     imageSrc = `${API_BASE_URL}${imageSrc}`
   }
 
-  return (
-    <Image
-      {...rest}
-      src={imageSrc}
-      onError={handleOnError}
-      unoptimized={
-        imageSrc?.startsWith('http://localhost') ||
-        imageSrc?.startsWith('http://127.0.0.1')
-      }
-    />
-  )
+  return <Image {...rest} src={imageSrc} onError={handleOnError} unoptimized />
 }
 
 export default SafeImage

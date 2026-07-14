@@ -6,7 +6,9 @@
     "dev": "next dev",
     "prebuild": "npm list next",
     "build": "next build",
+    "postbuild": "node scripts/prepare-standalone.mjs",
     "start": "next start",
+    "start:standalone": "node .next/standalone/server.js",
     "lint": "eslint",
     "prepare": "husky"
   },
