@@ -103,6 +103,14 @@ export async function middleware(request) {
   const accessToken = request.cookies.get('accessToken')?.value
   const refreshToken = request.cookies.get('refreshToken')?.value
 
+  const htmlNext = () => {
+    const response = NextResponse.next()
+    // Avoid caching HTML across deploys (stale HTML points at old CSS hashes → unstyled site)
+    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
+    response.headers.set('Pragma', 'no-cache')
+    return response
+  }
+
   // Allow all static files
   if (
     pathname.startsWith('/_next') ||
@@ -125,7 +133,7 @@ export async function middleware(request) {
       const newAccessToken = await refreshAccessToken(refreshToken)
       if (newAccessToken) {
         // Create response with new access token
-        const response = NextResponse.next()
+        const response = htmlNext()
         response.cookies.set('accessToken', newAccessToken, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
@@ -182,7 +190,7 @@ export async function middleware(request) {
     ) {
       return NextResponse.redirect(new URL('/', request.url))
     }
-    return NextResponse.next()
+    return htmlNext()
   }
 
   // Check if path is protected
@@ -198,7 +206,7 @@ export async function middleware(request) {
         try {
           const newAccessToken = await refreshAccessToken(refreshToken)
           if (newAccessToken) {
-            const response = NextResponse.next()
+            const response = htmlNext()
             response.cookies.set('accessToken', newAccessToken, {
               httpOnly: true,
               secure: process.env.NODE_ENV === 'production',
@@ -232,8 +240,7 @@ export async function middleware(request) {
     }
   }
 
-  // For all other routes, allow access (guest users can browse)
-  return NextResponse.next()
+  return htmlNext()
 }
 
 export const config = {

@@ -1,9 +1,5 @@
-/* Tailwind directives */
+/* Tailwind v4 — only @import is required (do not mix legacy @tailwind directives) */
 @import 'tailwindcss';
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 /* Hide scrollbar for Chrome, Safari and Opera */
 .scrollbar-hide::-webkit-scrollbar {

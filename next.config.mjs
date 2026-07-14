@@ -58,6 +58,35 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
 
+  // Prevent Hostinger CDN from caching HTML for 1 year while CSS hashes change on each deploy.
+  // Stale HTML → missing /_next/static/css/<old-hash>.css → server returns text/html → browser drops CSS.
+  async headers() {
+    return [
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+        ],
+      },
+    ]
+  },
+
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
