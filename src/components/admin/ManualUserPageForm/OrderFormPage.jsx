@@ -709,14 +709,14 @@ export default function OrderFormPage({
                       <div className="md:col-span-2">
                         <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded text-sm">
                           <span className="text-gray-500">Price:</span>{' '}
-                          <span className="font-medium">₹{price}</span>
+                          <span className="font-medium">${price}</span>
                         </div>
                       </div>
 
                       <div className="md:col-span-1">
                         <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded text-sm">
                           <span className="text-gray-500">Total:</span>{' '}
-                          <span className="font-medium">₹{lineTotal}</span>
+                          <span className="font-medium">${lineTotal}</span>
                         </div>
                       </div>
 
@@ -738,29 +738,29 @@ export default function OrderFormPage({
               <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
                 <div className="flex justify-end gap-4 text-sm">
                   <span className="text-gray-600">Product Subtotal:</span>
-                  <span className="font-medium">₹{productSubtotal}</span>
+                  <span className="font-medium">${productSubtotal}</span>
                 </div>
                 <div className="flex justify-end gap-4 text-sm">
                   <span className="text-gray-600">Shipping Cost:</span>
                   <span className="font-medium">
-                    ₹{Number(shippingCostValue) || 0}
+                    ${Number(shippingCostValue) || 0}
                   </span>
                 </div>
                 <div className="flex justify-end gap-4 text-base font-semibold text-cyan-700">
                   <span>Order Total:</span>
-                  <span>₹{orderTotal}</span>
+                  <span>${orderTotal}</span>
                 </div>
                 {paid > 0 && (
                   <>
                     <div className="flex justify-end gap-4 text-sm">
                       <span className="text-gray-600">Paid Amount:</span>
                       <span className="font-medium text-green-600">
-                        ₹{paid}
+                        ${paid}
                       </span>
                     </div>
                     <div className="flex justify-end gap-4 text-base font-semibold text-orange-600">
                       <span>Remaining:</span>
-                      <span>₹{remainingAmount}</span>
+                      <span>${remainingAmount}</span>
                     </div>
                   </>
                 )}

@@ -59,7 +59,7 @@ export default function AdminDashboard() {
       columnHelper.accessor('total', {
         header: 'Total Price',
         enableSorting: false,
-        cell: (info) => `₹${info.getValue()}`,
+        cell: (info) => `$${info.getValue()}`,
       }),
       columnHelper.accessor('status', {
         header: 'Status',
@@ -115,7 +115,7 @@ export default function AdminDashboard() {
     },
     {
       title: 'Total Purchased Money',
-      value: `₹ ${adminDashboard?.totalPurchasedMoney?.toFixed(2) || '0.00'}`,
+      value: `$ ${adminDashboard?.totalPurchasedMoney?.toFixed(2) || '0.00'}`,
       bgColor: 'bg-blue-800',
       textColor: 'text-white',
       icon: <ChartBarIcon className="h-8 w-8" />,
@@ -340,7 +340,7 @@ export default function AdminDashboard() {
                             {product.name}
                           </p>
                           <p className="text-sm font-semibold text-gray-900 mt-1">
-                            ₹{product.price}
+                            ${product.price}
                           </p>
                         </div>
                       </div>

@@ -8,10 +8,14 @@ import { useRouter } from 'next/navigation'
 
 import { FormAdminInputRow } from '../AdminInputRow'
 
+// Matches GoldAPI price_gram_* carats saved by backend
+const VALID_CARATS = [24, 22, 21, 20, 18, 16, 14, 10]
+
 const goldSchema = yup.object({
   carat: yup
     .number()
     .typeError('Carat must be a number')
+    .oneOf(VALID_CARATS, 'Carat must be one of: 24, 22, 21, 20, 18, 16, 14, 10')
     .required('Carat is required'),
 
   pricePerGram: yup
@@ -66,7 +70,7 @@ export default function GoldFormPage({
 
             <FormAdminInputRow
               name="pricePerGram"
-              label="Price Per Gram"
+              label="Price Per Gram (USD)"
               type="number"
               step="0.01"
               required

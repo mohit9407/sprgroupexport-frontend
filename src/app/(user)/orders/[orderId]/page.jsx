@@ -327,7 +327,7 @@ export default function OrderDetailsPage() {
                               )}
                             </div>
                             <p className="text-sm font-medium text-gray-900">
-                              ₹{(product.price || 0).toFixed(2)}
+                              ${(product.price || 0).toFixed(2)}
                             </p>
                           </div>
                           <div className="mt-2 flex-1 flex items-end justify-between">
@@ -335,7 +335,7 @@ export default function OrderDetailsPage() {
                               Qty: {item.quantity || 1}
                             </p>
                             <p className="text-sm font-medium text-gray-900">
-                              Total: ₹
+                              Total: $
                               {(
                                 (item.quantity || 1) * (product.price || 0)
                               ).toFixed(2)}
@@ -538,7 +538,7 @@ export default function OrderDetailsPage() {
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-500">Subtotal</span>
                     <span className="text-sm font-medium text-gray-900">
-                      ₹
+                      $
                       {(
                         order.total +
                         (order.discount || 0) -
@@ -551,14 +551,14 @@ export default function OrderDetailsPage() {
                     <span className="text-sm font-medium text-gray-900">
                       {order.shippingCost === 0
                         ? 'Free'
-                        : `₹${order.shippingCost?.toFixed(2) || '0.00'}`}
+                        : `$${order.shippingCost?.toFixed(2) || '0.00'}`}
                     </span>
                   </div>
                   {order.discount > 0 && (
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-500">Discount</span>
                       <span className="text-sm font-medium text-red-600">
-                        -₹{order.discount?.toFixed(2) || '0.00'}
+                        -${order.discount?.toFixed(2) || '0.00'}
                       </span>
                     </div>
                   )}
@@ -568,7 +568,7 @@ export default function OrderDetailsPage() {
                         Total
                       </span>
                       <span className="text-base font-bold text-gray-900">
-                        ₹{order.total?.toFixed(2) || '0.00'}
+                        ${order.total?.toFixed(2) || '0.00'}
                       </span>
                     </div>
                   </div>

@@ -43,18 +43,18 @@ export default function OrderSummary({
   const summaryItems = [
     {
       label: 'Subtotal',
-      value: `₹${subtotal.toLocaleString()}`,
+      value: `$${subtotal.toLocaleString()}`,
     },
     {
       label: `Discount${isFirstOrder ? ' (5% First Order)' : ''}`,
-      value: `-₹${discount.toLocaleString()}`,
+      value: `-$${discount.toLocaleString()}`,
       isDiscount: true,
     },
     {
       label: 'Shipping Cost',
       value:
         shippingCost > 0
-          ? `₹${Number(shippingCost).toLocaleString('en-IN')}`
+          ? `$${Number(shippingCost).toLocaleString('en-US')}`
           : 'FREE',
     },
   ]
@@ -88,7 +88,7 @@ export default function OrderSummary({
               <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
             </div>
             <div className="text-sm font-medium text-gray-900">
-              ₹{(item.price * item.quantity).toLocaleString('en-IN')}
+              ${(item.price * item.quantity).toLocaleString('en-US')}
             </div>
           </div>
         ))}
@@ -111,7 +111,7 @@ export default function OrderSummary({
         <div className="flex justify-between items-center">
           <span className="font-bold text-base">Total</span>
           <span className="text-[#c89b5a] text-xl font-bold">
-            ₹{total.toLocaleString('en-IN')}
+            ${total.toLocaleString('en-US')}
           </span>
         </div>
       </div>
@@ -119,7 +119,7 @@ export default function OrderSummary({
       <div className="border-t border-gray-200 pt-4 mt-4">
         <div className="flex justify-between text-lg font-semibold">
           <span>Order Total</span>
-          <span>₹{total.toLocaleString('en-IN')}</span>
+          <span>${total.toLocaleString('en-US')}</span>
         </div>
       </div>
 

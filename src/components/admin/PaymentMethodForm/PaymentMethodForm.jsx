@@ -20,6 +20,7 @@ export default function PaymentMethodForm({
 
   const [isPayPal, setIsPayPal] = useState(false)
   const [isRazorpay, setIsRazorpay] = useState(false)
+  const [isSkydo, setIsSkydo] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     environment: 'SANDBOX', // Default to SANDBOX
@@ -31,6 +32,8 @@ export default function PaymentMethodForm({
     testClientSecret: '',
     testKeyId: '',
     testKeySecret: '',
+    skydoToken: '',
+    skydoSecretKey: '',
   })
   useEffect(() => {
     if (isEdit && initialData && !formData.name) {
@@ -38,8 +41,10 @@ export default function PaymentMethodForm({
       const isRazorpayMethod = initialData.name
         ?.toLowerCase()
         .includes('razorpay')
+      const isSkydoMethod = initialData.name?.toLowerCase().includes('skydo')
       setIsPayPal(isPayPalMethod)
       setIsRazorpay(isRazorpayMethod)
+      setIsSkydo(isSkydoMethod)
 
       setFormData({
         name: initialData.name || '',
@@ -52,6 +57,8 @@ export default function PaymentMethodForm({
         clientSecret: initialData.clientSecret || '',
         testClientId: initialData.testClientId || '',
         testClientSecret: initialData.testClientSecret || '',
+        skydoToken: initialData.skydoToken || '',
+        skydoSecretKey: initialData.skydoSecretKey || '',
       })
     }
   }, [initialData, isEdit])
@@ -64,12 +71,14 @@ export default function PaymentMethodForm({
         [name]: type === 'checkbox' ? checked : value,
       }
 
-      // Update isPayPal/isRazorpay state when name changes
+      // Update isPayPal/isRazorpay/isSkydo state when name changes
       if (name === 'name') {
         const isPayPalMethod = value.toLowerCase().includes('paypal')
         const isRazorpayMethod = value.toLowerCase().includes('razorpay')
+        const isSkydoMethod = value.toLowerCase().includes('skydo')
         setIsPayPal(isPayPalMethod)
         setIsRazorpay(isRazorpayMethod)
+        setIsSkydo(isSkydoMethod)
       }
 
       if (name === 'environment') {
@@ -110,26 +119,43 @@ export default function PaymentMethodForm({
     try {
       const isPayPalMethod = formData.name.toLowerCase().includes('paypal')
       const isRazorpayMethod = formData.name.toLowerCase().includes('razorpay')
+      const isSkydoMethod = formData.name.toLowerCase().includes('skydo')
       const payload = { ...formData }
 
       if (isPayPalMethod) {
         // For PayPal, keep clientId/clientSecret and testClientId/testClientSecret
         delete payload.keyId
         delete payload.keySecret
+        delete payload.skydoToken
+        delete payload.skydoSecretKey
       } else if (isRazorpayMethod) {
         // For Razorpay, keep keyId/keySecret and testKeyId/testKeySecret
         delete payload.clientId
         delete payload.clientSecret
         delete payload.testClientId
         delete payload.testClientSecret
-      } else {
-        // For non-PayPal/non-Razorpay, keep keyId/keySecret
+        delete payload.skydoToken
+        delete payload.skydoSecretKey
+      } else if (isSkydoMethod) {
+        // For Skydo, keep skydoToken/skydoSecretKey
+        delete payload.keyId
+        delete payload.keySecret
         delete payload.clientId
         delete payload.clientSecret
         delete payload.testClientId
         delete payload.testClientSecret
         delete payload.testKeyId
         delete payload.testKeySecret
+      } else {
+        // For non-PayPal/non-Razorpay/non-Skydo, keep keyId/keySecret
+        delete payload.clientId
+        delete payload.clientSecret
+        delete payload.testClientId
+        delete payload.testClientSecret
+        delete payload.testKeyId
+        delete payload.testKeySecret
+        delete payload.skydoToken
+        delete payload.skydoSecretKey
       }
 
       if (isEdit) {
@@ -344,6 +370,41 @@ export default function PaymentMethodForm({
                     </div>
                   )}
                 </>
+              ) : isSkydo ? (
+                <div className="space-y-4">
+                  <AdminInputRow
+                    label="Skydo Token"
+                    name="skydoToken"
+                    value={formData.skydoToken || ''}
+                    onChange={(e) =>
+                      handleChange({
+                        target: {
+                          name: 'skydoToken',
+                          value: e.target.value,
+                        },
+                      })
+                    }
+                    required
+                    placeholder="Enter Skydo token"
+                    className="w-full"
+                  />
+                  <AdminInputRow
+                    label="Skydo Secret Key"
+                    name="skydoSecretKey"
+                    value={formData.skydoSecretKey || ''}
+                    onChange={(e) =>
+                      handleChange({
+                        target: {
+                          name: 'skydoSecretKey',
+                          value: e.target.value,
+                        },
+                      })
+                    }
+                    required
+                    placeholder="Enter Skydo secret key"
+                    className="w-full"
+                  />
+                </div>
               ) : (
                 <div className="space-y-4">
                   <AdminInputRow

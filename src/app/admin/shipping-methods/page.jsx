@@ -54,7 +54,7 @@ const ShippingMethodsTableContent = () => {
     columnHelper.accessor('price', {
       header: 'Price',
       enableSorting: true,
-      cell: (info) => `₹ ${info.getValue()}`,
+      cell: (info) => `$ ${info.getValue()}`,
     }),
 
     columnHelper.accessor('status', {

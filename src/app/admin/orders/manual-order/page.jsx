@@ -94,7 +94,7 @@ export default function ManualOrderPage() {
   const shippingMethodOptions = useMemo(
     () =>
       (shippingMethods || []).map((m) => ({
-        label: `${m.name}${m.price != null ? ` (₹${m.price})` : ''}`,
+        label: `${m.name}${m.price != null ? ` ($${m.price})` : ''}`,
         value: m._id,
         price: m.price,
       })),
@@ -131,7 +131,7 @@ export default function ManualOrderPage() {
   const productSelectOptions = useMemo(
     () =>
       (productOptions || []).map((p) => ({
-        label: `${p.productName || p.name || p.title || p._id}${p.price ? ` (₹${p.price})` : ''}`,
+        label: `${p.productName || p.name || p.title || p._id}${p.price ? ` ($${p.price})` : ''}`,
         value: p._id,
         price: p.price,
       })),

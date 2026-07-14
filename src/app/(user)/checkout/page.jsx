@@ -235,6 +235,9 @@ export default function CheckoutPage() {
         const discount = isFirstOrder ? Math.round(subtotal * 0.05) : 0
         const total = subtotal + shippingCost - discount
 
+        console.log('stepData:', stepData)
+        console.log('stepData.installinkId:', stepData.installinkId)
+
         const orderData = {
           user: user?._id,
           shippingMethod: formData.shippingMethod?._id,
@@ -251,7 +254,10 @@ export default function CheckoutPage() {
           total: total,
           discountReason: isFirstOrder ? 'first_order_5_percent' : null,
           comments: stepData.orderNotes || '',
+          installinkId: stepData.installinkId || null,
         }
+
+        console.log('orderData:', orderData)
 
         // Dispatch the createOrder action
         const result = await dispatch(createOrder(orderData))
@@ -272,6 +278,34 @@ export default function CheckoutPage() {
 
         if (createOrder.fulfilled.match(result)) {
           console.log('Order created successfully:', result.payload)
+
+          // Check if this is a Skydo order and send email notification
+          if (stepData.isSkydoOrder) {
+            try {
+              const skydoPaymentLink = JSON.parse(
+                localStorage.getItem('skydoPaymentLink') || '{}',
+              )
+
+              await api.post('/orders/send-skydo-email', {
+                orderId: result.payload._id || result.payload.id,
+                userEmail: user?.email,
+                userName: user?.name || shippingAddress?.fullName,
+                paymentLink: skydoPaymentLink.paymentLink,
+                orderDetails: {
+                  orderNumber:
+                    result.payload.orderNumber || `ORD-${Date.now()}`,
+                  totalAmount: total,
+                  items: products,
+                },
+              })
+
+              // Clear Skydo payment link from localStorage
+              localStorage.removeItem('skydoPaymentLink')
+            } catch (emailError) {
+              console.error('Error sending Skydo email:', emailError)
+              // Don't block order creation if email fails
+            }
+          }
 
           toast.success('Order created successfully! 🎉')
 

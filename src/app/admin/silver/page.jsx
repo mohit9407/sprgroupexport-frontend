@@ -12,13 +12,22 @@ import { useDispatch, useSelector } from 'react-redux'
 
 const columnHelper = createColumnHelper()
 
+const formatPricePerGram = (value) => {
+  const amount = Number(value)
+  if (Number.isNaN(amount)) return '—'
+  return `$${amount.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}/g`
+}
+
 function SilverTableContent() {
   const dispatch = useDispatch()
   const router = useRouter()
   const silverState = useSelector((state) => state?.silver || {})
-  const { data, loadning, error } = silverState || {
+  const { data, loading, error } = silverState || {
     data: [],
-    loadning: false,
+    loading: false,
     error: null,
   }
 
@@ -31,24 +40,38 @@ function SilverTableContent() {
     dispatch(fetchSilver())
   }, [dispatch])
 
+  const tableData = useMemo(() => {
+    const list = Array.isArray(data) ? data : []
+    return [...list].sort((a, b) => (b.purity || 0) - (a.purity || 0))
+  }, [data])
+
   const columns = useMemo(
     () => [
-      columnHelper.accessor('_id', {
-        header: 'ID',
-        enableSorting: false,
-      }),
       columnHelper.accessor('purity', {
         header: 'Purity',
         enableSorting: false,
+        cell: (info) => {
+          const purity = info.getValue()
+          return purity != null ? purity : '—'
+        },
       }),
       columnHelper.accessor('pricePerGram', {
         header: 'Price Per Gram',
         enableSorting: false,
         cell: (info) => (
-          <p className="max-w-md text-sm text-gray-700 line-clamp-3">
-            {info.getValue()}
+          <p className="max-w-md text-sm text-gray-700">
+            {formatPricePerGram(info.getValue())}
           </p>
         ),
+      }),
+      columnHelper.accessor('updatedAt', {
+        header: 'Last Updated',
+        enableSorting: false,
+        cell: (info) => {
+          const value = info.getValue()
+          if (!value) return '—'
+          return new Date(value).toLocaleString('en-US')
+        },
       }),
       columnHelper.display({
         id: 'actions',
@@ -117,8 +140,8 @@ function SilverTableContent() {
 
       <TanstackTable
         columns={columns}
-        data={data || []}
-        isLoading={loadning}
+        data={tableData}
+        isLoading={loading}
         mode="server"
       />
 
