@@ -1,22 +1,11 @@
 'use client'
 
-import { useEffect, useState, useRef, useMemo } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 
 /**
- * StickyBackgroundSections Component
- *
- * @param {Object} props
- * @param {Array} props.sections - Array of section objects
- * @param {string} props.sections[].id - Unique identifier for the section
- * @param {string} props.sections[].bg - Background image URL
- * @param {string} props.sections[].title - Section title
- * @param {string} props.sections[].description - Section description
- * @param {string} [props.sections[].buttonText] - Optional button text
- * @param {Function} [props.onButtonClick] - Optional click handler for the button
- * @param {string} [props.overlayClass] - Optional custom class for the overlay div
- * @param {string} [props.sectionClass] - Optional custom class for each section
- * @returns {JSX.Element}
+ * Banner section with background image scoped to the section.
+ * Avoids position:fixed on the viewport (that covered Hero / whole homepage).
  */
 export default function StickyBackgroundSections({
   sections = [],
@@ -25,151 +14,98 @@ export default function StickyBackgroundSections({
   sectionClass = '',
 }) {
   const router = useRouter()
-  // Memoize sections array to prevent unnecessary recalculations
   const sectionsArray = useMemo(
-    () => (Array.isArray(sections) ? sections : [sections]),
+    () => (Array.isArray(sections) ? sections : [sections]).filter(Boolean),
     [sections],
   )
 
-  // Set initial background from the first section
-  const [activeBg, setActiveBg] = useState(() => {
-    const firstSection = Array.isArray(sections) ? sections[0] : sections
-    return firstSection?.bg || ''
-  })
   const [bgLoaded, setBgLoaded] = useState(false)
   const [hoveredSection, setHoveredSection] = useState(null)
 
   const handleButtonClick = (section) => {
-    // Call the provided onClick handler if it exists
     if (onButtonClick) {
       onButtonClick(section)
     }
-
-    // If the section has a route, navigate to it
     if (section.route) {
       router.push(section.route)
     }
   }
-  const observerRef = useRef(null)
 
-  // Preload all background images and set up observer
   useEffect(() => {
-    if (sectionsArray.length === 0) return
+    if (sectionsArray.length === 0) {
+      setBgLoaded(true)
+      return
+    }
 
-    // Preload all background images
+    let cancelled = false
     const imagePromises = sectionsArray.map((section) => {
-      if (section?.bg) {
-        return new Promise((resolve) => {
-          const img = new Image()
-          img.src = section.bg
-          img.onload = () => resolve()
-          img.onerror = () => resolve() // Resolve even if image fails to load
-        })
-      }
-      return Promise.resolve()
+      if (!section?.bg) return Promise.resolve()
+      return new Promise((resolve) => {
+        const img = new Image()
+        img.src = section.bg
+        img.onload = () => resolve()
+        img.onerror = () => resolve()
+      })
     })
 
     Promise.all(imagePromises).then(() => {
-      setBgLoaded(true)
+      if (!cancelled) setBgLoaded(true)
     })
 
-    // Cleanup previous observer if it exists
-    if (observerRef.current) {
-      observerRef.current.disconnect()
-    }
-
-    const handleIntersection = (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const bg = entry.target.dataset.bg
-          if (bg) {
-            setActiveBg(bg)
-          }
-        }
-      })
-    }
-
-    // Create new observer
-    observerRef.current = new IntersectionObserver(handleIntersection, {
-      threshold: 0.5,
-      rootMargin: '0px',
-    })
-
-    // Observe all sections with data-bg attribute
-    const sectionElements = document.querySelectorAll('[data-bg]')
-    sectionElements.forEach((section) => observerRef.current.observe(section))
-
-    // Cleanup function
     return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect()
-      }
+      cancelled = true
     }
-  }, [sectionsArray]) // Removed activeBg from dependencies
+  }, [sectionsArray])
 
   if (sectionsArray.length === 0) {
-    return <div>No sections provided</div>
-  }
-
-  if (!bgLoaded) {
-    return (
-      <div className="fixed inset-0 bg-gray-100 flex items-center justify-center">
-        <div className="animate-pulse text-gray-500">Loading...</div>
-      </div>
-    )
+    return null
   }
 
   return (
-    <div className="relative h-[500px]">
-      {/* Sticky Background */}
-      <div
-        className="fixed inset-0 bg-cover bg-center transition-all w-full transform-gpu"
-        style={{
-          backgroundImage: `url(${activeBg})`,
-          backgroundColor: '#E6F0F5',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          height: '100vh',
-          width: '100%',
-          position: 'fixed',
-          top: 0,
-          left: 0,
-        }}
-      >
-        <div className={`absolute inset-0 ${overlayClass}`} />
-      </div>
-
-      {/* Sections Content */}
+    <div className="relative z-0">
       {sectionsArray.map((section) => (
         <section
           key={section.id}
-          className={`w-full h-[500px] flex flex-col items-center justify-center relative px-4 ${sectionClass} group`}
-          data-bg={section.bg}
+          className={`relative w-full h-[500px] md:h-[600px] flex flex-col items-center justify-center px-4 overflow-hidden ${sectionClass} group`}
           onMouseEnter={() => setHoveredSection(section.id)}
           onMouseLeave={() => setHoveredSection(null)}
         >
-          <div className="text-center text-white w-full relative z-1">
-            <h2 className="text-7xl md:text-8xl font-bold leading-tight tracking-tight">
-              {section.title}
-            </h2>
-            <div className="relative">
-              <p className="text-[40px] md:text-3xl font-bold mt-2 mb-8">
+          <div
+            className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-500 ${
+              bgLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+            style={{
+              backgroundImage: section.bg ? `url(${section.bg})` : undefined,
+              backgroundColor: '#E6F0F5',
+            }}
+            aria-hidden
+          />
+          <div className={`absolute inset-0 ${overlayClass}`} aria-hidden />
+
+          <div className="relative z-10 text-center text-white w-full max-w-5xl mx-auto">
+            {section.title ? (
+              <h2 className="text-4xl sm:text-5xl md:text-7xl font-bold leading-tight tracking-tight drop-shadow-md">
+                {section.title}
+              </h2>
+            ) : null}
+            {section.description ? (
+              <p className="text-xl sm:text-2xl md:text-3xl font-bold mt-3 mb-8 drop-shadow-md">
                 {section.description}
               </p>
-              {section.buttonText && (
-                <button
-                  className={`absolute left-1/2 -translate-x-1/2 w-auto whitespace-nowrap bg-[#8B5A2B] hover:bg-[#6B4423] text-white font-medium py-3 px-8 rounded-md transition-all duration-300 text-lg mx-auto transform ${
-                    hoveredSection === section.id
-                      ? 'translate-y-0 opacity-100 visible'
-                      : '-translate-y-4 opacity-0 invisible'
-                  }`}
-                  onClick={() => handleButtonClick(section)}
-                >
-                  {section.buttonText}
-                </button>
-              )}
-            </div>
+            ) : null}
+            {section.buttonText ? (
+              <button
+                type="button"
+                className={`bg-[#8B5A2B] hover:bg-[#6B4423] text-white font-medium py-3 px-8 rounded-md transition-all duration-300 text-lg transform ${
+                  hoveredSection === section.id
+                    ? 'translate-y-0 opacity-100'
+                    : 'translate-y-2 opacity-90 md:opacity-0 md:invisible md:group-hover:opacity-100 md:group-hover:visible md:group-hover:translate-y-0'
+                }`}
+                onClick={() => handleButtonClick(section)}
+              >
+                {section.buttonText}
+              </button>
+            ) : null}
           </div>
         </section>
       ))}
