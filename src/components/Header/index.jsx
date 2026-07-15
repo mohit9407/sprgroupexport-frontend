@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import Link from 'next/link'
 import { fetchUserOrders } from '@/features/order/orderSlice'
+import { useAuth } from '@/context/AuthContext'
 
 // Import Components
 import NotificationBar from './components/NotificationBar'
@@ -17,6 +18,7 @@ import SafeImage from '../SafeImage'
 
 const Header = ({ settings = {} }) => {
   const dispatch = useDispatch()
+  const { user } = useAuth()
   const { userOrders = [] } = useSelector((state) => state.order)
   const [showNotification, setShowNotification] = useState(false)
   const [showCategories, setShowCategories] = useState(false)
@@ -25,16 +27,25 @@ const Header = ({ settings = {} }) => {
   const [showCatalogDropdown, setShowCatalogDropdown] = useState(false)
   const [activeSubmenu, setActiveSubmenu] = useState(null)
 
-  // Fetch user orders when component mounts
+  // Auth-only: never call orders API for guests (avoids 401 noise)
   useEffect(() => {
+    const token =
+      user?.accessToken ||
+      (typeof window !== 'undefined'
+        ? localStorage.getItem('accessToken')
+        : null)
+    if (!user || !token) return
     dispatch(fetchUserOrders())
-  }, [dispatch])
+  }, [dispatch, user])
 
-  // Update notification visibility based on order count
+  // Guest / first-order promo: show when no orders (guests always, or logged-in with 0)
   useEffect(() => {
-    // Only show notification if user has 0 orders
+    if (!user) {
+      setShowNotification(true)
+      return
+    }
     setShowNotification(userOrders.length === 0)
-  }, [userOrders.length])
+  }, [user, userOrders.length])
 
   const navItems = [
     { name: 'HOME', href: '/' },

@@ -43,6 +43,14 @@ export const createOrder = createAsyncThunk(
 export const fetchUserOrders = createAsyncThunk(
   'order/fetchUserOrders',
   async (userId, { rejectWithValue }) => {
+    // Guest / no token: skip network call (admin passes userId with their own token)
+    if (!userId) {
+      const token = getAuthToken()
+      if (!token) {
+        return []
+      }
+    }
+
     try {
       const response = userId
         ? await getOrdersByUserId(userId)
@@ -50,10 +58,13 @@ export const fetchUserOrders = createAsyncThunk(
       // Sort orders by creation date (newest first)
       return sortByCreatedAtDesc(response.data || [])
     } catch (error) {
-      console.error('Error fetching user orders:', error)
-      return rejectWithValue(
-        error.response?.data?.message || 'Failed to fetch orders',
-      )
+      const status = error.response?.status
+      const message = error.response?.data?.message || 'Failed to fetch orders'
+      // Expected for expired session — don't spam console as hard error
+      if (status !== 401 && status !== 403) {
+        console.error('Error fetching user orders:', error)
+      }
+      return rejectWithValue(message)
     }
   },
 )

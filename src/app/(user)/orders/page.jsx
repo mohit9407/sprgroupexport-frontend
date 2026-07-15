@@ -47,7 +47,13 @@ export default function OrdersPage() {
 
   useEffect(() => {
     const id = setTimeout(() => setIsClient(true), 0)
-    dispatch(fetchUserOrders())
+    const token =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('accessToken') || localStorage.getItem('token')
+        : null
+    if (token) {
+      dispatch(fetchUserOrders())
+    }
     if (products.length === 0) {
       dispatch(fetchProducts({ limit: 1000 }))
     }
