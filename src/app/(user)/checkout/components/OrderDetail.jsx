@@ -236,14 +236,14 @@ export default function OrderDetail({
           return
         }
 
-        // Call Skydo API to create payment link
+        // Call Skydo API to create payment link (payload matches Skydo dashboard create-payment-link)
         const skydoResponse = await skydoService.createSkydoPaymentLink({
           clientName: user?.name || shippingAddress?.fullName || 'Customer',
           country: shippingAddress?.country || 'United States',
           currency: 'USD',
           invoiceAmount: totalAmount,
-          invoiceNumber: `ORD-${Date.now()}`,
-          description: `Order for ${displayItems.map((item) => item.name).join(', ')}`,
+          invoiceNumber: '',
+          description: '',
           allowedMethods: ['ACH_DEBIT'],
         })
 
