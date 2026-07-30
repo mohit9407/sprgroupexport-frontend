@@ -13,6 +13,8 @@ const SignupForm = ({
   handleSubmit,
   showPassword,
   setShowPassword,
+  showConfirmPassword,
+  setShowConfirmPassword,
 }) => {
   return (
     <>
@@ -91,8 +93,8 @@ const SignupForm = ({
           touched={touched.confirmPassword}
           disabled={loading}
           showPasswordToggle
-          showPassword={showPassword}
-          onTogglePassword={() => setShowPassword(!showPassword)}
+          showPassword={showConfirmPassword}
+          onTogglePassword={() => setShowConfirmPassword(!showConfirmPassword)}
         />
 
         <div>

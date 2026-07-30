@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useAuth } from '@/context/AuthContext'
 
 export default function AdminHeader({
   title = 'Admin',
@@ -10,6 +11,7 @@ export default function AdminHeader({
   onToggleSidebar,
 }) {
   const [open, setOpen] = useState(false)
+  const { logout } = useAuth()
 
   return (
     <header className="sticky top-0 z-40 w-full bg-sky-700 text-white shadow">
@@ -63,11 +65,18 @@ export default function AdminHeader({
                   Dashboard
                 </Link>
                 <Link
-                  href="/login"
+                  href="/admin/account"
                   className="block px-3 py-2 hover:bg-gray-100"
                 >
-                  Logout
+                  Account Settings
                 </Link>
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="block w-full px-3 py-2 text-left hover:bg-gray-100"
+                >
+                  Logout
+                </button>
               </div>
             )}
           </div>

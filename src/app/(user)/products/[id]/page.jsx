@@ -134,6 +134,17 @@ export default function ProductDetails() {
       return false
     }
 
+    const availableStock = product.stock ?? 0
+    if (availableStock <= 0) {
+      toast.error('This product is out of stock')
+      return false
+    }
+
+    if (quantity > availableStock) {
+      toast.error(`Only ${availableStock} item(s) available in stock`)
+      return false
+    }
+
     try {
       setIsAddingToCart(true)
 
@@ -175,6 +186,17 @@ export default function ProductDetails() {
 
     if (!product || !product._id) {
       toast.error('Product information is not available')
+      return
+    }
+
+    const availableStock = product.stock ?? 0
+    if (availableStock <= 0) {
+      toast.error('This product is out of stock')
+      return
+    }
+
+    if (quantity > availableStock) {
+      toast.error(`Only ${availableStock} item(s) available in stock`)
       return
     }
 
@@ -262,6 +284,33 @@ export default function ProductDetails() {
     )
   }
 
+  const availableStock = product?.stock ?? 0
+
+  const goldColorKt = [product?.color, product?.carat && `${product.carat}K`]
+    .filter(Boolean)
+    .join(' / ')
+
+  const detailRows = [
+    { label: 'Gold Color / KT', value: goldColorKt },
+    { label: 'Diamond Colour / KT', value: product?.diamondCarat },
+    { label: 'Gemstone KT', value: product?.gemstoneKt },
+    { label: 'Size', value: product?.productDetails?.size || product?.size },
+    {
+      label: 'Total Weight',
+      value: product?.productDetails?.totalMetalWeight,
+    },
+    { label: 'Material', value: product?.productDetails?.materialType },
+    { label: 'Metal Type', value: product?.productDetails?.metalType },
+    {
+      label: 'Country of Origin',
+      value: product?.productDetails?.countryOfOrigin,
+    },
+    {
+      label: 'Occasions',
+      value: product?.productDetails?.occasionType?.join(', '),
+    },
+  ].filter((row) => row.value)
+
   return (
     <div className="bg-white min-h-screen">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
@@ -347,34 +396,31 @@ export default function ProductDetails() {
               </div>
             )}
 
-            {/* Color and Size Selection - Side by Side */}
-            <div className="grid grid-cols-2 gap-6 mb-6">
-              {/* Color Selection */}
-              <div>
-                <h3 className="text-sm font-medium text-gray-900 mb-2">
-                  Color
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  <p className="text-sm text-gray-600">{product?.color}</p>
-                </div>
-              </div>
-
-              {/* Size Selection */}
-              <div>
-                <h3 className="text-sm font-medium text-gray-900 mb-2">Size</h3>
-                <div className="flex flex-wrap gap-2">
-                  <p className="text-sm text-gray-600">{product?.size}</p>
-                </div>
-              </div>
-            </div>
+            {/* Product Specifications */}
+            {detailRows.length > 0 && (
+              <dl className="mb-6 divide-y divide-gray-200 border-y border-gray-200 text-sm">
+                {detailRows.map((row) => (
+                  <div
+                    key={row.label}
+                    className="flex flex-col gap-1 py-2 sm:flex-row sm:gap-4"
+                  >
+                    <dt className="text-gray-600 sm:w-52 sm:shrink-0">
+                      {row.label}
+                    </dt>
+                    <dd className="font-medium text-gray-900">{row.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
 
             {/* Quantity Selector */}
-            <div className="flex items-center mb-6">
+            <div className="flex items-center mb-2">
               <span className="mr-4 font-medium text-gray-700">Quantity:</span>
               <div className="flex items-center border border-gray-300 rounded">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 cursor-pointer"
+                  disabled={quantity <= 1}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   -
                 </button>
@@ -383,14 +429,27 @@ export default function ProductDetails() {
                 </span>
                 <button
                   onClick={() => {
+                    if (quantity >= availableStock) {
+                      toast.error(
+                        `Only ${availableStock} item(s) available in stock`,
+                      )
+                      return
+                    }
                     setQuantity(quantity + 1)
                   }}
-                  className={`px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 cursor-pointer`}
+                  disabled={quantity >= availableStock}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   +
                 </button>
               </div>
             </div>
+
+            <p className="mb-6 text-sm text-gray-500">
+              {availableStock > 0
+                ? `${availableStock} in stock`
+                : 'Out of stock'}
+            </p>
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -454,51 +513,17 @@ export default function ProductDetails() {
               <div className="text-gray-700 text-sm p-4">
                 {activeTab === 'details' ? (
                   <div className="space-y-4">
-                    {product?.productDetails && (
-                      <div className="mt-6">
-                        <h4 className="text-lg font-medium text-gray-900 mb-3">
-                          Product Details
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {product.productDetails.totalMetalWeight && (
-                            <div>
-                              <span className="text-gray-600">
-                                Total Weight:{' '}
-                              </span>
-                              <span className="font-medium">
-                                {product.productDetails.totalMetalWeight}
-                              </span>
-                            </div>
-                          )}
-                          {product.productDetails.materialType && (
-                            <div>
-                              <span className="text-gray-600">Material: </span>
-                              <span className="font-medium">
-                                {product.productDetails.materialType}
-                              </span>
-                            </div>
-                          )}
-                          {product.productDetails.metalType && (
-                            <div>
-                              <span className="text-gray-600">
-                                Metal Type:{' '}
-                              </span>
-                              <span className="font-medium">
-                                {product.productDetails.metalType}
-                              </span>
-                            </div>
-                          )}
-                          {product.productDetails.occasionType?.length > 0 && (
-                            <div className="md:col-span-2">
-                              <span className="text-gray-600">Occasions: </span>
-                              <span className="font-medium">
-                                {product.productDetails.occasionType.join(', ')}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
+                    <div className="mt-6">
+                      <h4 className="text-lg font-medium text-gray-900 mb-3">
+                        Product Details
+                      </h4>
+
+                      {product?.description && (
+                        <p className="text-gray-600 leading-relaxed whitespace-pre-line">
+                          {product.description}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-6">

@@ -53,6 +53,26 @@ const changePassword = async ({ oldPassword, newPassword }) => {
   return response.data
 }
 
+const changeAdminEmail = async ({ currentPassword, newEmail }) => {
+  const token = getAuthToken()
+  if (!token) {
+    throw new Error('No authentication token found')
+  }
+
+  const response = await api.put(
+    '/auth/admin/change-email',
+    { currentPassword, newEmail },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    },
+  )
+
+  return response.data
+}
+
 const guestLogin = async (email) => {
   const response = await api.post('/auth/guest/request-otp', { email })
   return response
@@ -83,6 +103,7 @@ export const authService = {
   resetPassword,
   resendOTP,
   changePassword,
+  changeAdminEmail,
   resendGuestOTP,
   manualUserCreateByAdmin,
 }

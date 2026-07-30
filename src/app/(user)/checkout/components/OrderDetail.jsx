@@ -14,6 +14,7 @@ export default function OrderDetail({
   isLoading,
   shippingAddress,
   shippingMethod,
+  orderTotal: orderTotalProp,
 }) {
   const { cart, removeFromCart, updateQuantity } = useCart()
   const [paymentMethod, setPaymentMethod] = useState(initialPaymentMethod)
@@ -28,11 +29,13 @@ export default function OrderDetail({
 
   const shippingCost = Number(shippingMethod?.price) || 0
 
-  // Calculate order total
+  // Prefer parent total (same as orderData.total); fallback only if prop missing
   const orderTotal =
-    displayItems.reduce((total, item) => {
-      return total + item.price * (item.quantity || 1)
-    }, 0) + shippingCost
+    typeof orderTotalProp === 'number'
+      ? orderTotalProp
+      : displayItems.reduce((total, item) => {
+          return total + item.price * (item.quantity || 1)
+        }, 0) + shippingCost
 
   // Fetch payment methods from API
   useEffect(() => {
@@ -217,12 +220,6 @@ export default function OrderDetail({
     if (paymentMethod?.toLowerCase() === 'skydo') {
       try {
         const user = JSON.parse(localStorage.getItem('user'))
-        const shippingCost = Number(shippingMethod?.price) || 0
-
-        const totalAmount =
-          displayItems.reduce((total, item) => {
-            return total + item.price * (item.quantity || 1)
-          }, 0) + shippingCost
 
         // Find Skydo payment method ID
         const skydoMethodId = paymentMethods.find(
@@ -236,12 +233,12 @@ export default function OrderDetail({
           return
         }
 
-        // Call Skydo API to create payment link (payload matches Skydo dashboard create-payment-link)
+        // invoiceAmount = same value as orderData.total from checkout page
         const skydoResponse = await skydoService.createSkydoPaymentLink({
           clientName: user?.name || shippingAddress?.fullName || 'Customer',
           country: shippingAddress?.country || 'United States',
           currency: 'USD',
-          invoiceAmount: totalAmount,
+          invoiceAmount: orderTotal,
           invoiceNumber: '',
           description: '',
           allowedMethods: ['ACH_DEBIT'],

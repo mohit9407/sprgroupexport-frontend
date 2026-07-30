@@ -148,7 +148,7 @@ function GoldTableContent() {
         <div>
           <h1 className="text-2xl font-semibold">List Of All Gold Data</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Live rates from GoldAPI (price_gram_24k … price_gram_10k)
+            GoldAPI rates including 18% GST and 1% charge
             {currency ? ` · ${currency}` : ''}
           </p>
         </div>

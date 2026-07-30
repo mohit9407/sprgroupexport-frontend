@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
-import { toast } from 'react-hot-toast'
+import { toast } from '@/utils/toastConfig'
 import {
   registerUser,
   resetAuthState,
@@ -19,7 +19,7 @@ const AuthForm = ({ isLogin = false }) => {
   const [activeTab, setActiveTab] = useState(isLogin ? 'login' : 'signup')
   const dispatch = useDispatch()
   const router = useRouter()
-  const { loading, error, success } = useSelector((state) => state.auth)
+  const { loading, success } = useSelector((state) => state.auth)
 
   const [loginData, setLoginData] = useState({
     email: '',
@@ -36,6 +36,7 @@ const AuthForm = ({ isLogin = false }) => {
   })
 
   const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [formErrors, setFormErrors] = useState({})
   const [touched, setTouched] = useState({})
   const { login } = useAuth()
@@ -85,18 +86,6 @@ const AuthForm = ({ isLogin = false }) => {
       successRef.current = false
     }
   }, [success])
-
-  useEffect(() => {
-    if (!error) return
-
-    if (typeof error === 'string') {
-      toast.error(error)
-    } else if (typeof error === 'object') {
-      Object.values(error).forEach((msg) => {
-        toast.error(msg)
-      })
-    }
-  }, [error])
 
   const validate = (values, isLogin) => {
     return validateAuthForm(values, isLogin)
@@ -159,16 +148,13 @@ const AuthForm = ({ isLogin = false }) => {
           toast.success('Login successful!')
         }
       } catch (err) {
-        const backendErrors =
-          err?.response?.data?.errors || err?.response?.data?.message
-
-        if (backendErrors && typeof backendErrors === 'object') {
-          setFormErrors(backendErrors)
-        } else if (typeof backendErrors === 'string') {
-          toast.error(backendErrors)
-        } else {
-          toast.error('Registration failed')
-        }
+        const message =
+          typeof err === 'string'
+            ? err
+            : Array.isArray(err)
+              ? err.join(', ')
+              : err?.message || 'Login failed'
+        toast.error(message)
       }
     }
   }
@@ -190,9 +176,15 @@ const AuthForm = ({ isLogin = false }) => {
       const { confirmPassword, agreeTerms, ...registrationData } = signupData
       try {
         await dispatch(registerUser(registrationData)).unwrap()
-        toast.success('Account created successfull!')
-      } catch (error) {
-        console.error('Registration failed:', error)
+        toast.success('Account created successfully!')
+      } catch (err) {
+        const message =
+          typeof err === 'string'
+            ? err
+            : Array.isArray(err)
+              ? err.join(', ')
+              : err?.message || 'Registration failed'
+        toast.error(message)
       }
     }
   }
@@ -226,6 +218,8 @@ const AuthForm = ({ isLogin = false }) => {
               handleSubmit={handleSignup}
               showPassword={showPassword}
               setShowPassword={setShowPassword}
+              showConfirmPassword={showConfirmPassword}
+              setShowConfirmPassword={setShowConfirmPassword}
             />
           )}
         </div>

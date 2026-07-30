@@ -99,6 +99,11 @@ export default function AdminDashboard() {
         header: 'Email',
         enableSorting: false,
       }),
+      columnHelper.accessor('phone', {
+        header: 'Phone',
+        enableSorting: false,
+        cell: (info) => info.getValue() || '-',
+      }),
     ],
     [],
   )

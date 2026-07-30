@@ -2,6 +2,17 @@ import next from "@next/eslint-plugin-next"
 import prettier from "eslint-config-prettier"
 
 export default [
+  // JSX is also used inside .js files (app router pages, shared components)
+  {
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      parserOptions: {
+        ecmaFeatures: { jsx: true }
+      }
+    }
+  },
+
   // Next.js ESLint config
   {
     plugins: {

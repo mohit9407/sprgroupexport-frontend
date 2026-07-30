@@ -43,9 +43,13 @@ export default function WishlistPage() {
     }
   }, [authLoading, wishlistLoading])
 
-  const handleAddToCart = (product) => {
-    addToCart(product, 1)
-    toast.success('Added to cart!')
+  const handleAddToCart = async (product) => {
+    try {
+      await addToCart(product, 1)
+      toast.success('Added to cart!')
+    } catch (error) {
+      toast.error(error?.message || 'Failed to add item to cart')
+    }
   }
 
   const handleRemoveFromWishlist = async (productId) => {

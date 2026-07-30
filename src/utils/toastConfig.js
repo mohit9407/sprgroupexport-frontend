@@ -1,3 +1,5 @@
+'use client'
+
 import hotToast, { Toaster as HotToaster } from 'react-hot-toast'
 
 export const toast = {

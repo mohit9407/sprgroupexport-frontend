@@ -138,7 +138,7 @@ const ProductCard = ({
     [cart, id],
   )
 
-  const handleAddToCart = (e) => {
+  const handleAddToCart = async (e) => {
     e?.preventDefault?.()
     e?.stopPropagation?.()
 
@@ -152,28 +152,34 @@ const ProductCard = ({
     // If we get here, user is authenticated
     setIsAdding(true)
 
-    // Add item to cart
-    addToCart(
-      {
-        id,
-        name,
-        price,
-        image: imageUrl,
-        brand,
-      },
-      1,
-    )
+    try {
+      await addToCart(
+        {
+          id,
+          name,
+          price,
+          image: imageUrl,
+          brand,
+        },
+        1,
+      )
 
-    // Show success message
-    toast.success('Added to cart!', {
-      position: 'bottom-center',
-      duration: 2000,
-    })
+      toast.success('Added to cart!', {
+        position: 'bottom-center',
+        duration: 2000,
+      })
 
-    // Reset button state after animation
-    setTimeout(() => {
+      // Reset button state after animation
+      setTimeout(() => {
+        setIsAdding(false)
+      }, 2000)
+    } catch (error) {
+      toast.error(error?.message || 'Failed to add item to cart', {
+        position: 'bottom-center',
+        duration: 2000,
+      })
       setIsAdding(false)
-    }, 2000)
+    }
   }
 
   const handleWishlistClick = async (e) => {

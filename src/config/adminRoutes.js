@@ -10,6 +10,7 @@ import {
   FaRegImages,
   FaFileAlt,
   FaUsers,
+  FaUserPlus,
   FaDatabase,
   FaList,
   FaRegFileAlt,
@@ -23,6 +24,18 @@ import {
   FaRegGrinStars,
   FaEye,
   FaEnvelope,
+  FaCoins,
+  FaMoneyBillWave,
+  FaExclamationTriangle,
+  FaTimesCircle,
+  FaChartBar,
+  FaHeart,
+  FaShoppingCart,
+  FaClipboardList,
+  FaTasks,
+  FaPlusCircle,
+  FaSearchDollar,
+  FaUserShield,
 } from 'react-icons/fa'
 import { FaGears, FaTicket } from 'react-icons/fa6'
 
@@ -86,7 +99,7 @@ export const routeMeta = [
     description: 'Add Customer...',
     parent: '/admin/customers',
     sidebar: false,
-    icon: FaUsers,
+    icon: FaUserPlus,
   },
   {
     key: 'edit-customers',
@@ -130,7 +143,7 @@ export const routeMeta = [
     description: 'Add Categorie...',
     parent: '/admin/categories',
     sidebar: false,
-    icon: FaUsers,
+    icon: FaPlusCircle,
   },
   {
     key: 'edit-categorie',
@@ -164,7 +177,7 @@ export const routeMeta = [
     description: 'Add Products...',
     parent: '/admin/products',
     sidebar: false,
-    icon: FaUsers,
+    icon: FaPlusCircle,
   },
   {
     key: 'edit-products',
@@ -205,7 +218,7 @@ export const routeMeta = [
     label: 'Gold Price',
     parent: '/admin',
     sidebar: true,
-    icon: FaRegGrinStars,
+    icon: FaCoins,
   },
   {
     key: 'add-gold',
@@ -214,7 +227,7 @@ export const routeMeta = [
     description: 'Add Gold Price...',
     parent: '/admin/gold',
     sidebar: false,
-    icon: FaRegGrinStars,
+    icon: FaPlusCircle,
   },
   {
     key: 'edit-gold',
@@ -223,7 +236,7 @@ export const routeMeta = [
     description: 'Edit Gold Price...',
     parent: '/admin/gold',
     sidebar: false,
-    icon: FaRegGrinStars,
+    icon: FaCoins,
   },
   {
     key: 'silver',
@@ -231,7 +244,7 @@ export const routeMeta = [
     label: 'Silver Price',
     parent: '/admin',
     sidebar: true,
-    icon: FaRegGrinStars,
+    icon: FaMoneyBillWave,
   },
   {
     key: 'add-Silver',
@@ -240,7 +253,7 @@ export const routeMeta = [
     description: 'Add Silver Price...',
     parent: '/admin/silver',
     sidebar: false,
-    icon: FaRegGrinStars,
+    icon: FaPlusCircle,
   },
   {
     key: 'edit-silver',
@@ -249,7 +262,7 @@ export const routeMeta = [
     description: 'Edit Silver Price...',
     parent: '/admin/silver',
     sidebar: false,
-    icon: FaRegGrinStars,
+    icon: FaMoneyBillWave,
   },
 
   // ===== Contact Messages =====
@@ -280,7 +293,7 @@ export const routeMeta = [
     label: 'Orders',
     parent: '/admin',
     sidebar: true,
-    icon: FaList,
+    icon: FaClipboardList,
   },
   {
     key: 'order-status',
@@ -288,7 +301,7 @@ export const routeMeta = [
     label: 'Order Status',
     parent: '/admin/orders',
     sidebar: true,
-    icon: FaList,
+    icon: FaTasks,
   },
   {
     key: 'add-order-status',
@@ -297,7 +310,7 @@ export const routeMeta = [
     description: 'Add Order Status...',
     parent: '/admin/orders/order-status',
     sidebar: false,
-    icon: FaEye,
+    icon: FaPlusCircle,
   },
   {
     key: 'edit-order-status',
@@ -315,7 +328,7 @@ export const routeMeta = [
     description: 'Manual Order...',
     parent: '/admin',
     sidebar: true,
-    icon: FaEye,
+    icon: FaPlusCircle,
   },
   {
     key: 'edit-order',
@@ -348,7 +361,7 @@ export const routeMeta = [
     label: 'Low Stock Products',
     parent: '/admin',
     sidebar: true,
-    icon: FaRegFileAlt,
+    icon: FaExclamationTriangle,
   },
   {
     key: 'out-of-stock',
@@ -356,7 +369,7 @@ export const routeMeta = [
     label: 'Out of Stock Products',
     parent: '/admin',
     sidebar: true,
-    icon: FaRegFileAlt,
+    icon: FaTimesCircle,
   },
   {
     key: 'customer-reports',
@@ -364,28 +377,28 @@ export const routeMeta = [
     label: 'Customer Reports',
     parent: '/admin',
     sidebar: true,
-    icon: FaRegFileAlt,
+    icon: FaChartBar,
   },
   {
     key: 'product-liked',
     path: '/admin/product-liked',
     label: 'Product Liked',
     parent: '/admin',
-    icon: FaRegFileAlt,
+    icon: FaHeart,
   },
   {
     key: 'total-purchased',
     path: '/admin/total-purchased',
     label: 'Total Purchased',
     parent: '/admin',
-    icon: FaRegFileAlt,
+    icon: FaShoppingCart,
   },
   {
     key: 'view-customer-order-history',
     path: '/admin/customer-reports/view',
     label: 'View Customer Order History',
     parent: '/admin/customer-reports',
-    icon: FaRegFileAlt,
+    icon: FaSearchDollar,
   },
 
   // ===== Coupons =====
@@ -434,6 +447,16 @@ export const routeMeta = [
     parent: '/admin/payment-methods',
     sidebar: false,
     icon: FaEye,
+  },
+
+  // ===== Admin Account =====
+  {
+    key: 'admin-account',
+    path: '/admin/account',
+    label: 'Admin Account',
+    parent: '/admin',
+    sidebar: true,
+    icon: FaUserShield,
   },
 
   // ===== Settings =====

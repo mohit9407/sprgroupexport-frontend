@@ -10,6 +10,11 @@ import SafeImage from '@/components/SafeImage'
 import { createProduct, updateProduct } from '@/features/products/productsSlice'
 import { fetchAllCategories } from '@/features/categories/categoriesSlice'
 import {
+  fetchAllAttributes,
+  selectAllAttributes,
+  selectAttributeStatus,
+} from '@/features/attributes/attributesSlice'
+import {
   fetchCaratData,
   setSelectedCarat,
   selectCaratData,
@@ -84,6 +89,8 @@ const productSchema = (isGold = false, isSilver = false, isEdit = false) => {
     userExtra: yup.number().min(0, 'Extra cost must be a positive number'),
     color: yup.string(),
     size: yup.string(),
+    diamondCarat: yup.string(),
+    gemstoneKt: yup.string(),
     image: yup
       .mixed()
       .test('file-or-url', 'Image is required', function (value) {
@@ -109,6 +116,8 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
   // Get categories from Redux store
   const { allCategories } = useSelector((state) => state.categories)
   const { status, error } = useSelector((state) => state.products)
+  const attributes = useSelector(selectAllAttributes)
+  const attributeStatus = useSelector(selectAttributeStatus)
   const [isLoadingCategories, setIsLoadingCategories] = useState(false)
   const [formattedCategories, setFormattedCategories] = useState([])
   const [hierarchicalCategories, setHierarchicalCategories] = useState([])
@@ -161,6 +170,39 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
     loadCategories()
   }, [dispatch, allCategories])
 
+  useEffect(() => {
+    if (attributeStatus === 'idle') {
+      dispatch(fetchAllAttributes())
+    }
+  }, [attributeStatus, dispatch])
+
+  const findAttributeOptions = (...names) => {
+    const normalizedNames = names.map((name) => name.toLowerCase())
+    const attribute = attributes.find((item) =>
+      normalizedNames.includes(item.name?.trim().toLowerCase()),
+    )
+
+    return [
+      {
+        label: attribute
+          ? 'Select value'
+          : `Add "${names[0]}" values in Product Attributes`,
+        value: '',
+      },
+      ...(attribute?.values || []).map((item) => ({
+        label: item.value,
+        value: item.value,
+      })),
+    ]
+  }
+
+  const diamondCaratOptions = findAttributeOptions(
+    'Diamond Carat',
+    'Diamond Ceret',
+    'Diamond KT',
+  )
+  const gemstoneKtOptions = findAttributeOptions('Gemstone KT', 'Gem KT')
+
   const [isLoading, setIsLoading] = useState(false)
   const [imageFile, setImageFile] = useState(null)
   const [selectedImage, setSelectedImage] = useState(null)
@@ -170,6 +212,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
   const [goldPrice, setGoldPrice] = useState(0)
   const isEditMode = mode === 'edit'
   const isInitialMount = useRef(true)
+  const metalSetupKey = useRef(null)
   const imageInputRef = useRef(null)
   const sideImagesInputRef = useRef(null)
 
@@ -222,6 +265,8 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
       userExtra: 0,
       color: '',
       size: '',
+      diamondCarat: '',
+      gemstoneKt: '',
       image: null,
       sideImages: [],
       videoEmbedLink: '',
@@ -240,6 +285,8 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
   const selectedCategory = watch('category')
   const purityValue = watch('purity')
   const selectedGrams = watch('gram')
+  const selectedCaratValue = watch('carat')
+  const userExtraValue = watch('userExtra')
 
   // Function to handle gold price calculation
   const handleGoldPriceCalculation = useCallback(
@@ -287,6 +334,8 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
     [silverData, setValue],
   )
 
+  // Detect gold/silver from the category tree. Runs again once the tree loads,
+  // otherwise an edit page opened before the categories arrive stays non-metal.
   useEffect(() => {
     if (!selectedCategory) {
       setIsGoldCategory(false)
@@ -368,9 +417,19 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
 
     setIsGoldCategory(isGold)
     setIsSilverCategory(finalIsSilver)
+  }, [selectedCategory, hierarchicalCategories])
+
+  // Metal specific defaults, applied once per category/metal combination so a
+  // re-render never wipes values the admin already typed
+  useEffect(() => {
+    if (!selectedCategory) return
+
+    const setupKey = `${selectedCategory}|${isGoldCategory}|${isSilverCategory}`
+    if (metalSetupKey.current === setupKey) return
+    metalSetupKey.current = setupKey
 
     // Reset fields when not gold or silver (Add mode only)
-    if (!isGold && !finalIsSilver && !isEditMode) {
+    if (!isGoldCategory && !isSilverCategory && !isEditMode) {
       setValue('carat', null, { shouldValidate: false })
       setValue('purity', null, { shouldValidate: false })
       setValue('gram', 0)
@@ -378,12 +437,12 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
       setValue('price', 0)
     }
 
-    if (finalIsSilver && !isEditMode) {
+    if (isSilverCategory && !isEditMode) {
       setValue('carat', null, { shouldValidate: false })
       setValue('goldPrice', 0)
     }
 
-    if (isGold && !isEditMode) {
+    if (isGoldCategory && !isEditMode) {
       setValue('purity', null, { shouldValidate: false })
       setValue('silverPrice', 0)
 
@@ -411,19 +470,36 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
     }
 
     // Edit Mode Price Calculation
-    if (isGold && isEditMode && defaultValues?.carat && defaultValues?.gram) {
+    if (
+      isGoldCategory &&
+      isEditMode &&
+      defaultValues?.carat &&
+      defaultValues?.gram
+    ) {
       handleGoldPriceCalculation(defaultValues.carat, defaultValues.gram)
     }
 
     if (
-      finalIsSilver &&
+      isSilverCategory &&
       isEditMode &&
       defaultValues?.purity &&
       defaultValues?.gram
     ) {
       handleSilverPriceCalculation(defaultValues.purity, defaultValues.gram)
     }
-  }, [selectedCategory])
+  }, [
+    selectedCategory,
+    isGoldCategory,
+    isSilverCategory,
+    isEditMode,
+    defaultValues,
+    caratData,
+    dispatch,
+    getValues,
+    setValue,
+    handleGoldPriceCalculation,
+    handleSilverPriceCalculation,
+  ])
 
   // Re-validate form when gold/silver category changes
   useEffect(() => {
@@ -514,6 +590,56 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
     handleSilverPriceCalculation,
   ])
 
+  // Recalculate gold price whenever karat or grams change (debounced, hits API)
+  useEffect(() => {
+    if (!isGoldCategory) return
+
+    const gramValue = Number(selectedGrams)
+    if (!selectedCaratValue || !gramValue || gramValue <= 0) return
+
+    const timer = setTimeout(() => {
+      handleGoldPriceCalculation(selectedCaratValue, gramValue)
+    }, 400)
+
+    return () => clearTimeout(timer)
+  }, [
+    isGoldCategory,
+    selectedCaratValue,
+    selectedGrams,
+    handleGoldPriceCalculation,
+  ])
+
+  // Keep the submitted price in sync with the calculated gold price + extra cost
+  useEffect(() => {
+    if (!isGoldCategory || !calculatedPrice) return
+
+    const matchesForm =
+      String(calculatedPrice.carat) === String(selectedCaratValue) &&
+      Number(calculatedPrice.gram) === Number(selectedGrams)
+
+    if (!matchesForm) return
+
+    const totalPrice = Number(
+      (
+        Number(calculatedPrice.totalPrice || 0) + Number(userExtraValue || 0)
+      ).toFixed(2),
+    )
+
+    setGoldPrice(Number(calculatedPrice.totalPrice || 0))
+
+    if (Number(getValues('price')) !== totalPrice) {
+      setValue('price', totalPrice, { shouldValidate: true })
+    }
+  }, [
+    isGoldCategory,
+    calculatedPrice,
+    selectedCaratValue,
+    selectedGrams,
+    userExtraValue,
+    getValues,
+    setValue,
+  ])
+
   useEffect(() => {
     if (isEditMode && defaultValues) {
       reset({
@@ -526,26 +652,15 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
       if (defaultValues.sideImages) {
         setSelectedSideImages(defaultValues.sideImages)
       }
-
-      // Set initial gold price if both carat and gram exist
-      if (defaultValues.gram && defaultValues.carat) {
-        // Calculate initial price without triggering API call
-        const selectedCarat = caratData?.find(
-          (item) => item.carat === defaultValues.carat,
-        )
-        if (selectedCarat) {
-          const initialGoldPrice =
-            defaultValues.gram * selectedCarat.pricePerGram
-          setGoldPrice(initialGoldPrice)
-        }
-      }
     }
 
     // Set initial render to false after first render
     if (isInitialMount.current) {
       isInitialMount.current = false
     }
-  }, [isEditMode, defaultValues, reset, goldRate, caratData])
+    // Rate driven deps are intentionally excluded: resetting after a price
+    // calculation would overwrite the freshly calculated price
+  }, [isEditMode, defaultValues, reset])
 
   useEffect(() => {
     dispatch(fetchAllCategories())
@@ -887,7 +1002,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                 {/* Carat */}
                 <FormAdminSelect
                   name="carat"
-                  label="Carat"
+                  label="Karat"
                   options={
                     caratData === null || caratLoading
                       ? [
@@ -898,7 +1013,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                           },
                         ]
                       : [
-                          { label: 'Select Carat', value: '' },
+                          { label: 'Select Karat', value: '' },
                           ...(Array.isArray(caratData)
                             ? caratData.map((item) => ({
                                 label: `${item.carat}K`,
@@ -911,16 +1026,10 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                   required={isGoldCategory}
                   fullWidth
                   disabled={caratLoading || caratData === null}
-                  onBlur={async (e) => {
-                    const caratValue = e.target.value
-                    const gramValue = parseFloat(watch('gram') || 0)
-                    if (caratValue && gramValue > 0) {
-                      await handleGoldPriceCalculation(caratValue, gramValue)
-                    }
-                  }}
                   onChange={(e) => {
+                    // Select values arrive as strings while the API returns numbers
                     const carat = caratData?.find(
-                      (item) => item.carat === e.target.value,
+                      (item) => String(item.carat) === String(e.target.value),
                     )
                     if (carat) {
                       dispatch(
@@ -943,13 +1052,6 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                   placeholder="0.00"
                   required={isGoldCategory}
                   fullWidth
-                  onBlur={async (e) => {
-                    const gramValue = parseFloat(e.target.value) || 0
-                    const caratValue = watch('carat')
-                    if (caratValue && gramValue > 0) {
-                      await handleGoldPriceCalculation(caratValue, gramValue)
-                    }
-                  }}
                   onChange={(e) => {
                     const gram = parseFloat(e.target.value) || 0
                     setValue('gram', gram, { shouldValidate: true })
@@ -960,7 +1062,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                 <div>
                   <AdminInputRow
                     label="Gold Price"
-                    value={calculatedPrice?.totalPrice?.toFixed(2) || '0.00'}
+                    value={goldPrice ? goldPrice.toFixed(2) : '0.00'}
                     readOnly
                     fullWidth
                     helperText={`${watch('gram') || 0}g × $${goldRate || 0}/g`}
@@ -997,21 +1099,16 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                   onChange={(e) => {
                     const userExtra = parseFloat(e.target.value) || 0
                     setValue('userExtra', userExtra, { shouldValidate: true })
-                    // Add userExtra to total price (silver price + extra)
-                    const gramValue = parseFloat(watch('gram') || 0)
-                    const purityValue = parseFloat(watch('purity') || 0)
-                    if (purityValue && gramValue > 0) {
-                      const selectedSilver = silverData?.find(
-                        (item) => item.purity === purityValue,
-                      )
-                      if (selectedSilver) {
-                        const basePrice =
-                          gramValue * selectedSilver.pricePerGram
-                        const totalPrice = basePrice
-                        setValue('price', totalPrice, { shouldValidate: true })
-                      }
-                    }
                   }}
+                />
+
+                {/* Final Price (Read-only) */}
+                <AdminInputRow
+                  label="Final Price"
+                  value={Number(watch('price') || 0).toFixed(2)}
+                  readOnly
+                  fullWidth
+                  helperText="Gold price + extra cost (saved as product price)"
                 />
               </>
             )}
@@ -1140,6 +1237,27 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
               name="size"
               label="Size"
               placeholder="e.g., Small, Medium, Large"
+              fullWidth
+            />
+
+            <FormAdminSelect
+              name="diamondCarat"
+              label="Diamond Carat"
+              options={diamondCaratOptions}
+              disabled={
+                attributeStatus === 'loading' ||
+                diamondCaratOptions.length === 1
+              }
+              fullWidth
+            />
+
+            <FormAdminSelect
+              name="gemstoneKt"
+              label="Gemstone KT"
+              options={gemstoneKtOptions}
+              disabled={
+                attributeStatus === 'loading' || gemstoneKtOptions.length === 1
+              }
               fullWidth
             />
 

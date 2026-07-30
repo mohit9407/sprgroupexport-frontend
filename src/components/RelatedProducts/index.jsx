@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux'
 import Slider from 'react-slick'
 import 'slick-carousel/slick/slick.css'
@@ -43,6 +44,7 @@ const PrevArrow = ({ className, style, onClick, isHovered }) => {
 
 const RelatedProducts = ({ category, excludeProductId }) => {
   const dispatch = useDispatch()
+  const router = useRouter()
   const { items: products = [], status } = useSelector(
     (state) => state.products || {},
   )
@@ -334,7 +336,7 @@ const RelatedProducts = ({ category, excludeProductId }) => {
                     Check back later or explore our collection.
                   </p>
                   <button
-                    onClick={() => router.push('/products')}
+                    onClick={() => router.push('/shop')}
                     className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#b7853f] hover:bg-[#9a7135] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#b7853f]"
                   >
                     Browse All Products

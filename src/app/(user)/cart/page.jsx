@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux'
 import { FiShoppingBag, FiPlus, FiMinus, FiTrash2 } from 'react-icons/fi'
 import Link from 'next/link'
 import ConfirmationModal from '@/components/admin/ConfirmationModal'
-import { toast, Toaster } from '@/utils/toastConfig'
+import { toast } from '@/utils/toastConfig'
 import SafeImage from '@/components/SafeImage'
 
 export default function CartPage() {
@@ -46,12 +46,20 @@ export default function CartPage() {
           return
         }
 
+        const availableStock = product?.product?.stock ?? 0
+        if (newQuantity > availableStock) {
+          toast.error(`Only ${availableStock} item(s) available in stock`)
+          return
+        }
+
         setUpdatingItemId(productId)
 
         try {
           await updateQuantity(productId, newQuantity)
           toast.success('Cart updated successfully')
-        } catch {}
+        } catch (updateError) {
+          toast.error(updateError?.message || 'Failed to update quantity')
+        }
       } catch (error) {
         console.error('Error updating quantity:', error)
         toast.error(error.message || 'Failed to update quantity')
@@ -121,7 +129,6 @@ export default function CartPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <Toaster />
       <button
         onClick={() => window.history.back()}
         className="flex items-center text-gray-600 hover:text-[#BA8B4E] mb-6 transition-colors"
@@ -230,6 +237,7 @@ export default function CartPage() {
                       <input
                         type="number"
                         min="1"
+                        max={item.product?.stock ?? undefined}
                         value={
                           localQuantities[item.id] !== undefined
                             ? localQuantities[item.id]
@@ -271,9 +279,13 @@ export default function CartPage() {
                             (item.quantity || 1) + 1,
                           )
                         }
-                        disabled={updatingItemId === item.id}
+                        disabled={
+                          updatingItemId === item.id ||
+                          (item.quantity || 1) >= (item.product?.stock ?? 0)
+                        }
                         className={`w-8 h-8 flex items-center justify-center border border-gray-300 rounded-r hover:bg-gray-100 ${
-                          updatingItemId === item.id
+                          updatingItemId === item.id ||
+                          (item.quantity || 1) >= (item.product?.stock ?? 0)
                             ? 'opacity-50 cursor-not-allowed'
                             : ''
                         }`}
@@ -285,6 +297,13 @@ export default function CartPage() {
                         )}
                       </button>
                     </div>
+                    {item.product?.stock !== undefined && (
+                      <p className="mt-1 text-center text-xs text-gray-500">
+                        {item.product.stock > 0
+                          ? `${item.product.stock} in stock`
+                          : 'Out of stock'}
+                      </p>
+                    )}
                   </div>
 
                   {/* Total */}

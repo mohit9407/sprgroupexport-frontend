@@ -124,6 +124,8 @@ export default function EditProductPage() {
     userExtra: product.userExtra || 0,
     color: product.color || '',
     size: product.size || '',
+    diamondCarat: product.diamondCarat || '',
+    gemstoneKt: product.gemstoneKt || '',
     image: product.image || '',
     videoEmbedLink: product.videoEmbedLink || '',
     productName: product.productName || product.name || '',

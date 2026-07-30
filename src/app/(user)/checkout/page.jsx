@@ -411,6 +411,7 @@ export default function CheckoutPage() {
             directCheckoutItem={directCheckoutItem}
             shippingMethod={formData.shippingMethod}
             shippingAddress={formData.shippingAddress}
+            orderTotal={orderTotal}
             isLoading={loading}
           />
         )
@@ -430,12 +431,16 @@ export default function CheckoutPage() {
     return null
   }
 
-  // Calculate order total
+  // Same total as placeOrder (subtotal + shipping - first-order discount)
   const displayItems = directCheckoutItem ? [directCheckoutItem] : cart
-  const orderTotal =
-    displayItems.reduce((total, item) => {
-      return total + item.price * item.quantity
-    }, 0) + Number(formData.shippingMethod?.price || 0)
+  const subtotal = displayItems.reduce(
+    (sum, item) => sum + item.price * (item.quantity || 1),
+    0,
+  )
+  const shippingCost = Number(formData.shippingMethod?.price || 0)
+  const isFirstOrder = userOrders?.length === 0
+  const discount = isFirstOrder ? Math.round(subtotal * 0.05) : 0
+  const orderTotal = subtotal + shippingCost - discount
 
   return (
     <div className="min-h-screen bg-white">
