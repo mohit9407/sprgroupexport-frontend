@@ -320,7 +320,12 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
         )
 
         if (selectedSilver) {
-          const totalPrice = gramNum * selectedSilver.pricePerGram
+          const totalPrice = Number(
+            (
+              gramNum * selectedSilver.pricePerGram +
+              Number(getValues('userExtra') || 0)
+            ).toFixed(2),
+          )
           setValue('silverPrice', selectedSilver.pricePerGram)
           setValue('price', totalPrice, { shouldValidate: true })
         } else {
@@ -331,7 +336,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
         toast.error('Failed to calculate silver price')
       }
     },
-    [silverData, setValue],
+    [silverData, setValue, getValues],
   )
 
   // Detect gold/silver from the category tree. Runs again once the tree loads,
@@ -578,7 +583,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
     }
   }, [silverError, silverLoading, silverData])
 
-  // Handle silver price calculation when purity or grams change
+  // Handle silver price calculation when purity, grams, or extra cost change
   useEffect(() => {
     if (isSilverCategory && purityValue && selectedGrams && selectedGrams > 0) {
       handleSilverPriceCalculation(purityValue, selectedGrams)
@@ -587,6 +592,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
     isSilverCategory,
     purityValue,
     selectedGrams,
+    userExtraValue,
     handleSilverPriceCalculation,
   ])
 
@@ -757,8 +763,33 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
       metalType = 'silver'
     }
 
+    // Number inputs can be strings while typing ("10.5"); coerce before save
+    const numberFields = [
+      'price',
+      'minOrderLimit',
+      'stock',
+      'gram',
+      'userExtra',
+      'carat',
+      'purity',
+    ]
+    const normalizedData = { ...data }
+    numberFields.forEach((key) => {
+      if (
+        normalizedData[key] === '' ||
+        normalizedData[key] === null ||
+        normalizedData[key] === undefined
+      ) {
+        return
+      }
+      const parsed = Number(normalizedData[key])
+      if (!Number.isNaN(parsed)) {
+        normalizedData[key] = parsed
+      }
+    })
+
     // Add metalType to data if applicable
-    const dataWithMetalType = { ...data }
+    const dataWithMetalType = { ...normalizedData }
     if (metalType) {
       dataWithMetalType.metalType = metalType
     }
@@ -973,6 +1004,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
               label="Min Order Limit"
               type="number"
               min="1"
+              step="1"
               fullWidth
             />
 
@@ -1052,10 +1084,6 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                   placeholder="0.00"
                   required={isGoldCategory}
                   fullWidth
-                  onChange={(e) => {
-                    const gram = parseFloat(e.target.value) || 0
-                    setValue('gram', gram, { shouldValidate: true })
-                  }}
                 />
 
                 {/* Gold Price (Read-only) */}
@@ -1096,10 +1124,6 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                   placeholder="0.00"
                   fullWidth
                   startAdornment="$"
-                  onChange={(e) => {
-                    const userExtra = parseFloat(e.target.value) || 0
-                    setValue('userExtra', userExtra, { shouldValidate: true })
-                  }}
                 />
 
                 {/* Final Price (Read-only) */}
@@ -1168,25 +1192,16 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                   placeholder="0.00"
                   required={isSilverCategory}
                   fullWidth
-                  onChange={(e) => {
-                    const gram = parseFloat(e.target.value) || 0
-                    setValue('gram', gram, { shouldValidate: true })
-                    // Calculate price if purity is already selected
-                    const purityValue = parseFloat(watch('purity') || 0)
-                    if (purityValue && gram > 0) {
-                      handleSilverPriceCalculation(purityValue, gram)
-                    }
-                  }}
                 />
 
                 {/* Silver Price (Read-only) */}
                 <div>
                   <AdminInputRow
                     label="Silver Price"
-                    value={watch('price')?.toFixed(2) || '0.00'}
+                    value={Number(watch('price') || 0).toFixed(2)}
                     readOnly
                     fullWidth
-                    helperText={`${watch('gram') || 0}g × $${silverRate || 0}/g = $${((watch('gram') || 0) * (silverRate || 0)).toFixed(2)}`}
+                    helperText={`${watch('gram') || 0}g × $${silverRate || 0}/g = $${(Number(watch('gram') || 0) * (silverRate || 0)).toFixed(2)}`}
                   />
                 </div>
 
@@ -1200,26 +1215,6 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                   placeholder="0.00"
                   fullWidth
                   startAdornment="$"
-                  onChange={(e) => {
-                    const userExtra = parseFloat(e.target.value) || 0
-                    setValue('userExtra', userExtra, { shouldValidate: true })
-                    // Add userExtra to total price (silver price + extra)
-                    const gramValue = parseFloat(watch('gram') || 0)
-                    const purityValue = parseFloat(watch('purity') || 0)
-                    if (purityValue && gramValue > 0) {
-                      const selectedSilver = silverData?.find(
-                        (item) => item.purity === purityValue,
-                      )
-                      if (selectedSilver) {
-                        const basePrice =
-                          gramValue * selectedSilver.pricePerGram
-                        const totalPrice = basePrice
-                        setValue('price', totalPrice, {
-                          shouldValidate: true,
-                        })
-                      }
-                    }
-                  }}
                 />
               </>
             )}

@@ -58,7 +58,7 @@ const StickyHeader = () => {
 
   return (
     <div
-      className={`fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm shadow-md z-2 transition-all duration-500 ease-in-out transform ${
+      className={`fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm shadow-md z-[100] transition-all duration-500 ease-in-out transform ${
         isVisible
           ? 'translate-y-0 opacity-100'
           : '-translate-y-full opacity-0 pointer-events-none'
@@ -90,15 +90,19 @@ const StickyHeader = () => {
                   item.hasDropdown && setShowCatalogDropdown(false)
                 }
               >
-                <Link
-                  href={item.href}
-                  className="flex items-center text-sm font-medium hover:text-[#BA8B4E] transition-colors"
-                >
-                  {item.name}
-                  {item.hasDropdown && (
+                {item.hasDropdown ? (
+                  <span className="flex items-center text-sm font-medium hover:text-[#BA8B4E] transition-colors cursor-default select-none">
+                    {item.name}
                     <FaChevronDown className="ml-1 text-xs" />
-                  )}
-                </Link>
+                  </span>
+                ) : (
+                  <Link
+                    href={item.href}
+                    className="flex items-center text-sm font-medium hover:text-[#BA8B4E] transition-colors"
+                  >
+                    {item.name}
+                  </Link>
+                )}
 
                 {item.hasDropdown && (
                   <CatalogDropdown

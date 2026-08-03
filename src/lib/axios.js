@@ -1,5 +1,8 @@
 import axios from 'axios'
-import { refreshAccessToken } from '@/features/user/userService'
+import {
+  clearAuthTokens,
+  refreshAccessToken,
+} from '@/features/user/userService'
 
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
@@ -26,6 +29,17 @@ const processQueue = (error, token = null) => {
   failedQueue = []
 }
 
+const isAuthRefreshRequest = (config) => {
+  const url = config?.url || ''
+  return url.includes('/auth/refresh')
+}
+
+const redirectToLogin = () => {
+  if (typeof window === 'undefined') return
+  if (window.location.pathname.startsWith('/login')) return
+  window.location.href = '/login?session=expired'
+}
+
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
@@ -48,26 +62,30 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response.data,
   async (error) => {
-    const originalRequest = error.config
+    const originalRequest = error.config || {}
 
-    // If error is not 401 or it's a refresh token request, reject
-    if (error.response?.status !== 401 || originalRequest._retry) {
+    // Never try to refresh the refresh call itself
+    if (
+      error.response?.status !== 401 ||
+      originalRequest._retry ||
+      isAuthRefreshRequest(originalRequest)
+    ) {
       return Promise.reject(error)
     }
 
-    // If we're already refreshing token, add the request to the queue
+    // If we're already refreshing token, queue this request
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
         failedQueue.push({ resolve, reject })
       })
         .then((token) => {
+          originalRequest.headers = originalRequest.headers || {}
           originalRequest.headers.Authorization = `Bearer ${token}`
           return api(originalRequest)
         })
         .catch((err) => Promise.reject(err))
     }
 
-    // Set flag to prevent multiple refresh attempts
     originalRequest._retry = true
     isRefreshing = true
 
@@ -80,35 +98,21 @@ api.interceptors.response.use(
         throw new Error('No refresh token available')
       }
 
-      // Get new access token
       const newAccessToken = await refreshAccessToken(refreshToken)
       if (!newAccessToken) {
         throw new Error('Failed to refresh token')
       }
 
-      // Update stored token
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('accessToken', newAccessToken)
-      }
-
-      // Update the Authorization header
-      api.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`
+      api.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`
+      originalRequest.headers = originalRequest.headers || {}
       originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
 
-      // Process queued requests
       processQueue(null, newAccessToken)
-
-      // Retry the original request
       return api(originalRequest)
     } catch (refreshError) {
-      // Clear auth state and redirect to login
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('accessToken')
-        localStorage.removeItem('refreshToken')
-        localStorage.removeItem('user')
-        window.location.href = '/login'
-      }
       processQueue(refreshError, null)
+      clearAuthTokens()
+      redirectToLogin()
       return Promise.reject(refreshError)
     } finally {
       isRefreshing = false

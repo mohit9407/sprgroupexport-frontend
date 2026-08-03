@@ -398,7 +398,6 @@ export default function CheckoutPage() {
             }}
             initialMethod={formData.shippingMethod}
             shippingAddress={formData.shippingAddress}
-            cartItems={directCheckoutItem ? [directCheckoutItem] : cart}
           />
         )
       case 3:

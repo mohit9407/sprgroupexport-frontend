@@ -1,4 +1,6 @@
-import api from '@/lib/axios'
+import axios from 'axios'
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
 
 export const getAuthToken = () => {
   if (typeof window === 'undefined') return null
@@ -10,10 +12,30 @@ export const getRefreshToken = () => {
   return localStorage.getItem('refreshToken')
 }
 
+const setAuthCookies = (accessToken, refreshToken) => {
+  if (typeof document === 'undefined') return
+
+  if (accessToken) {
+    document.cookie = `accessToken=${accessToken}; path=/; max-age=86400; SameSite=Lax`
+  }
+  if (refreshToken) {
+    document.cookie = `refreshToken=${refreshToken}; path=/; max-age=604800; SameSite=Lax`
+  }
+}
+
+const clearAuthCookies = () => {
+  if (typeof document === 'undefined') return
+  document.cookie =
+    'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+  document.cookie =
+    'refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+}
+
 export const setAuthTokens = (accessToken, refreshToken) => {
   if (typeof window === 'undefined') return
   if (accessToken) localStorage.setItem('accessToken', accessToken)
   if (refreshToken) localStorage.setItem('refreshToken', refreshToken)
+  setAuthCookies(accessToken, refreshToken)
 }
 
 export const clearAuthTokens = () => {
@@ -21,59 +43,68 @@ export const clearAuthTokens = () => {
   localStorage.removeItem('accessToken')
   localStorage.removeItem('refreshToken')
   localStorage.removeItem('user')
+  clearAuthCookies()
 }
 
+/**
+ * Refresh access token using the stored refresh token.
+ * Uses a plain axios call (no interceptors) to avoid 401 refresh loops.
+ */
 export const refreshAccessToken = async (refreshToken) => {
-  try {
-    const response = await api.post('/auth/refresh', { refreshToken })
+  if (!refreshToken) {
+    throw new Error('No refresh token available')
+  }
 
-    // If the response is not ok, throw an error
-    if (!response.data || !response.data.accessToken) {
-      throw new Error('Invalid response from refresh token endpoint')
-    }
+  // Plain axios — do NOT use the shared `api` instance (its interceptor
+  // would recurse on 401 from /auth/refresh)
+  const response = await axios.post(
+    `${API_BASE_URL}/auth/refresh`,
+    { refreshToken },
+    {
+      headers: { 'Content-Type': 'application/json' },
+      withCredentials: true,
+    },
+  )
 
-    const { accessToken, refreshToken: newRefreshToken } = response.data
+  // Plain axios returns { data: body }. Backend body is { accessToken, refreshToken }.
+  const payload = response?.data?.data || response?.data || response
+  const accessToken = payload?.accessToken
+  const newRefreshToken = payload?.refreshToken
 
-    setAuthTokens(accessToken, newRefreshToken || refreshToken)
+  if (!accessToken) {
+    throw new Error('Invalid response from refresh token endpoint')
+  }
 
-    // Update user data if it exists
-    const userData = localStorage.getItem('user')
-    if (userData) {
+  setAuthTokens(accessToken, newRefreshToken || refreshToken)
+
+  const userData = localStorage.getItem('user')
+  if (userData) {
+    try {
       const user = JSON.parse(userData)
       user.accessToken = accessToken
       if (newRefreshToken) user.refreshToken = newRefreshToken
       localStorage.setItem('user', JSON.stringify(user))
+    } catch {
+      // ignore corrupt user JSON
     }
-
-    return accessToken
-  } catch (error) {
-    console.error('Token refresh failed:', error)
-    // Clear all auth data
-    clearAuthTokens()
-
-    // If we're on the client side, redirect to login
-    if (typeof window !== 'undefined') {
-      // Use window.location instead of Next.js router to ensure full page reload
-      window.location.href = '/login?session=expired'
-    }
-
-    return null
   }
+
+  return accessToken
 }
 
 export const getUserById = async (userId) => {
-  const response = await api.get(`/auth/get-user/${userId}`)
-  return response
+  const { default: api } = await import('@/lib/axios')
+  return api.get(`/auth/get-user/${userId}`)
 }
 
 export const updateUserProfile = async (formData) => {
+  const { default: api } = await import('@/lib/axios')
   const config = {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
   }
-  const response = await api.put('/auth/edit-profile', formData, config)
-  return response
+  return api.put('/auth/edit-profile', formData, config)
 }
 
 export const userService = {

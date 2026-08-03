@@ -62,38 +62,31 @@ const decodeToken = (token) => {
 // Function to refresh access token
 const refreshAccessToken = async (refreshToken) => {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ refreshToken }),
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+    const response = await fetch(`${apiBase}/auth/refresh`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
-    )
+      body: JSON.stringify({ refreshToken }),
+    })
 
     if (!response.ok) {
       throw new Error('Failed to refresh token')
     }
 
     const data = await response.json()
-    // Update the stored tokens in localStorage if we're in the browser
-    if (typeof window !== 'undefined') {
-      const user = JSON.parse(localStorage.getItem('user') || '{}')
-      user.accessToken = data.accessToken
-      // Update refresh token if a new one is provided
-      if (data.refreshToken) {
-        user.refreshToken = data.refreshToken
-      }
-      localStorage.setItem('user', JSON.stringify(user))
+    const payload = data?.data || data
+    if (!payload?.accessToken) {
+      throw new Error('Invalid refresh response')
     }
-    return data.accessToken
+
+    return {
+      accessToken: payload.accessToken,
+      refreshToken: payload.refreshToken || refreshToken,
+    }
   } catch (error) {
     console.error('Error refreshing token:', error)
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('user')
-    }
     return null
   }
 }
@@ -126,21 +119,33 @@ export async function middleware(request) {
     return NextResponse.next()
   }
 
+  const applyRefreshedTokens = (response, tokens) => {
+    response.cookies.set('accessToken', tokens.accessToken, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24, // 1 day
+    })
+    if (tokens.refreshToken) {
+      response.cookies.set('refreshToken', tokens.refreshToken, {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+      })
+    }
+    return response
+  }
+
   // Check if access token is expired but refresh token exists
   if (accessToken && refreshToken && isTokenExpired(accessToken)) {
     try {
       // Attempt to refresh the access token
-      const newAccessToken = await refreshAccessToken(refreshToken)
-      if (newAccessToken) {
-        // Create response with new access token
-        const response = htmlNext()
-        response.cookies.set('accessToken', newAccessToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'strict',
-          path: '/',
-        })
-        return response
+      const tokens = await refreshAccessToken(refreshToken)
+      if (tokens?.accessToken) {
+        return applyRefreshedTokens(htmlNext(), tokens)
       } else {
         // If refresh fails, clear tokens and redirect to login
         const response = NextResponse.redirect(new URL('/login', request.url))
@@ -204,16 +209,9 @@ export async function middleware(request) {
       // If refresh token exists but access token is missing/expired, try to refresh
       if (refreshToken) {
         try {
-          const newAccessToken = await refreshAccessToken(refreshToken)
-          if (newAccessToken) {
-            const response = htmlNext()
-            response.cookies.set('accessToken', newAccessToken, {
-              httpOnly: true,
-              secure: process.env.NODE_ENV === 'production',
-              sameSite: 'strict',
-              path: '/',
-            })
-            return response
+          const tokens = await refreshAccessToken(refreshToken)
+          if (tokens?.accessToken) {
+            return applyRefreshedTokens(htmlNext(), tokens)
           }
         } catch (error) {
           console.error('Error during token refresh:', error)

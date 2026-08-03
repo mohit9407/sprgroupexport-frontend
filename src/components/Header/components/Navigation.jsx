@@ -28,15 +28,21 @@ const Navigation = () => {
                 }
               }}
             >
-              <Link
-                href={item.href}
-                className="text-[14px] font-semibold uppercase hover:opacity-90 flex items-center tracking-wide"
-              >
-                {item.name}
-                {item.hasDropdown && <FaChevronDown className="ml-1 text-xs" />}
-              </Link>
+              {item.hasDropdown ? (
+                <span className="text-[14px] font-semibold uppercase hover:opacity-90 flex items-center tracking-wide cursor-default select-none">
+                  {item.name}
+                  <FaChevronDown className="ml-1 text-xs" />
+                </span>
+              ) : (
+                <Link
+                  href={item.href}
+                  className="text-[14px] font-semibold uppercase hover:opacity-90 flex items-center tracking-wide"
+                >
+                  {item.name}
+                </Link>
+              )}
 
-              {item.name === 'CATALOG' && (
+              {item.hasDropdown && (
                 <CatalogDropdown
                   isOpen={showCatalogDropdown}
                   onMouseEnter={() => setShowCatalogDropdown(true)}

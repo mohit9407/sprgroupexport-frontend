@@ -9,7 +9,7 @@ import { toast } from '@/utils/toastConfig'
 
 export default function OrderDetail({
   onContinue,
-  paymentMethod: initialPaymentMethod = 'cod',
+  paymentMethod: initialPaymentMethod = '',
   directCheckoutItem = null,
   isLoading,
   shippingAddress,
@@ -37,48 +37,39 @@ export default function OrderDetail({
           return total + item.price * (item.quantity || 1)
         }, 0) + shippingCost
 
-  // Fetch payment methods from API
+  const getMethodType = (method) => (method?.type || '').toLowerCase()
+
+  // Fetch payment methods — show only isActive: true from API
   useEffect(() => {
     const fetchPaymentMethods = async () => {
       try {
         const response = await paymentService.getAllPaymentMethods()
-        // API returns array directly, not nested under status/data
-        if (Array.isArray(response)) {
-          // Filter payment methods based on shipping address city
-          const filteredMethods = response.filter((method) => {
-            // Always show all methods if no shipping address is selected yet
-            if (!shippingAddress) return true
-            // If city is Surat, show all methods including COD
-            if (shippingAddress.city?.toLowerCase() === 'surat') {
-              return true
-            }
-            // For other cities, exclude COD
-            return method.type?.toLowerCase() !== 'cod'
-          })
-          setPaymentMethods(filteredMethods)
+        const methods = Array.isArray(response)
+          ? response
+          : Array.isArray(response?.data)
+            ? response.data
+            : []
+
+        const activeMethods = methods.filter(
+          (method) => method.isActive === true,
+        )
+        setPaymentMethods(activeMethods)
+
+        if (activeMethods.length > 0) {
+          const selectedType = getMethodType(activeMethods[0])
+          setPaymentMethod(selectedType)
+          onContinue({ paymentMethod: selectedType }, null, true)
         }
       } catch (error) {
         console.error('Failed to fetch payment methods:', error)
-        // In case of error, still try to set some default payment methods
-        setPaymentMethods(
-          [
-            { _id: 'paypal', name: 'PayPal', type: 'paypal' },
-            { _id: 'razorpay', name: 'Credit/Debit Card', type: 'razorpay' },
-          ].filter((method) => {
-            if (!shippingAddress || !shippingAddress.city) return true
-            return (
-              shippingAddress.city.toLowerCase() !== 'surat' ||
-              method.type !== 'cod'
-            )
-          }),
-        )
+        setPaymentMethods([])
       } finally {
         setLoadingPaymentMethods(false)
       }
     }
 
     fetchPaymentMethods()
-  }, [shippingAddress]) // Add shippingAddress as a dependency
+  }, [])
 
   const handleDeleteItem = (productId) => {
     setItemToDelete(productId)
@@ -394,19 +385,7 @@ export default function OrderDetail({
     )
   }
 
-  const selectedCity = shippingAddress?.city?.toLowerCase()
-
-  const filteredPaymentMethods = paymentMethods.filter((method) => {
-    if (method.type?.toLowerCase() === 'cod') {
-      return selectedCity === 'surat'
-    }
-
-    if (method.type?.toLowerCase() === 'offline') {
-      return false
-    }
-
-    return true
-  })
+  const filteredPaymentMethods = paymentMethods
 
   return (
     <form onSubmit={handleSubmit}>
@@ -546,10 +525,7 @@ export default function OrderDetail({
           ) : (
             <div className="space-y-3">
               {filteredPaymentMethods.map((method) => {
-                // Use name as fallback if type is incorrect
-                const methodType = method.name?.toLowerCase().includes('skydo')
-                  ? 'skydo'
-                  : (method.type || '').toLowerCase()
+                const methodType = getMethodType(method)
                 return (
                   <div key={method._id} className="flex items-center">
                     <input

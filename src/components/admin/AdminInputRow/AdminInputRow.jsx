@@ -1,6 +1,57 @@
 'use client'
 
-import { Controller, useController, useFormContext } from 'react-hook-form'
+import { useController, useFormContext } from 'react-hook-form'
+
+const allowsDecimal = (step) => {
+  if (step === undefined || step === null || step === '') return true
+  if (step === 'any') return true
+  const stepNum = Number(step)
+  return !Number.isNaN(stepNum) && stepNum % 1 !== 0
+}
+
+const sanitizeNumberInput = (rawValue, { decimal = true, min } = {}) => {
+  let next = String(rawValue ?? '')
+
+  // Keep only digits, one decimal point (when allowed), and a leading minus when min allows it
+  next = next.replace(/[^\d.-]/g, '')
+
+  if (min !== undefined && Number(min) >= 0) {
+    next = next.replace(/-/g, '')
+  } else {
+    const isNegative = next.startsWith('-')
+    next = next.replace(/-/g, '')
+    if (isNegative) next = `-${next}`
+  }
+
+  if (!decimal) {
+    next = next.replace(/\./g, '')
+  } else {
+    const negative = next.startsWith('-')
+    const unsigned = negative ? next.slice(1) : next
+    const [whole, ...rest] = unsigned.split('.')
+    next = `${negative ? '-' : ''}${whole}${rest.length ? `.${rest.join('').replace(/\./g, '')}` : ''}`
+  }
+
+  return next
+}
+
+const normalizeNumberOnBlur = (rawValue, { decimal = true } = {}) => {
+  if (
+    rawValue === '' ||
+    rawValue === '-' ||
+    rawValue === '.' ||
+    rawValue === '-.'
+  ) {
+    return ''
+  }
+
+  const parsed = Number(rawValue)
+  if (Number.isNaN(parsed)) return ''
+
+  // Keep typed precision for decimals; integers stay whole numbers
+  if (!decimal) return String(Math.trunc(parsed))
+  return String(parsed)
+}
 
 export function AdminInputRow({
   label,
@@ -16,9 +67,11 @@ export function AdminInputRow({
   onBlur,
   required,
   fullWidth,
+  inputRef,
   ...rest
 }) {
   const inputId = id ?? name
+  const isNumber = type === 'number'
 
   return (
     <div className="grid grid-cols-12 gap-4 items-start mb-4">
@@ -34,8 +87,18 @@ export function AdminInputRow({
       <div className={fullWidth ? 'col-span-8' : 'col-span-12 md:col-span-4'}>
         <input
           {...rest}
+          ref={inputRef}
           id={inputId}
-          type={type === 'number' ? 'text' : type}
+          name={name}
+          // text + inputMode lets users type "10." without the browser stripping the dot
+          type={isNumber ? 'text' : type}
+          inputMode={
+            isNumber
+              ? allowsDecimal(rest.step)
+                ? 'decimal'
+                : 'numeric'
+              : undefined
+          }
           className={`w-full rounded border px-3 py-2 text-sm
             focus:outline-none focus:ring-2
             ${
@@ -77,6 +140,8 @@ export function FormAdminInputRow({
   touchedField = false,
   onBlur,
   onChange: onParentChange,
+  step,
+  min,
   ...rest
 }) {
   const { control } = useFormContext()
@@ -92,30 +157,49 @@ export function FormAdminInputRow({
     ? touchedFields[name] && errors[name]?.message
     : errors[name]?.message
 
-  // If externalValue is provided, use it, otherwise use the form field value
   const inputValue = externalValue !== undefined ? externalValue : field.value
+  const isNumber = type === 'number'
+  const decimal = allowsDecimal(step)
 
   return (
     <AdminInputRow
-      {...field}
       {...rest}
+      name={field.name}
+      inputRef={field.ref}
       label={label}
       error={errorMessage}
       helpText={helpText}
       type={type}
-      value={inputValue}
+      step={step}
+      min={min}
+      value={inputValue ?? ''}
       readOnly={readOnly}
       required={required}
       fullWidth={fullWidth}
       onChange={(e) => {
-        // Only update if not readOnly
-        if (!readOnly) {
-          field.onChange(e)
-          onParentChange?.(e)
+        if (readOnly) return
+
+        if (isNumber) {
+          const next = sanitizeNumberInput(e.target.value, { decimal, min })
+          field.onChange(next)
+          onParentChange?.({
+            ...e,
+            target: { ...e.target, value: next, name },
+          })
+          return
         }
+
+        field.onChange(e)
+        onParentChange?.(e)
       }}
       onBlur={(e) => {
-        field.onBlur(e)
+        if (isNumber && !readOnly) {
+          const normalized = normalizeNumberOnBlur(e.target.value, { decimal })
+          if (normalized !== e.target.value) {
+            field.onChange(normalized)
+          }
+        }
+        field.onBlur()
         onBlur?.(e)
       }}
     />

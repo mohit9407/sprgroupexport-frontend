@@ -49,9 +49,9 @@ const Header = ({ settings = {} }) => {
 
   const navItems = [
     { name: 'HOME', href: '/' },
-    { name: 'CATALOG', href: '/catalog' },
+    { name: 'CATALOG', hasDropdown: true },
     { name: 'ABOUT US', href: '/about-us' },
-    { name: 'CONTACT US', href: '/contact' },
+    { name: 'CONTACT US', href: '/contact-us' },
   ]
 
   // State for scroll position

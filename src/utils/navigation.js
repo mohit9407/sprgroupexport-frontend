@@ -5,13 +5,8 @@ export const navItems = [
   },
   {
     name: 'CATALOG',
-    href: '/catalog',
+    // No page at /catalog — hover opens dropdown only (not a link)
     hasDropdown: true,
-    subItems: [
-      { name: 'All Products', href: '/catalog/all' },
-      { name: 'New Arrivals', href: '/catalog/new' },
-      { name: 'Featured', href: '/catalog/featured' },
-    ],
   },
   {
     name: 'ABOUT US',
