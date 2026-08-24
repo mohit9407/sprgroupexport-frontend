@@ -24,6 +24,10 @@ async function refreshGoldPrices() {
   return await api.post('gold/refresh')
 }
 
+async function calculateGoldPrice(carat, gram) {
+  return await api.get(`gold/calculate-price?carat=${carat}&gram=${gram}`)
+}
+
 export const goldService = {
   createGold,
   getAllGold,
@@ -31,4 +35,5 @@ export const goldService = {
   updateGold,
   deleteGold,
   refreshGoldPrices,
+  calculateGoldPrice,
 }

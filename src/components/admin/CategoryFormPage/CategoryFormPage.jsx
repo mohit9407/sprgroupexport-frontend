@@ -7,8 +7,9 @@ import { FormAdminSelect } from '../AdminSelect'
 import FileUploadButton from '../FileUploadButton/FileUploadButton'
 import { useEffect, useState, useRef } from 'react'
 import * as yup from 'yup'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from '@/utils/toastConfig'
+import { getCategoriesListReturnPath } from '@/utils/adminRouteUtils'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   createCategory,
@@ -52,6 +53,8 @@ export function CategoryFormPage({
   const isEditMode = mode === 'edit'
   const dispatch = useDispatch()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const categoriesListPath = getCategoriesListReturnPath(searchParams)
   const {
     addNewCategory: addNewCategoryData,
     updateCategory: updateCategoryData,
@@ -255,7 +258,7 @@ export function CategoryFormPage({
       } else {
         await dispatch(createCategory(requestData)).unwrap()
         toast.success('Category created successfully!')
-        router.push('/admin/categories')
+        router.push(categoriesListPath)
       }
     } catch (error) {
       console.error('Error saving category:', error)
@@ -401,7 +404,7 @@ export function CategoryFormPage({
             <button
               type="button"
               className="px-6 py-2 rounded border border-gray-300 text-gray-700 font-semibold hover:bg-gray-100 transition-colors"
-              onClick={() => router.back()}
+              onClick={() => router.push(categoriesListPath)}
               disabled={formProviders.formState.isSubmitting}
             >
               Back

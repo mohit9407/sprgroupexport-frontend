@@ -9,16 +9,17 @@ import {
   selectAllCategories,
   deleteCategory,
 } from '@/features/categories/categoriesSlice'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import SafeImage from '@/components/SafeImage'
 import { TanstackTable } from '@/components/admin/TanStackTable'
 import ConfirmationModal from '@/components/admin/ConfirmationModal'
 import { useTableQueryParams } from '@/components/admin/TanStackTable'
 import { toast } from '@/utils/toastConfig'
+import { buildCategoryEditPath } from '@/utils/adminRouteUtils'
 
 const columnHelper = createColumnHelper()
 
-const getColumns = (router, handleDeleteClick) => [
+const getColumns = (router, handleDeleteClick, searchParams) => [
   columnHelper.accessor('_id', {
     header: 'ID',
     cell: (info) => info.getValue(),
@@ -108,7 +109,7 @@ const getColumns = (router, handleDeleteClick) => [
         <button
           className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-full hover:text-blue-700 transition-colors"
           onClick={() =>
-            router.push(`/admin/categories/edit/${row.original._id}`)
+            router.push(buildCategoryEditPath(row.original._id, searchParams))
           }
           title="Edit"
         >
@@ -127,6 +128,7 @@ const getColumns = (router, handleDeleteClick) => [
 
 function CategoriesDisplayContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const dispatch = useDispatch()
   const { params } = useTableQueryParams()
 
@@ -172,7 +174,10 @@ function CategoriesDisplayContent() {
     )
   }, [categoriesData])
 
-  const columns = useMemo(() => getColumns(router, handleDeleteClick), [router])
+  const columns = useMemo(
+    () => getColumns(router, handleDeleteClick, searchParams),
+    [router, searchParams],
+  )
 
   useEffect(() => {
     dispatch(

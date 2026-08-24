@@ -132,7 +132,7 @@ function GoldTableContent() {
   const handleRefreshPrices = async () => {
     try {
       await dispatch(refreshGoldPrices()).unwrap()
-      toast.success('Gold prices refreshed from GoldAPI')
+      toast.success('Gold prices refreshed from Sapna Bullion')
     } catch (err) {
       toast.error(err || 'Failed to refresh gold prices')
     }
@@ -148,7 +148,7 @@ function GoldTableContent() {
         <div>
           <h1 className="text-2xl font-semibold">List Of All Gold Data</h1>
           <p className="text-sm text-gray-500 mt-1">
-            GoldAPI rates including 18% GST and 1% charge
+            Sapna Bullion live rates (no GST or charges)
             {currency ? ` · ${currency}` : ''}
           </p>
         </div>

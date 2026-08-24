@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   fetchProductDetails,
@@ -9,11 +9,14 @@ import {
 } from '@/features/products/productDetailsSlice'
 import ProductFormPage from '@/components/admin/ProductFormPage/ProductFormPage'
 import { fetchAllCategories } from '@/features/categories/categoriesSlice'
+import { getProductsListReturnPath } from '@/utils/adminRouteUtils'
 
 export default function EditProductPage() {
   const { id } = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const dispatch = useDispatch()
+  const productsListPath = getProductsListReturnPath(searchParams)
 
   const {
     data: product,
@@ -25,7 +28,7 @@ export default function EditProductPage() {
 
   useEffect(() => {
     if (!id) {
-      router.push('/admin/products')
+      router.push(productsListPath)
       return
     }
 
@@ -35,7 +38,7 @@ export default function EditProductPage() {
     return () => {
       dispatch(clearProductDetails())
     }
-  }, [dispatch, id, router])
+  }, [dispatch, id, router, productsListPath])
 
   useEffect(() => {
     if (!categories || categories.length === 0) {
@@ -75,7 +78,7 @@ export default function EditProductPage() {
                 Error loading product: {error}
               </p>
               <button
-                onClick={() => router.push('/admin/products')}
+                onClick={() => router.push(productsListPath)}
                 className="mt-2 px-4 py-2 bg-cyan-500 text-white rounded hover:bg-cyan-600 text-sm"
               >
                 Back to Products
@@ -98,7 +101,7 @@ export default function EditProductPage() {
             The requested product could not be found or may have been removed.
           </p>
           <button
-            onClick={() => router.push('/admin/products')}
+            onClick={() => router.push(productsListPath)}
             className="px-4 py-2 bg-cyan-500 text-white rounded hover:bg-cyan-600"
           >
             Back to Products
@@ -126,6 +129,16 @@ export default function EditProductPage() {
     size: product.size || '',
     diamondCarat: product.diamondCarat || '',
     gemstoneKt: product.gemstoneKt || '',
+    goldColor: product.goldColor || '',
+    diamondColor: product.diamondColor || '',
+    diamondClarity: product.diamondClarity || '',
+    diamondSize: product.diamondSize || '',
+    totalWeight: product.totalWeight || 0,
+    totalNoOfDiamonds: product.totalNoOfDiamonds || 0,
+    diamondPrice: product.diamondPrice || 0,
+    ornamentSize: product.ornamentSize || '',
+    grossWeight: product.grossWeight || 0,
+    netWeight: product.netWeight || 0,
     image: product.image || '',
     videoEmbedLink: product.videoEmbedLink || '',
     productName: product.productName || product.name || '',

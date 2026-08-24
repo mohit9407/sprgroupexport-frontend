@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import {
   getOrderDetails,
   updateOrderStatus,
@@ -17,10 +17,13 @@ import StatusHistory from '@/components/admin/orders/order-page/StatusHistory'
 import AdminOnlyCommentSection from '@/components/admin/orders/order-page/AdminOnlyCommentSection'
 import ShippingDetailsSection from '@/components/admin/orders/order-page/ShippingDetailsSection'
 import { FiCopy } from 'react-icons/fi'
+import { getOrdersListReturnPath } from '@/utils/adminRouteUtils'
 
 export default function OrderDetailPage() {
   const { id } = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const ordersListPath = getOrdersListReturnPath(searchParams)
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -291,7 +294,7 @@ export default function OrderDetailPage() {
           Order not found
         </h2>
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push(ordersListPath)}
           className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
         >
           Go Back
@@ -354,7 +357,7 @@ export default function OrderDetailPage() {
             Print
           </button>
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push(ordersListPath)}
             className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
           >
             Back to Orders
@@ -394,6 +397,7 @@ export default function OrderDetailPage() {
             setComment={setComment}
             handleStatusUpdate={handleStatusUpdate}
             router={router}
+            cancelPath={ordersListPath}
           />
           <AdminOnlyCommentSection
             orderId={id}

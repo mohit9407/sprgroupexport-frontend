@@ -115,13 +115,11 @@ export const TanstackTable = memo(function TanstackTable({
   const options = selectedFilter?.options || []
 
   useEffect(() => {
-    if (Object.keys(params || {})?.length) {
-      setFilterSearchDraft({
-        filterBy: params.filterBy,
-        search: params.search,
-      })
-    }
-  }, [])
+    setFilterSearchDraft({
+      filterBy: params.filterBy,
+      search: params.search,
+    })
+  }, [params.filterBy, params.search])
 
   return (
     <div>

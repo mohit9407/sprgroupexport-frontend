@@ -17,6 +17,14 @@ import {
 
 const columnHelper = createColumnHelper()
 
+const EXCLUDED_ATTRIBUTE_NAMES = [
+  'diamond carat',
+  'diamond ceret',
+  'diamond kt',
+  'gemstone kt',
+  'gem kt',
+]
+
 const getColumns = (router, handleDeleteClick) => [
   columnHelper.accessor('name', {
     header: 'Attribute',
@@ -89,7 +97,10 @@ function AttributesPageContent() {
   }, [dispatch])
 
   const attributes = useMemo(() => {
-    return attributesData || []
+    return (attributesData || []).filter(
+      (attr) =>
+        !EXCLUDED_ATTRIBUTE_NAMES.includes(attr.name?.trim().toLowerCase()),
+    )
   }, [attributesData])
 
   const handleDeleteClick = useCallback((attribute) => {

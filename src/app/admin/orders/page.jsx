@@ -9,7 +9,7 @@ import {
   Suspense,
 } from 'react'
 import { createColumnHelper } from '@tanstack/react-table'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { FaEdit, FaTrash } from 'react-icons/fa'
 import ConfirmationModal from '@/components/admin/ConfirmationModal'
 import { useDispatch, useSelector } from 'react-redux'
@@ -21,11 +21,13 @@ import {
 } from '@/components/admin/TanStackTable'
 import { toast } from '@/utils/toastConfig'
 import { Eye } from 'lucide-react'
+import { buildOrderDetailPath } from '@/utils/adminRouteUtils'
 
 const columnHelper = createColumnHelper()
 
 function OrdersPageContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { params } = useTableQueryParams()
   const dispatch = useDispatch()
   const [selectedOrderId, setSelectedOrderId] = useState(null)
@@ -145,7 +147,7 @@ function OrdersPageContent() {
 
           const handleEdit = (e) => {
             e.stopPropagation()
-            router.push(`/admin/orders/${id}`)
+            router.push(buildOrderDetailPath(id, searchParams))
           }
 
           const handleDeleteClick = (e) => {
@@ -208,7 +210,7 @@ function OrdersPageContent() {
         },
       }),
     ],
-    [router],
+    [router, searchParams],
   )
 
   // Get orders and statuses from Redux store

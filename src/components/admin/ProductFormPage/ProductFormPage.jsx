@@ -3,17 +3,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useForm, FormProvider, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux'
 import { toast } from '@/utils/toastConfig'
 import SafeImage from '@/components/SafeImage'
 import { createProduct, updateProduct } from '@/features/products/productsSlice'
 import { fetchAllCategories } from '@/features/categories/categoriesSlice'
-import {
-  fetchAllAttributes,
-  selectAllAttributes,
-  selectAttributeStatus,
-} from '@/features/attributes/attributesSlice'
 import {
   fetchCaratData,
   setSelectedCarat,
@@ -33,6 +28,7 @@ import { buildCategoryTree } from '@/utils/categoryUtils'
 import * as yup from 'yup'
 import AdminTextAreaRow from '@/components/AdminTextAreaRow/AdminTextAreaRow'
 import { HierarchicalCategorySelect } from '@/components/HierarchicalCategoryTree/HierarchicalCategoryTree'
+import { getProductsListReturnPath } from '@/utils/adminRouteUtils'
 
 const productSchema = (isGold = false, isSilver = false, isEdit = false) => {
   return yup.object({
@@ -91,6 +87,20 @@ const productSchema = (isGold = false, isSilver = false, isEdit = false) => {
     size: yup.string(),
     diamondCarat: yup.string(),
     gemstoneKt: yup.string(),
+    goldColor: yup.string(),
+    diamondColor: yup.string(),
+    diamondClarity: yup.string(),
+    diamondSize: yup.string(),
+    totalWeight: yup.number().min(0, 'Total weight must be a positive number'),
+    totalNoOfDiamonds: yup
+      .number()
+      .min(0, 'Total number of diamonds must be a positive number'),
+    diamondPrice: yup
+      .number()
+      .min(0, 'Diamond price must be a positive number'),
+    ornamentSize: yup.string(),
+    grossWeight: yup.number().min(0, 'Gross weight must be a positive number'),
+    netWeight: yup.number().min(0, 'Net weight must be a positive number'),
     image: yup
       .mixed()
       .test('file-or-url', 'Image is required', function (value) {
@@ -109,15 +119,15 @@ const productSchema = (isGold = false, isSilver = false, isEdit = false) => {
 
 const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const dispatch = useDispatch()
+  const productsListPath = getProductsListReturnPath(searchParams)
 
   const MAX_SIDE_IMAGES = 6
 
   // Get categories from Redux store
   const { allCategories } = useSelector((state) => state.categories)
   const { status, error } = useSelector((state) => state.products)
-  const attributes = useSelector(selectAllAttributes)
-  const attributeStatus = useSelector(selectAttributeStatus)
   const [isLoadingCategories, setIsLoadingCategories] = useState(false)
   const [formattedCategories, setFormattedCategories] = useState([])
   const [hierarchicalCategories, setHierarchicalCategories] = useState([])
@@ -170,39 +180,6 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
     loadCategories()
   }, [dispatch, allCategories])
 
-  useEffect(() => {
-    if (attributeStatus === 'idle') {
-      dispatch(fetchAllAttributes())
-    }
-  }, [attributeStatus, dispatch])
-
-  const findAttributeOptions = (...names) => {
-    const normalizedNames = names.map((name) => name.toLowerCase())
-    const attribute = attributes.find((item) =>
-      normalizedNames.includes(item.name?.trim().toLowerCase()),
-    )
-
-    return [
-      {
-        label: attribute
-          ? 'Select value'
-          : `Add "${names[0]}" values in Product Attributes`,
-        value: '',
-      },
-      ...(attribute?.values || []).map((item) => ({
-        label: item.value,
-        value: item.value,
-      })),
-    ]
-  }
-
-  const diamondCaratOptions = findAttributeOptions(
-    'Diamond Carat',
-    'Diamond Ceret',
-    'Diamond KT',
-  )
-  const gemstoneKtOptions = findAttributeOptions('Gemstone KT', 'Gem KT')
-
   const [isLoading, setIsLoading] = useState(false)
   const [imageFile, setImageFile] = useState(null)
   const [selectedImage, setSelectedImage] = useState(null)
@@ -226,6 +203,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
     calculatedPrice,
     isCalculating,
     calculationError,
+    calculation,
   } = useSelector(selectCaratData)
 
   // Get silver data from Redux store
@@ -244,6 +222,8 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
 
   const [isGoldCategory, setIsGoldCategory] = useState(false)
   const [isSilverCategory, setIsSilverCategory] = useState(false)
+  const [diamondPrice, setDiamondPrice] = useState(0)
+  const [totalCost, setTotalCost] = useState(0)
 
   const formMethods = useForm({
     resolver: (data, context, options) => {
@@ -267,6 +247,16 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
       size: '',
       diamondCarat: '',
       gemstoneKt: '',
+      goldColor: '',
+      diamondColor: '',
+      diamondClarity: '',
+      diamondSize: '',
+      totalWeight: 0,
+      totalNoOfDiamonds: 0,
+      diamondPrice: 0,
+      ornamentSize: '',
+      grossWeight: 0,
+      netWeight: 0,
       image: null,
       sideImages: [],
       videoEmbedLink: '',
@@ -287,6 +277,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
   const selectedGrams = watch('gram')
   const selectedCaratValue = watch('carat')
   const userExtraValue = watch('userExtra')
+  const diamondPriceValue = watch('diamondPrice')
 
   // Function to handle gold price calculation
   const handleGoldPriceCalculation = useCallback(
@@ -440,6 +431,17 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
       setValue('gram', 0)
       setGoldPrice(0)
       setValue('price', 0)
+      // Reset new fields in add mode
+      setValue('goldColor', '', { shouldValidate: false })
+      setValue('diamondColor', '', { shouldValidate: false })
+      setValue('diamondClarity', '', { shouldValidate: false })
+      setValue('diamondSize', '', { shouldValidate: false })
+      setValue('totalWeight', 0, { shouldValidate: false })
+      setValue('totalNoOfDiamonds', 0, { shouldValidate: false })
+      setValue('diamondPrice', 0, { shouldValidate: false })
+      setValue('ornamentSize', '', { shouldValidate: false })
+      setValue('grossWeight', 0, { shouldValidate: false })
+      setValue('netWeight', 0, { shouldValidate: false })
     }
 
     if (isSilverCategory && !isEditMode) {
@@ -646,6 +648,31 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
     setValue,
   ])
 
+  // Calculate total cost (Extra cost + Diamond price + Gold/Silver price)
+  useEffect(() => {
+    const extraCost = Number(userExtraValue || 0)
+    const diamondCost = Number(diamondPriceValue || 0)
+    let metalCost = 0
+
+    if (isGoldCategory && goldPrice) {
+      metalCost = Number(goldPrice)
+    } else if (isSilverCategory) {
+      metalCost = Number(getValues('price') || 0)
+    }
+
+    const calculatedTotal = Number(
+      (extraCost + diamondCost + metalCost).toFixed(2),
+    )
+    setTotalCost(calculatedTotal)
+  }, [
+    isGoldCategory,
+    isSilverCategory,
+    userExtraValue,
+    diamondPriceValue,
+    goldPrice,
+    getValues,
+  ])
+
   useEffect(() => {
     if (isEditMode && defaultValues) {
       reset({
@@ -653,13 +680,26 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
         isEditMode: true,
         image: defaultValues.image || null,
         sideImages: defaultValues.sideImages || [],
+        goldColor: defaultValues.goldColor || '',
+        diamondColor: defaultValues.diamondColor || '',
+        diamondClarity: defaultValues.diamondClarity || '',
+        diamondSize: defaultValues.diamondSize || '',
+        totalWeight: defaultValues.totalWeight || 0,
+        totalNoOfDiamonds: defaultValues.totalNoOfDiamonds || 0,
+        diamondPrice: defaultValues.diamondPrice || 0,
+        ornamentSize: defaultValues.ornamentSize || '',
+        grossWeight: defaultValues.grossWeight || 0,
+        netWeight: defaultValues.netWeight || 0,
       })
       if (defaultValues.image) setExistingImage(defaultValues.image)
       if (defaultValues.sideImages) {
         setSelectedSideImages(defaultValues.sideImages)
       }
+      // Set diamond price state
+      if (defaultValues.diamondPrice) {
+        setDiamondPrice(defaultValues.diamondPrice)
+      }
     }
-
     // Set initial render to false after first render
     if (isInitialMount.current) {
       isInitialMount.current = false
@@ -884,11 +924,11 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
           updateProduct({ productId, productData: formData }),
         ).unwrap()
         toast.success('Product updated successfully!')
-        router.push('/admin/products')
+        router.push(productsListPath)
       } else {
         await dispatch(createProduct(formData)).unwrap()
         toast.success('Product created successfully!')
-        router.push('/admin/products')
+        router.push(productsListPath)
       }
     } catch (error) {
       console.error('Error saving product:', error)
@@ -1031,230 +1071,411 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
             {/* Gold-related fields - Only show when gold category is selected */}
             {isGoldCategory && (
               <>
-                {/* Carat */}
-                <FormAdminSelect
-                  name="carat"
-                  label="Karat"
-                  options={
-                    caratData === null || caratLoading
-                      ? [
-                          {
-                            label: 'Loading carat data...',
-                            value: '',
-                            disabled: true,
-                          },
-                        ]
-                      : [
-                          { label: 'Select Karat', value: '' },
-                          ...(Array.isArray(caratData)
-                            ? caratData.map((item) => ({
-                                label: `${item.carat}K`,
-                                value: item.carat,
-                                pricePerGram: item.pricePerGram,
-                              }))
-                            : []),
-                        ]
-                  }
-                  required={isGoldCategory}
-                  fullWidth
-                  disabled={caratLoading || caratData === null}
-                  onChange={(e) => {
-                    // Select values arrive as strings while the API returns numbers
-                    const carat = caratData?.find(
-                      (item) => String(item.carat) === String(e.target.value),
-                    )
-                    if (carat) {
-                      dispatch(
-                        setSelectedCarat({
-                          carat: carat.carat,
-                          pricePerGram: carat.pricePerGram,
-                        }),
-                      )
-                    }
-                  }}
-                />
+                {/* Metal Section */}
+                <div className="col-span-1 md:col-span-2 border-t border-gray-200 pt-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Metal Section
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Carat */}
+                    <FormAdminSelect
+                      name="carat"
+                      label="Karat"
+                      options={
+                        caratData === null || caratLoading
+                          ? [
+                              {
+                                label: 'Loading carat data...',
+                                value: '',
+                                disabled: true,
+                              },
+                            ]
+                          : [
+                              { label: 'Select Karat', value: '' },
+                              ...(Array.isArray(caratData)
+                                ? caratData.map((item) => ({
+                                    label: `${item.carat}K`,
+                                    value: item.carat,
+                                    pricePerGram: item.pricePerGram,
+                                  }))
+                                : []),
+                            ]
+                      }
+                      required={isGoldCategory}
+                      fullWidth
+                      disabled={caratLoading || caratData === null}
+                      onChange={(e) => {
+                        // Select values arrive as strings while the API returns numbers
+                        const carat = caratData?.find(
+                          (item) =>
+                            String(item.carat) === String(e.target.value),
+                        )
+                        if (carat) {
+                          dispatch(
+                            setSelectedCarat({
+                              carat: carat.carat,
+                              pricePerGram: carat.pricePerGram,
+                            }),
+                          )
+                        }
+                      }}
+                    />
 
-                {/* Grams */}
-                <FormAdminInputRow
-                  name="gram"
-                  label="Grams"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                  required={isGoldCategory}
-                  fullWidth
-                />
+                    {/* Grams */}
+                    <FormAdminInputRow
+                      name="gram"
+                      label="Grams"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      required={isGoldCategory}
+                      fullWidth
+                    />
 
-                {/* Gold Price (Read-only) */}
-                <div>
-                  <AdminInputRow
-                    label="Gold Price"
-                    value={goldPrice ? goldPrice.toFixed(2) : '0.00'}
-                    readOnly
-                    fullWidth
-                    helperText={`${watch('gram') || 0}g × $${goldRate || 0}/g`}
-                  />
-                  <p className="mt-1 text-sm text-gray-500">
-                    {isCalculating ? (
-                      'Calculating...'
-                    ) : calculationError ? (
-                      <span className="text-red-500">
-                        Error calculating price
-                      </span>
-                    ) : calculatedPrice ? (
-                      `Calculated: ${calculatedPrice.gram}g × $${calculatedPrice.pricePerGram?.toLocaleString('en-US')}/g`
-                    ) : caratLoading || caratData === null ? (
-                      'Loading carat data...'
-                    ) : caratError ? (
-                      'Error loading carat data'
-                    ) : (
-                      'Enter carat and gram to calculate'
-                    )}
-                  </p>
+                    {/* Gold Price (Read-only) */}
+                    <div>
+                      <AdminInputRow
+                        label="Gold Price"
+                        value={goldPrice ? goldPrice.toFixed(2) : '0.00'}
+                        readOnly
+                        fullWidth
+                        helperText={`${watch('gram') || 0}g × $${goldRate || 0}/g`}
+                      />
+                      <p className="mt-1 text-sm text-gray-500">
+                        {isCalculating ? (
+                          'Calculating...'
+                        ) : calculationError ? (
+                          <span className="text-red-500">
+                            Error calculating price
+                          </span>
+                        ) : calculatedPrice ? (
+                          `Calculated: ${calculatedPrice.gram}g × $${calculatedPrice.pricePerGram?.toLocaleString('en-US')}/g`
+                        ) : caratLoading || caratData === null ? (
+                          'Loading carat data...'
+                        ) : caratError ? (
+                          'Error loading carat data'
+                        ) : (
+                          'Enter carat and gram to calculate'
+                        )}
+                      </p>
+                      {/* Calculation Breakdown */}
+                      {calculation && (
+                        <div>
+                          <p className="mt-1 text-sm text-gray-500">
+                            Price Calculation:
+                            {calculation.caratCalculation ||
+                              `(${calculation.inr10Gram?.toFixed(2)} / ${calculation.usdToInr}) / 10 = ${calculation.usd24kPerGram?.toFixed(2)} / gram`}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Gold Color */}
+                    <FormAdminInputRow
+                      name="goldColor"
+                      label="Gold Color"
+                      placeholder="e.g., Yellow, White, Rose"
+                      fullWidth
+                    />
+                  </div>
                 </div>
 
-                {/* Extra Cost */}
-                <FormAdminInputRow
-                  name="userExtra"
-                  label="Extra Cost"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                  fullWidth
-                  startAdornment="$"
-                />
+                {/* Diamond Section */}
+                <div className="col-span-1 md:col-span-2 border-t border-gray-200 pt-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Diamond Section
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormAdminInputRow
+                      name="diamondCarat"
+                      label="Diamond Carat"
+                      placeholder="e.g., 0.5, 1.0"
+                      fullWidth
+                    />
 
-                {/* Final Price (Read-only) */}
-                <AdminInputRow
-                  label="Final Price"
-                  value={Number(watch('price') || 0).toFixed(2)}
-                  readOnly
-                  fullWidth
-                  helperText="Gold price + extra cost (saved as product price)"
-                />
+                    <FormAdminInputRow
+                      name="diamondColor"
+                      label="Diamond Color"
+                      placeholder="e.g., D, E, F"
+                      fullWidth
+                    />
+
+                    <FormAdminInputRow
+                      name="diamondClarity"
+                      label="Diamond Clarity"
+                      placeholder="e.g., VVS1, VS2"
+                      fullWidth
+                    />
+
+                    <FormAdminInputRow
+                      name="diamondSize"
+                      label="Diamond Size"
+                      placeholder="e.g., 2mm, 3mm"
+                      fullWidth
+                    />
+
+                    <FormAdminInputRow
+                      name="totalWeight"
+                      label="Total Weight"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      fullWidth
+                    />
+
+                    <FormAdminInputRow
+                      name="totalNoOfDiamonds"
+                      label="Total No. Of Diamonds"
+                      type="number"
+                      step="1"
+                      min="0"
+                      placeholder="0"
+                      fullWidth
+                    />
+
+                    <FormAdminInputRow
+                      name="diamondPrice"
+                      label="Diamond Price"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      fullWidth
+                      startAdornment="$"
+                      onChange={(e) => {
+                        setValue('diamondPrice', Number(e.target.value) || 0)
+                        setDiamondPrice(Number(e.target.value) || 0)
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Other Fields Section */}
+                <div className="col-span-1 md:col-span-2 border-t border-gray-200 pt-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Other Details
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormAdminInputRow
+                      name="ornamentSize"
+                      label="Ornament Size"
+                      placeholder="e.g., Small, Medium, Large"
+                      fullWidth
+                    />
+
+                    <FormAdminInputRow
+                      name="grossWeight"
+                      label="Gross Weight"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      fullWidth
+                    />
+
+                    <FormAdminInputRow
+                      name="netWeight"
+                      label="Net Weight"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      fullWidth
+                    />
+
+                    <FormAdminInputRow
+                      name="userExtra"
+                      label="Extra Cost"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      fullWidth
+                      startAdornment="$"
+                    />
+
+                    {/* Total Cost (Read-only) */}
+                    <div>
+                      <AdminInputRow
+                        label="Total Cost"
+                        value={totalCost.toFixed(2)}
+                        readOnly
+                        fullWidth
+                      />
+                      <p className="mt-1 text-sm text-gray-500">
+                        Extra Cost: ${Number(userExtraValue || 0).toFixed(2)} +
+                        Diamond Price: $
+                        {Number(diamondPriceValue || 0).toFixed(2)} + Gold
+                        Price: ${Number(goldPrice || 0).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </>
             )}
 
             {/* Silver-related fields - Only show when silver category is selected */}
             {isSilverCategory && (
               <>
-                {/* Purity */}
-                <FormAdminSelect
-                  name="purity"
-                  label="Purity"
-                  options={(() => {
-                    if (silverData === null || silverLoading) {
-                      return [
-                        {
-                          label: 'Loading silver data...',
-                          value: '',
-                          disabled: true,
-                        },
-                      ]
-                    }
+                {/* Metal Section */}
+                <div className="col-span-1 md:col-span-2 border-t border-gray-200 pt-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Metal Section
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Purity */}
+                    <FormAdminSelect
+                      name="purity"
+                      label="Purity"
+                      options={(() => {
+                        if (silverData === null || silverLoading) {
+                          return [
+                            {
+                              label: 'Loading silver data...',
+                              value: '',
+                              disabled: true,
+                            },
+                          ]
+                        }
 
-                    const options = [
-                      { label: 'Select Purity', value: '' },
-                      ...(Array.isArray(silverData)
-                        ? silverData.map((item) => ({
-                            label: `${item.purity}`,
-                            value: item.purity,
-                            pricePerGram: item.pricePerGram,
-                          }))
-                        : []),
-                    ]
-                    return options
-                  })()}
-                  required={isSilverCategory}
-                  fullWidth
-                  disabled={silverLoading || silverData === null}
-                  onChange={(e) => {
-                    const purity = parseFloat(e.target.value)
-                    setValue('purity', purity, { shouldValidate: true })
-                    dispatch(setSelectedPurity(purity))
-                    // Calculate price if grams are already entered
-                    const gramValue = parseFloat(watch('gram') || 0)
-                    if (purity && gramValue > 0) {
-                      handleSilverPriceCalculation(purity, gramValue)
-                    }
-                  }}
-                />
+                        const options = [
+                          { label: 'Select Purity', value: '' },
+                          ...(Array.isArray(silverData)
+                            ? silverData.map((item) => ({
+                                label: `${item.purity}`,
+                                value: item.purity,
+                                pricePerGram: item.pricePerGram,
+                              }))
+                            : []),
+                        ]
+                        return options
+                      })()}
+                      required={isSilverCategory}
+                      fullWidth
+                      disabled={silverLoading || silverData === null}
+                      onChange={(e) => {
+                        const purity = parseFloat(e.target.value)
+                        setValue('purity', purity, { shouldValidate: true })
+                        dispatch(setSelectedPurity(purity))
+                        // Calculate price if grams are already entered
+                        const gramValue = parseFloat(watch('gram') || 0)
+                        if (purity && gramValue > 0) {
+                          handleSilverPriceCalculation(purity, gramValue)
+                        }
+                      }}
+                    />
 
-                {/* Grams */}
-                <FormAdminInputRow
-                  name="gram"
-                  label="Grams"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                  required={isSilverCategory}
-                  fullWidth
-                />
+                    {/* Grams */}
+                    <FormAdminInputRow
+                      name="gram"
+                      label="Grams"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      required={isSilverCategory}
+                      fullWidth
+                    />
 
-                {/* Silver Price (Read-only) */}
-                <div>
-                  <AdminInputRow
-                    label="Silver Price"
-                    value={Number(watch('price') || 0).toFixed(2)}
-                    readOnly
-                    fullWidth
-                    helperText={`${watch('gram') || 0}g × $${silverRate || 0}/g = $${(Number(watch('gram') || 0) * (silverRate || 0)).toFixed(2)}`}
-                  />
+                    {/* Silver Price (Read-only) */}
+                    <div>
+                      <AdminInputRow
+                        label="Silver Price"
+                        value={Number(watch('price') || 0).toFixed(2)}
+                        readOnly
+                        fullWidth
+                        helperText={`${watch('gram') || 0}g × $${silverRate || 0}/g = $${(Number(watch('gram') || 0) * (silverRate || 0)).toFixed(2)}`}
+                      />
+                    </div>
+
+                    {/* Extra Cost */}
+                    <FormAdminInputRow
+                      name="userExtra"
+                      label="Extra Cost"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      fullWidth
+                      startAdornment="$"
+                    />
+                  </div>
                 </div>
 
-                {/* Extra Cost */}
-                <FormAdminInputRow
-                  name="userExtra"
-                  label="Extra Cost"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                  fullWidth
-                  startAdornment="$"
-                />
+                {/* Diamond Section */}
+                <div className="col-span-1 md:col-span-2 border-t border-gray-200 pt-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Diamond Section
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormAdminInputRow
+                      name="diamondCarat"
+                      label="Diamond Carat"
+                      placeholder="e.g., 0.5, 1.0"
+                      fullWidth
+                    />
+
+                    <FormAdminInputRow
+                      name="diamondColor"
+                      label="Diamond Color"
+                      placeholder="e.g., D, E, F"
+                      fullWidth
+                    />
+
+                    <FormAdminInputRow
+                      name="diamondClarity"
+                      label="Diamond Clarity"
+                      placeholder="e.g., VVS1, VS2"
+                      fullWidth
+                    />
+
+                    <FormAdminInputRow
+                      name="diamondSize"
+                      label="Diamond Size"
+                      placeholder="e.g., 2mm, 3mm"
+                      fullWidth
+                    />
+
+                    <FormAdminInputRow
+                      name="totalWeight"
+                      label="Total Weight"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      fullWidth
+                    />
+
+                    <FormAdminInputRow
+                      name="totalNoOfDiamonds"
+                      label="Total No. Of Diamonds"
+                      type="number"
+                      step="1"
+                      min="0"
+                      placeholder="0"
+                      fullWidth
+                    />
+
+                    <FormAdminInputRow
+                      name="diamondPrice"
+                      label="Diamond Price"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      fullWidth
+                      startAdornment="$"
+                      onChange={(e) => {
+                        setValue('diamondPrice', Number(e.target.value) || 0)
+                        setDiamondPrice(Number(e.target.value) || 0)
+                      }}
+                    />
+                  </div>
+                </div>
               </>
             )}
-
-            {/* Color */}
-            <FormAdminInputRow
-              name="color"
-              label="Color"
-              placeholder="e.g., Yellow, White, Rose"
-              fullWidth
-            />
-
-            {/* Size */}
-            <FormAdminInputRow
-              name="size"
-              label="Size"
-              placeholder="e.g., Small, Medium, Large"
-              fullWidth
-            />
-
-            <FormAdminSelect
-              name="diamondCarat"
-              label="Diamond Carat"
-              options={diamondCaratOptions}
-              disabled={
-                attributeStatus === 'loading' ||
-                diamondCaratOptions.length === 1
-              }
-              fullWidth
-            />
-
-            <FormAdminSelect
-              name="gemstoneKt"
-              label="Gemstone KT"
-              options={gemstoneKtOptions}
-              disabled={
-                attributeStatus === 'loading' || gemstoneKtOptions.length === 1
-              }
-              fullWidth
-            />
 
             {/* Product Image */}
             {/* <div className="col-span-1 md:col-span-2"> */}
@@ -1427,7 +1648,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
             <div className="flex justify-end space-x-3">
               <button
                 type="button"
-                onClick={() => router.push('/admin/products')}
+                onClick={() => router.push(productsListPath)}
                 className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500"
               >
                 Cancel

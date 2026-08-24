@@ -14,6 +14,7 @@ const initialState = {
     isLoading: false,
     error: null,
   },
+  calculation: null,
   status: 'idle',
   error: null,
 }
@@ -125,6 +126,7 @@ const caratSlice = createSlice({
         state.calculatedPrice.isLoading = false
         state.calculatedPrice.data = action.payload
         state.goldRate = action.payload.pricePerGram
+        state.calculation = action.payload.calculation || null
       })
       .addCase(calculateGoldPrice.rejected, (state, action) => {
         state.calculatedPrice.isLoading = false
@@ -161,6 +163,7 @@ export const selectCaratData = (state) => ({
   calculatedPrice: state.carat.calculatedPrice.data,
   isCalculating: state.carat.calculatedPrice.isLoading,
   calculationError: state.carat.calculatedPrice.error,
+  calculation: state.carat.calculation,
 })
 
 export default caratSlice.reducer

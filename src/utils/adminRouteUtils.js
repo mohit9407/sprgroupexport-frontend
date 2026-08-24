@@ -1,3 +1,65 @@
+export const ADMIN_PRODUCTS_LIST_PATH = '/admin/products'
+export const ADMIN_CATEGORIES_LIST_PATH = '/admin/categories'
+export const ADMIN_ORDERS_LIST_PATH = '/admin/orders'
+
+const LIST_PATHS_WITH_QUERY_RESTORE = new Set([
+  ADMIN_PRODUCTS_LIST_PATH,
+  ADMIN_CATEGORIES_LIST_PATH,
+  ADMIN_ORDERS_LIST_PATH,
+])
+
+export function getListReturnPath(listPath, searchParams) {
+  const listQuery = searchParams?.get?.('listQuery')
+  return listQuery ? `${listPath}?${listQuery}` : listPath
+}
+
+export function buildListDetailPath(listPath, detailPath, searchParams) {
+  const listQuery = searchParams?.toString?.() || ''
+  const base = `${listPath}/${detailPath}`
+  if (!listQuery) return base
+  return `${base}?listQuery=${encodeURIComponent(listQuery)}`
+}
+
+export function getBreadcrumbListHref(path, searchParams) {
+  if (LIST_PATHS_WITH_QUERY_RESTORE.has(path)) {
+    return getListReturnPath(path, searchParams)
+  }
+
+  return path
+}
+
+export function getProductsListReturnPath(searchParams) {
+  return getListReturnPath(ADMIN_PRODUCTS_LIST_PATH, searchParams)
+}
+
+export function buildProductEditPath(productId, searchParams) {
+  return buildListDetailPath(
+    ADMIN_PRODUCTS_LIST_PATH,
+    `edit/${productId}`,
+    searchParams,
+  )
+}
+
+export function getCategoriesListReturnPath(searchParams) {
+  return getListReturnPath(ADMIN_CATEGORIES_LIST_PATH, searchParams)
+}
+
+export function buildCategoryEditPath(categoryId, searchParams) {
+  return buildListDetailPath(
+    ADMIN_CATEGORIES_LIST_PATH,
+    `edit/${categoryId}`,
+    searchParams,
+  )
+}
+
+export function getOrdersListReturnPath(searchParams) {
+  return getListReturnPath(ADMIN_ORDERS_LIST_PATH, searchParams)
+}
+
+export function buildOrderDetailPath(orderId, searchParams) {
+  return buildListDetailPath(ADMIN_ORDERS_LIST_PATH, orderId, searchParams)
+}
+
 function matchPath(pattern = '', pathname = '') {
   const patternParts = pattern.split('/')
   const pathParts = pathname.split('/')

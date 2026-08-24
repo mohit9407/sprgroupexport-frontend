@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, Suspense, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa'
 import ConfirmationModal from '@/components/admin/ConfirmationModal'
 import toast from 'react-hot-toast'
@@ -18,9 +18,10 @@ import {
   fetchAllCategories,
   selectAllCategories,
 } from '@/features/categories/categoriesSlice'
+import { buildProductEditPath } from '@/utils/adminRouteUtils'
 
 // Define columns with router and dispatch
-const getColumns = (router, dispatch, setDeleteModal) => [
+const getColumns = (router, dispatch, setDeleteModal, searchParams) => [
   {
     accessorKey: 'image',
     header: 'Image',
@@ -169,7 +170,7 @@ const getColumns = (router, dispatch, setDeleteModal) => [
           className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-full hover:text-blue-700 transition-colors"
           onClick={(e) => {
             e.stopPropagation()
-            router.push(`/admin/products/edit/${row.original._id}`)
+            router.push(buildProductEditPath(row.original._id, searchParams))
           }}
           title="Edit Product"
         >
@@ -197,6 +198,7 @@ const getColumns = (router, dispatch, setDeleteModal) => [
 
 function ProductsDisplayContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const dispatch = useDispatch()
   const { params } = useTableQueryParams()
   const [categories, setCategories] = useState([])
@@ -237,8 +239,8 @@ function ProductsDisplayContent() {
 
   // Create columns with router
   const columns = useMemo(
-    () => getColumns(router, dispatch, setDeleteModal),
-    [router, dispatch],
+    () => getColumns(router, dispatch, setDeleteModal, searchParams),
+    [router, dispatch, searchParams],
   )
 
   const {
@@ -322,8 +324,8 @@ function ProductsDisplayContent() {
             limit: params?.pageSize || 10,
             filterBy: params?.filterBy || undefined,
             search: params?.search || undefined,
-            sortBy: params?.sortBy || undefined,
-            sortOrder: params?.direction || undefined,
+            sortBy: params?.sortBy || 'createdAt',
+            sortOrder: params?.direction || 'desc',
           }),
         )
       } catch (error) {

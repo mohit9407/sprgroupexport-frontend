@@ -57,13 +57,6 @@ export default function ProductDetails() {
   const offers =
     useSelector((state) => selectProductOffers(product?._id)(state)) || []
 
-  const scrollToSpecial = () => {
-    const element = document.getElementById('why-special')
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' })
-    }
-  }
-
   // Get attributes from Redux store
   const attributes = useSelector(selectAllAttributes)
   const attributesStatus = useSelector(selectAttributeStatus)
@@ -351,9 +344,29 @@ export default function ProductDetails() {
             <h1 className="text-2xl font-medium text-[#b7853f] mb-1">
               {product.productName}
             </h1>
-            <h2 className="text-gray-600 text-sm mb-4">
+            <h2 className="text-gray-600 text-sm mb-1">
               {product.productModel}
             </h2>
+
+            {/* Metal and Diamond Summary */}
+            {(product?.carat ||
+              product?.goldColor ||
+              product?.gram ||
+              product?.diamondCarat ||
+              product?.diamondColor ||
+              product?.diamondClarity) && (
+              <p className="text-gray-600 text-sm mb-4">
+                {product?.carat && `Set in ${product.carat} KT`}
+                {product?.goldColor && ` ${product.goldColor}`}
+                {product?.gram && ` (${product.gram} g)`}
+                {product?.diamondCarat &&
+                  ` with diamonds (${product.diamondCarat} ct`}
+                {(product?.diamondColor || product?.diamondClarity) &&
+                  `, ${[product.diamondColor, product.diamondClarity].filter(Boolean).join('-')}`}
+                {product?.diamondCarat && `)`}
+              </p>
+            )}
+
             <div className="mb-6">
               <div className="flex items-center gap-2">
                 <span className="text-2xl font-bold text-[#b7853f]">
@@ -396,8 +409,145 @@ export default function ProductDetails() {
               </div>
             )}
 
+            {/* Metal Details Section */}
+            {(product?.goldColor ||
+              product?.carat ||
+              product?.gram ||
+              product?.ornamentSize ||
+              product?.grossWeight ||
+              product?.netWeight) && (
+              <div className="mb-6 bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-lg font-medium text-gray-900 mb-3">
+                  Metal Details
+                </h3>
+                <dl className="grid grid-cols-2 gap-2 text-sm">
+                  {product?.goldColor && (
+                    <div className="flex flex-col gap-1">
+                      <dt className="text-gray-600">Gold Color</dt>
+                      <dd className="font-medium text-gray-900">
+                        {product.goldColor}
+                      </dd>
+                    </div>
+                  )}
+                  {product?.carat && (
+                    <div className="flex flex-col gap-1">
+                      <dt className="text-gray-600">Carat</dt>
+                      <dd className="font-medium text-gray-900">
+                        {product.carat}K
+                      </dd>
+                    </div>
+                  )}
+                  {product?.gram && (
+                    <div className="flex flex-col gap-1">
+                      <dt className="text-gray-600">Weight</dt>
+                      <dd className="font-medium text-gray-900">
+                        {product.gram}g
+                      </dd>
+                    </div>
+                  )}
+                  {product?.ornamentSize && (
+                    <div className="flex flex-col gap-1">
+                      <dt className="text-gray-600">Ornament Size</dt>
+                      <dd className="font-medium text-gray-900">
+                        {product.ornamentSize}
+                      </dd>
+                    </div>
+                  )}
+                  {product?.grossWeight && (
+                    <div className="flex flex-col gap-1">
+                      <dt className="text-gray-600">Gross Weight</dt>
+                      <dd className="font-medium text-gray-900">
+                        {product.grossWeight}g
+                      </dd>
+                    </div>
+                  )}
+                  {product?.netWeight && (
+                    <div className="flex flex-col gap-1">
+                      <dt className="text-gray-600">Net Weight</dt>
+                      <dd className="font-medium text-gray-900">
+                        {product.netWeight}g
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+              </div>
+            )}
+
+            {/* Diamond Details Section */}
+            {(product?.diamondColor ||
+              product?.diamondClarity ||
+              product?.diamondSize ||
+              product?.totalWeight ||
+              product?.totalNoOfDiamonds ||
+              product?.diamondPrice ||
+              product?.diamondCarat) && (
+              <div className="mb-6 bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-lg font-medium text-gray-900 mb-3">
+                  Diamond Details
+                </h3>
+                <dl className="grid grid-cols-2 gap-2 text-sm">
+                  {product?.diamondColor && (
+                    <div className="flex flex-col gap-1">
+                      <dt className="text-gray-600">Diamond Color</dt>
+                      <dd className="font-medium text-gray-900">
+                        {product.diamondColor}
+                      </dd>
+                    </div>
+                  )}
+                  {product?.diamondClarity && (
+                    <div className="flex flex-col gap-1">
+                      <dt className="text-gray-600">Diamond Clarity</dt>
+                      <dd className="font-medium text-gray-900">
+                        {product.diamondClarity}
+                      </dd>
+                    </div>
+                  )}
+                  {product?.diamondSize && (
+                    <div className="flex flex-col gap-1">
+                      <dt className="text-gray-600">Diamond Size</dt>
+                      <dd className="font-medium text-gray-900">
+                        {product.diamondSize}
+                      </dd>
+                    </div>
+                  )}
+                  {product?.diamondCarat && (
+                    <div className="flex flex-col gap-1">
+                      <dt className="text-gray-600">Diamond Carat</dt>
+                      <dd className="font-medium text-gray-900">
+                        {product.diamondCarat}
+                      </dd>
+                    </div>
+                  )}
+                  {product?.totalWeight && (
+                    <div className="flex flex-col gap-1">
+                      <dt className="text-gray-600">Total Weight</dt>
+                      <dd className="font-medium text-gray-900">
+                        {product.totalWeight}g
+                      </dd>
+                    </div>
+                  )}
+                  {product?.totalNoOfDiamonds && (
+                    <div className="flex flex-col gap-1">
+                      <dt className="text-gray-600">Total No. of Diamonds</dt>
+                      <dd className="font-medium text-gray-900">
+                        {product.totalNoOfDiamonds}
+                      </dd>
+                    </div>
+                  )}
+                  {product?.diamondPrice && (
+                    <div className="flex flex-col gap-1">
+                      <dt className="text-gray-600">Diamond Price</dt>
+                      <dd className="font-medium text-gray-900">
+                        ${product.diamondPrice}
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+              </div>
+            )}
+
             {/* Product Specifications */}
-            {detailRows.length > 0 && (
+            {/* {detailRows.length > 0 && (
               <dl className="mb-6 divide-y divide-gray-200 border-y border-gray-200 text-sm">
                 {detailRows.map((row) => (
                   <div
@@ -411,7 +561,7 @@ export default function ProductDetails() {
                   </div>
                 ))}
               </dl>
-            )}
+            )} */}
 
             {/* Quantity Selector */}
             <div className="flex items-center mb-2">
@@ -469,24 +619,6 @@ export default function ProductDetails() {
               </button>
             </div>
 
-            {/* Why It's Special */}
-            <div className="border-t border-gray-200 pt-6 mb-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-3">
-                WHY IT&apos;S SPECIAL
-              </h3>
-              <p className="text-sm text-gray-600 mb-2">
-                Elevate your look with this stunning Gold Tone Clemina Hinge
-                Metallic Cuff from Ted Baker. The intricate design and premium
-                finish make it a perfect accessory for any occasion.
-              </p>
-              <button
-                onClick={scrollToSpecial}
-                className="text-sm text-[#b7853f] hover:underline cursor-pointer"
-              >
-                Read More
-              </button>
-            </div>
-
             <div className="border-t border-b border-gray-200 py-4">
               <div className="flex space-x-1">
                 <button
@@ -519,9 +651,76 @@ export default function ProductDetails() {
                       </h4>
 
                       {product?.description && (
-                        <p className="text-gray-600 leading-relaxed whitespace-pre-line">
+                        <p className="text-gray-600 leading-relaxed whitespace-pre-line mb-4">
                           {product.description}
                         </p>
+                      )}
+
+                      {/* Video Link */}
+                      {product?.videoEmbedLink && (
+                        <div className="mt-4">
+                          <h4 className="text-lg font-medium text-gray-900 mb-3">
+                            YouTube Video
+                          </h4>
+                          <a
+                            href={product.videoEmbedLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[#b7853f] hover:underline"
+                          >
+                            Watch Video
+                          </a>
+                        </div>
+                      )}
+
+                      {/* Additional Details */}
+                      {(product?.productDetails?.materialType ||
+                        product?.productDetails?.metalType ||
+                        product?.productDetails?.countryOfOrigin) && (
+                        <div className="mt-6">
+                          <h4 className="text-lg font-medium text-gray-900 mb-3">
+                            Additional Information
+                          </h4>
+                          <dl className="space-y-2 text-sm">
+                            {product?.productDetails?.materialType && (
+                              <div className="flex flex-col gap-1">
+                                <dt className="text-gray-600">Material Type</dt>
+                                <dd className="font-medium text-gray-900">
+                                  {product.productDetails.materialType}
+                                </dd>
+                              </div>
+                            )}
+                            {product?.productDetails?.metalType && (
+                              <div className="flex flex-col gap-1">
+                                <dt className="text-gray-600">Metal Type</dt>
+                                <dd className="font-medium text-gray-900">
+                                  {product.productDetails.metalType}
+                                </dd>
+                              </div>
+                            )}
+                            {product?.productDetails?.countryOfOrigin && (
+                              <div className="flex flex-col gap-1">
+                                <dt className="text-gray-600">
+                                  Country of Origin
+                                </dt>
+                                <dd className="font-medium text-gray-900">
+                                  {product.productDetails.countryOfOrigin}
+                                </dd>
+                              </div>
+                            )}
+                            {product?.productDetails?.occasionType?.length >
+                              0 && (
+                              <div className="flex flex-col gap-1">
+                                <dt className="text-gray-600">Occasions</dt>
+                                <dd className="font-medium text-gray-900">
+                                  {product.productDetails.occasionType.join(
+                                    ', ',
+                                  )}
+                                </dd>
+                              </div>
+                            )}
+                          </dl>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -593,20 +792,6 @@ export default function ProductDetails() {
             </div>
           </div>
         )}
-
-        {/* Why It's Special Section */}
-        <div id="why-special" className="mt-16 mb-12 px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-2xl font-medium text-gray-900 mb-6">
-              WHY IT&apos;S SPECIAL
-            </h2>
-            <p className="text-gray-600 leading-relaxed">
-              Elevate your look with this stunning Gold Tone Clemina Hinge
-              Metallic Cuff from Ted Baker. The intricate design and premium
-              finish make it a perfect accessory for any occasion.
-            </p>
-          </div>
-        </div>
 
         {/* Related Products Section */}
         {product && (
