@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux'
@@ -7,7 +8,7 @@ import { fetchCategoryById } from '@/features/categories/categoryDetailsSlice'
 import CategoryFormPage from '@/components/admin/CategoryFormPage/CategoryFormPage'
 import { fetchAllCategories } from '@/features/categories/categoriesSlice'
 
-export default function EditCategoryPage() {
+function EditCategoryContent() {
   const { id } = useParams()
   const router = useRouter()
   const dispatch = useDispatch()
@@ -85,5 +86,19 @@ export default function EditCategoryPage() {
       defaultValues={defaultValues}
       title={`Edit Category: ${category.name}`}
     />
+  )
+}
+
+export default function EditCategoryPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500"></div>
+        </div>
+      }
+    >
+      <EditCategoryContent />
+    </Suspense>
   )
 }

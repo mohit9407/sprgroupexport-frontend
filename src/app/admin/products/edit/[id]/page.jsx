@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useEffect } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux'
@@ -11,7 +12,7 @@ import ProductFormPage from '@/components/admin/ProductFormPage/ProductFormPage'
 import { fetchAllCategories } from '@/features/categories/categoriesSlice'
 import { getProductsListReturnPath } from '@/utils/adminRouteUtils'
 
-export default function EditProductPage() {
+function EditProductContent() {
   const { id } = useParams()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -155,5 +156,19 @@ export default function EditProductPage() {
         title={`Edit Product: ${product.productName}`}
       />
     </div>
+  )
+}
+
+export default function EditProductPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500"></div>
+        </div>
+      }
+    >
+      <EditProductContent />
+    </Suspense>
   )
 }
