@@ -14,17 +14,80 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
 
   // Combine main images with side images if they exist
   const allImages = React.useMemo(() => {
-    const mainImages = Array.isArray(images)
-      ? [...images]
-      : images
-        ? [images]
-        : []
+    let mainImages = []
+
+    // Handle main image - could be an object with videoUrl/mediaType or a URL string
+    if (images) {
+      if (typeof images === 'object') {
+        // Check if main image is a video
+        const isVideo =
+          images.type === 'video' ||
+          images.mediaType === 'video' ||
+          images.videoUrl
+        if (isVideo) {
+          mainImages.push({
+            type: 'video',
+            url: images.videoUrl,
+            thumbnailUrl: images.thumbnailUrl,
+            description: `${productName} main video`,
+          })
+        } else {
+          // It's an image object
+          const imgUrl =
+            images.mediumUrl || images.largeUrl || images.thumbnailUrl || ''
+          if (imgUrl) {
+            mainImages.push({
+              type: 'image',
+              url: imgUrl,
+              description: `${productName} main image`,
+            })
+          }
+        }
+      } else if (typeof images === 'string') {
+        // It's a URL string
+        mainImages.push({
+          type: 'image',
+          url: images,
+          description: `${productName} main image`,
+        })
+      } else if (Array.isArray(images)) {
+        // It's an array of images
+        mainImages = images.map((img) => {
+          if (typeof img === 'object') {
+            const isVideo =
+              img.type === 'video' || img.mediaType === 'video' || img.videoUrl
+            if (isVideo) {
+              return {
+                type: 'video',
+                url: img.videoUrl,
+                thumbnailUrl: img.thumbnailUrl,
+                description: `${productName} video`,
+              }
+            }
+            const imgUrl =
+              img.mediumUrl || img.largeUrl || img.thumbnailUrl || img.url || ''
+            return {
+              type: 'image',
+              url: imgUrl,
+              description: `${productName} image`,
+            }
+          }
+          return {
+            type: 'image',
+            url: img,
+            description: `${productName} image`,
+          }
+        })
+      }
+    }
 
     const additionalImages = Array.isArray(sideImages)
       ? sideImages
           .map((img) => {
-            // Handle video files
-            if (img.type === 'video') {
+            // Handle video files - check for type, mediaType, or videoUrl
+            const isVideo =
+              img.type === 'video' || img.mediaType === 'video' || img.videoUrl
+            if (isVideo) {
               return {
                 type: 'video',
                 url: img.videoUrl,
@@ -111,7 +174,9 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
               ✕
             </button>
             <div className="relative w-full h-full">
-              {allImages[selectedImage]?.type === 'video' ? (
+              {allImages[selectedImage]?.type === 'video' ||
+              allImages[selectedImage]?.mediaType === 'video' ||
+              allImages[selectedImage]?.videoUrl ? (
                 <>
                   <video
                     src={allImages[selectedImage].url}
@@ -147,36 +212,48 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
 
             {/* Thumbnail Navigation */}
             <div className="flex justify-center mt-4 space-x-2">
-              {allImages.map((img, index) => (
-                <button
-                  key={index}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setSelectedImage(index)
-                  }}
-                  className={`w-16 h-16 flex-shrink-0 border-2 transition-all relative ${
-                    selectedImage === index
-                      ? 'border-[#b7853f]'
-                      : 'border-transparent'
-                  }`}
-                  aria-label={`View ${img.type === 'video' ? 'video' : 'image'} ${index + 1}`}
-                >
-                  <div className="relative w-full h-full p-1">
-                    <SafeImage
-                      src={
-                        img.type === 'video' ? img.thumbnailUrl : img.url || img
-                      }
-                      alt={
-                        img.description ||
-                        `${productName} ${img.type === 'video' ? 'video' : 'image'} ${index + 1}`
-                      }
-                      fill
-                      style={{ objectFit: 'cover' }}
-                      className="w-full h-full"
-                    />
-                  </div>
-                </button>
-              ))}
+              {allImages.map((img, index) => {
+                const isVideo =
+                  img.type === 'video' ||
+                  img.mediaType === 'video' ||
+                  img.videoUrl
+                return (
+                  <button
+                    key={index}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSelectedImage(index)
+                    }}
+                    className={`w-16 h-16 flex-shrink-0 border-2 transition-all relative ${
+                      selectedImage === index
+                        ? 'border-[#b7853f]'
+                        : 'border-transparent'
+                    }`}
+                    aria-label={`View ${isVideo ? 'video' : 'image'} ${index + 1}`}
+                  >
+                    <div className="relative w-full h-full p-1">
+                      {isVideo ? (
+                        <video
+                          src={img.url}
+                          className="w-full h-full object-cover"
+                          muted
+                        />
+                      ) : (
+                        <SafeImage
+                          src={img.url || img}
+                          alt={
+                            img.description ||
+                            `${productName} image ${index + 1}`
+                          }
+                          fill
+                          style={{ objectFit: 'cover' }}
+                          className="w-full h-full"
+                        />
+                      )}
+                    </div>
+                  </button>
+                )
+              })}
             </div>
           </div>
         </div>
@@ -194,7 +271,11 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
           }}
           onMouseMove={(e) => {
             if (!isHovered) return
-            if (allImages[selectedImage]?.type === 'video') return
+            const isVideo =
+              allImages[selectedImage]?.type === 'video' ||
+              allImages[selectedImage]?.mediaType === 'video' ||
+              allImages[selectedImage]?.videoUrl
+            if (isVideo) return
 
             const container = e.currentTarget.getBoundingClientRect()
             const x = ((e.clientX - container.left) / container.width) * 100
@@ -224,9 +305,17 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
           {/* Main Image */}
           <div
             className="relative w-full h-full cursor-pointer"
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              const mediaUrl =
+                allImages[selectedImage]?.url || allImages[selectedImage]
+              if (mediaUrl) {
+                window.open(mediaUrl, '_blank')
+              }
+            }}
           >
-            {allImages[selectedImage]?.type === 'video' ? (
+            {allImages[selectedImage]?.type === 'video' ||
+            allImages[selectedImage]?.mediaType === 'video' ||
+            allImages[selectedImage]?.videoUrl ? (
               <>
                 <video
                   ref={videoRef}
@@ -264,7 +353,9 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
                 style={{
                   ...zoomStyle,
                   backgroundImage:
-                    allImages[selectedImage]?.type === 'video'
+                    allImages[selectedImage]?.type === 'video' ||
+                    allImages[selectedImage]?.mediaType === 'video' ||
+                    allImages[selectedImage]?.videoUrl
                       ? `url(${allImages[selectedImage].thumbnailUrl})`
                       : zoomStyle.backgroundImage,
                 }}
@@ -326,8 +417,10 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
 
               if (index < start || index >= end) return null
 
-              const imgSrc =
-                img.type === 'video' ? img.thumbnailUrl : img.url || img
+              const isVideo =
+                img.type === 'video' ||
+                img.mediaType === 'video' ||
+                img.videoUrl
               return (
                 <button
                   key={index}
@@ -338,31 +431,25 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
                       ? 'ring-2 ring-[#b7853f]'
                       : 'border border-gray-200 hover:border-[#b7853f]'
                   }`}
-                  aria-label={`Select ${img.type === 'video' ? 'video' : 'image'} ${index + 1}`}
+                  aria-label={`Select ${isVideo ? 'video' : 'image'} ${index + 1}`}
                 >
                   <div className="relative w-full h-full p-1">
-                    <SafeImage
-                      src={imgSrc}
-                      alt={
-                        img.description ||
-                        `${productName} ${img.type === 'video' ? 'video' : 'image'} ${index + 1}`
-                      }
-                      fill
-                      style={{ objectFit: 'cover' }}
-                      className="w-full h-full"
-                    />
-                    {img.type === 'video' && (
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div className="bg-black/50 rounded-full p-1.5">
-                          <svg
-                            className="w-4 h-4 text-white"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                          </svg>
-                        </div>
-                      </div>
+                    {isVideo ? (
+                      <video
+                        src={img.url}
+                        className="w-full h-full object-cover"
+                        muted
+                      />
+                    ) : (
+                      <SafeImage
+                        src={img.url || img}
+                        alt={
+                          img.description || `${productName} image ${index + 1}`
+                        }
+                        fill
+                        style={{ objectFit: 'cover' }}
+                        className="w-full h-full"
+                      />
                     )}
                   </div>
                 </button>

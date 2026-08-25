@@ -5,12 +5,13 @@ import { FaArrowRightLong, FaArrowLeftLong } from 'react-icons/fa6'
 import SafeImage from '../SafeImage'
 
 const Hero = () => {
-  // Define image sources
-  const heroImages = ['/hero2.jpg', '/hero3.jpg', '/hero4.jpg', '/hero5.jpg']
+  // Define media sources (2 videos and 2 images)
+  const heroImages = ['/3977.mp4', '/3971.mp4', '/3969.jpg', '/3975.jpg']
 
-  // Create heroSlides array with the images and content
+  // Create heroSlides array with the media and content
   const heroSlides = heroImages.map((src, index) => ({
     src,
+    isVideo: src.endsWith('.mp4'),
     title: 'SPR Group Export',
     subtitle: 'Your trusted partner in international trade',
     highlightText: index === 0 ? 'New Arrivals' : null,
@@ -77,14 +78,25 @@ const Hero = () => {
             }`}
           >
             <div className="relative w-full h-full">
-              <SafeImage
-                src={slide.src}
-                alt={slide.title}
-                fill
-                priority={index === 0}
-                sizes="100vw"
-                quality={75}
-              />
+              {slide.isVideo ? (
+                <video
+                  src={slide.src}
+                  className="w-full h-full object-cover"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                />
+              ) : (
+                <SafeImage
+                  src={slide.src}
+                  alt={slide.title}
+                  fill
+                  priority={index === 0}
+                  sizes="100vw"
+                  quality={75}
+                />
+              )}
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
           </div>

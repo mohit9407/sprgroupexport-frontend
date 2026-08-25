@@ -871,14 +871,26 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
         formData.append('image', imageFile)
       } else if (selectedImage) {
         // If an image was selected from the media library
-        formData.append('image', JSON.stringify(selectedImage))
+        const imageToSend = {
+          ...selectedImage,
+          mediaType: selectedImage.videoUrl
+            ? 'video'
+            : selectedImage.type || 'image',
+        }
+        delete imageToSend.type
+        formData.append('image', JSON.stringify(imageToSend))
       } else if (!existingImage && data.image === null) {
         formData.append('removeImage', 'true')
       }
 
       // Handle side images
       if (selectedSideImages.length > 0) {
-        formData.append('sideImages', JSON.stringify(selectedSideImages))
+        const sideImagesToSend = selectedSideImages.map((img) => ({
+          ...img,
+          mediaType: img.videoUrl ? 'video' : img.type || 'image',
+        }))
+        sideImagesToSend.forEach((img) => delete img.type)
+        formData.append('sideImages', JSON.stringify(sideImagesToSend))
       } else if (data.sideImages && data.sideImages.length === 0) {
         formData.append('removeSideImages', 'true')
       }
@@ -906,12 +918,24 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
         formData.append('image', imageFile)
       } else if (selectedImage) {
         // If an image was selected from the media library
-        formData.append('image', JSON.stringify(selectedImage))
+        const imageToSend = {
+          ...selectedImage,
+          mediaType: selectedImage.videoUrl
+            ? 'video'
+            : selectedImage.type || 'image',
+        }
+        delete imageToSend.type
+        formData.append('image', JSON.stringify(imageToSend))
       }
 
       // Handle side images for new product
       if (selectedSideImages.length > 0) {
-        formData.append('sideImages', JSON.stringify(selectedSideImages))
+        const sideImagesToSend = selectedSideImages.map((img) => ({
+          ...img,
+          mediaType: img.videoUrl ? 'video' : img.type || 'image',
+        }))
+        sideImagesToSend.forEach((img) => delete img.type)
+        formData.append('sideImages', JSON.stringify(sideImagesToSend))
       }
     }
 
@@ -1487,18 +1511,27 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                 {existingImage && !selectedImage && (
                   <div className="mb-4">
                     <p className="text-sm text-gray-500 mb-2">Current Image:</p>
-                    <SafeImage
-                      src={
-                        existingImage.thumbnailUrl ||
-                        existingImage.mediumUrl ||
-                        existingImage.largeUrl
-                      }
-                      alt="Current product"
-                      width={128}
-                      height={128}
-                      className="object-cover rounded"
-                      fallback="/images/placeholder-product.png"
-                    />
+                    {existingImage.mediaType === 'video' ||
+                    existingImage.type === 'video' ? (
+                      <video
+                        src={existingImage.videoUrl}
+                        className="w-32 h-32 object-cover rounded"
+                        controls
+                      />
+                    ) : (
+                      <SafeImage
+                        src={
+                          existingImage.thumbnailUrl ||
+                          existingImage.mediumUrl ||
+                          existingImage.largeUrl
+                        }
+                        alt="Current product"
+                        width={128}
+                        height={128}
+                        className="object-cover rounded"
+                        fallback="/images/placeholder-product.png"
+                      />
+                    )}
                   </div>
                 )}
                 <FileUploadButton
@@ -1534,27 +1567,25 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                       {selectedSideImages.map((img, index) => (
                         <div key={index} className="relative group">
                           <div className="relative">
-                            <SafeImage
-                              src={img.thumbnailUrl || img.mediumUrl || img}
-                              alt={`Side ${index + 1}`}
-                              width={96}
-                              height={96}
-                              className="object-cover rounded border"
-                              fallback="/images/placeholder-product.png"
-                            />
-                            {/* Video indicator icon */}
-                            {img.type === 'video' && (
-                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                <div className="bg-black/50 rounded-full p-1">
-                                  <svg
-                                    className="w-4 h-4 text-white"
-                                    fill="currentColor"
-                                    viewBox="0 0 20 20"
-                                  >
-                                    <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                                  </svg>
-                                </div>
-                              </div>
+                            {img.mediaType === 'video' ||
+                            img.type === 'video' ||
+                            img.videoUrl ? (
+                              <>
+                                <video
+                                  src={img.videoUrl}
+                                  className="w-24 h-24 object-cover rounded border"
+                                  controls
+                                />
+                              </>
+                            ) : (
+                              <SafeImage
+                                src={img.thumbnailUrl || img.mediumUrl || img}
+                                alt={`Side ${index + 1}`}
+                                width={96}
+                                height={96}
+                                className="object-cover rounded border"
+                                fallback="/images/placeholder-product.png"
+                              />
                             )}
                           </div>
                           <button

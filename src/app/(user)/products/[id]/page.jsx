@@ -332,7 +332,7 @@ export default function ProductDetails() {
           <div className="lg:w-1/2 lg:sticky lg:top-8 lg:self-start">
             <div className="lg:pr-4">
               <ProductImages
-                images={product.image.mediumUrl}
+                images={product.image}
                 sideImages={product.sideImages || []}
                 productName={product.productName}
               />

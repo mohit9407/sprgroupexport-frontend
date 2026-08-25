@@ -60,7 +60,7 @@ const getCategoryNameById = (categoryId, categories) => {
 }
 
 const ProductCard = ({
-  image: imageUrl,
+  image: imageObject,
   brand,
   name,
   price,
@@ -75,6 +75,18 @@ const ProductCard = ({
   isLiked: isLikedProp = false,
   ...props
 }) => {
+  // Determine if image is a video
+  const isVideo =
+    typeof imageObject === 'object' &&
+    (imageObject?.mediaType === 'video' ||
+      imageObject?.type === 'video' ||
+      imageObject?.videoUrl)
+  const videoUrl =
+    typeof imageObject === 'object' ? imageObject?.videoUrl : null
+  const imageUrl =
+    typeof imageObject === 'object'
+      ? imageObject?.mediumUrl || imageObject?.thumbnailUrl
+      : imageObject
   const router = useRouter()
   const dispatch = useDispatch()
   const [isHovered, setIsHovered] = useState(false)
@@ -249,17 +261,28 @@ const ProductCard = ({
           {/* Image */}
           <div className="w-full max-w-[280px] relative h-48 md:h-64">
             <div className="relative w-full h-full overflow-hidden rounded">
-              <SafeImage
-                src={imageUrl?.mediumUrl}
-                alt={name}
-                fill
-                unoptimized={true}
-                className="object-cover transition-transform duration-500 group-hover:scale-110"
-                onError={handleImageError}
-                sizes="(max-width: 768px) 100vw, 25vw"
-                priority={false}
-                fallback="/images/placeholder-product.png"
-              />
+              {isVideo && videoUrl ? (
+                <video
+                  src={videoUrl}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  muted
+                  autoPlay
+                  loop
+                  playsInline
+                />
+              ) : (
+                <SafeImage
+                  src={imageUrl}
+                  alt={name}
+                  fill
+                  unoptimized={true}
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  onError={handleImageError}
+                  sizes="(max-width: 768px) 100vw, 25vw"
+                  priority={false}
+                  fallback="/images/placeholder-product.png"
+                />
+              )}
               {/* Hover Overlay */}
               <div
                 className={`absolute inset-0 bg-black/20 flex flex-col items-center justify-center gap-4 p-4 transition-all duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
@@ -389,17 +412,28 @@ const ProductCard = ({
         {/* Image Container */}
         <div className="relative w-full pt-[100%] mb-4 overflow-hidden rounded">
           <div className="absolute inset-0 overflow-hidden">
-            <SafeImage
-              src={imageUrl?.mediumUrl}
-              alt={name}
-              fill
-              unoptimized={true}
-              className={`object-cover transition-transform duration-500 ${isHovered ? 'scale-110' : 'scale-100'}`}
-              onError={handleImageError}
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              priority={false}
-              fallback="/images/placeholder-product.png"
-            />
+            {isVideo && videoUrl ? (
+              <video
+                src={videoUrl}
+                className="w-full h-full object-cover transition-transform duration-500"
+                muted
+                autoPlay
+                loop
+                playsInline
+              />
+            ) : (
+              <SafeImage
+                src={imageUrl}
+                alt={name}
+                fill
+                unoptimized={true}
+                className={`object-cover transition-transform duration-500 ${isHovered ? 'scale-110' : 'scale-100'}`}
+                onError={handleImageError}
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                priority={false}
+                fallback="/images/placeholder-product.png"
+              />
+            )}
           </div>
           {/* Hover Overlay */}
           <div

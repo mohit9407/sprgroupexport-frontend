@@ -128,7 +128,6 @@ export default function ImageSelectionModal({
                     <>
                       <video
                         src={image.videoUrl}
-                        // poster={image.thumbnailUrl}
                         className="max-h-28 object-contain w-full"
                         style={{ maxWidth: '100%' }}
                       />

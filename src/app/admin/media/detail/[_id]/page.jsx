@@ -59,6 +59,7 @@ const page = async ({ params }) => {
           <div className="p-1 mb-4 border-2 border-gray-300 rounded-md">
             <video
               src={image.videoUrl}
+              poster={image.thumbnailUrl}
               controls
               className="w-full max-h-[500px]"
               style={{ maxWidth: '100%' }}

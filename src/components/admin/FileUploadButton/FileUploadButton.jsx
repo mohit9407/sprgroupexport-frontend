@@ -36,30 +36,50 @@ const FileUploadButton = forwardRef(
           {label}
         </label>
         {!multiSelect ? (
-          selectedItem?.thumbnailUrl && (
+          selectedItem && (
             <div className="mb-2">
-              <SafeImage
-                src={selectedItem.thumbnailUrl}
-                alt="Selected Image"
-                className="h-16 w-16 object-cover rounded border"
-                width={64}
-                height={64}
-                fallback="/images/placeholder-product.png"
-              />
+              {selectedItem.mediaType === 'video' ||
+              selectedItem.type === 'video' ||
+              selectedItem.videoUrl ? (
+                <video
+                  src={selectedItem.videoUrl}
+                  className="h-16 w-16 object-cover rounded border"
+                  controls
+                />
+              ) : (
+                <SafeImage
+                  src={selectedItem.thumbnailUrl}
+                  alt="Selected Image"
+                  className="h-16 w-16 object-cover rounded border"
+                  width={64}
+                  height={64}
+                  fallback="/images/placeholder-product.png"
+                />
+              )}
             </div>
           )
         ) : (
           <div className="mb-2 flex flex-wrap gap-2">
             {selectedItems?.map((item, index) => (
               <div key={item._id || index} className="relative">
-                <SafeImage
-                  src={item.thumbnailUrl}
-                  alt={`Selected ${index + 1}`}
-                  className="h-16 w-16 object-cover rounded border"
-                  width={64}
-                  height={64}
-                  fallback="/images/placeholder-product.png"
-                />
+                {item.mediaType === 'video' ||
+                item.type === 'video' ||
+                item.videoUrl ? (
+                  <video
+                    src={item.videoUrl}
+                    className="h-16 w-16 object-cover rounded border"
+                    controls
+                  />
+                ) : (
+                  <SafeImage
+                    src={item.thumbnailUrl}
+                    alt={`Selected ${index + 1}`}
+                    className="h-16 w-16 object-cover rounded border"
+                    width={64}
+                    height={64}
+                    fallback="/images/placeholder-product.png"
+                  />
+                )}
                 <span className="absolute -top-2 -right-2 bg-cyan-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                   {index + 1}
                 </span>

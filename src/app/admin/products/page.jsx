@@ -27,14 +27,30 @@ const getColumns = (router, dispatch, setDeleteModal, searchParams) => [
     header: 'Image',
     cell: (info) => {
       const imageData = info.getValue()
+      const isVideo =
+        typeof imageData === 'object' &&
+        (imageData?.mediaType === 'video' || imageData?.type === 'video')
+      const videoUrl =
+        typeof imageData === 'object' ? imageData?.videoUrl : null
       const imageUrl =
         typeof imageData === 'object'
           ? imageData?.thumbnailUrl || imageData?.mediumUrl
           : imageData
 
       return (
-        <div className="w-16 h-16 relative bg-gray-100 flex items-center justify-center rounded">
-          {imageUrl ? (
+        <div className="w-16 h-16 relative bg-gray-100 flex items-center justify-center rounded overflow-hidden">
+          {isVideo && videoUrl ? (
+            <video
+              src={videoUrl}
+              className="w-full h-full object-cover rounded"
+              muted
+              onMouseEnter={(e) => e.target.play()}
+              onMouseLeave={(e) => {
+                e.target.pause()
+                e.target.currentTime = 0
+              }}
+            />
+          ) : imageUrl ? (
             <SafeImage
               src={imageUrl}
               alt="Product"

@@ -54,7 +54,7 @@ const NewArrivalSection = ({ title }) => {
 
       return {
         id: product._id,
-        image: product.image || '/images/placeholder-product.png',
+        image: product.image || null,
         brand: product.brand || 'Unknown Brand',
         name: product.productModel || product.productName || 'Unnamed Product',
         price: product.price || 0,
@@ -85,7 +85,9 @@ const NewArrivalSection = ({ title }) => {
     return (
       <section className="px-4 sm:px-6 lg:px-8 py-12">
         <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">{title || 'NEW ARRIVAL'}</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            {title || 'NEW ARRIVAL'}
+          </h2>
           <p className="text-gray-600">Loading products...</p>
         </div>
       </section>
@@ -106,7 +108,9 @@ const NewArrivalSection = ({ title }) => {
     <section className="px-4 sm:px-6 lg:px-8 py-12">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">{title || 'NEW ARRIVAL'}</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            {title || 'NEW ARRIVAL'}
+          </h2>
           <p className="text-gray-600">New Arrival Products</p>
         </div>
 

@@ -33,13 +33,20 @@ const CategorySection = ({ title }) => {
   const mappedCategories = categoriesData?.data
     ? categoriesData.data
         .filter((category) => !category.parent) // Only include categories with no parent
-        .map((category) => ({
-          id: category._id,
-          title: category.name?.toUpperCase() || 'CATEGORY',
-          image: category.image || '/bg1.jpg',
-          slug: category.slug,
-          onClick: () => handleCategoryClick(category),
-        }))
+        .map((category) => {
+          const isVideo =
+            Boolean(category.image?.videoUrl) ||
+            category.image?.mediaType === 'video'
+          return {
+            id: category._id,
+            title: category.name?.toUpperCase() || 'CATEGORY',
+            image: category.image || '/bg1.jpg',
+            slug: category.slug,
+            onClick: () => handleCategoryClick(category),
+            isVideo,
+            videoUrl: category.image?.videoUrl,
+          }
+        })
     : []
 
   // Show loading state
@@ -80,6 +87,8 @@ const CategorySection = ({ title }) => {
                   href={`/shop?category=${category.id}`}
                   onClick={category.onClick}
                   className="w-full h-full cursor-pointer hover:opacity-90 transition-opacity"
+                  isVideo={category.isVideo}
+                  videoUrl={category.videoUrl}
                 />
               </div>
             ))}

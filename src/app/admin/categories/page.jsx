@@ -39,11 +39,27 @@ const getColumns = (router, handleDeleteClick, searchParams) => [
     cell: (info) => {
       const value = info.getValue()
       const name = info.row.original.name
+      const isVideo = value?.mediaType === 'video' || value?.videoUrl
+      const videoUrl = value?.videoUrl
+      const imageUrl =
+        value?.thumbnailUrl || value?.mediumUrl || value?.largeUrl
       return (
         <div className="w-20 h-20 bg-gray-100 grid place-items-center overflow-hidden">
-          {value ? (
+          {isVideo && videoUrl ? (
+            <video
+              src={videoUrl}
+              poster={imageUrl}
+              className="w-full h-full object-cover"
+              muted
+              onMouseEnter={(e) => e.target.play()}
+              onMouseLeave={(e) => {
+                e.target.pause()
+                e.target.currentTime = 0
+              }}
+            />
+          ) : imageUrl ? (
             <SafeImage
-              src={value?.thumbnailUrl || value?.mediumUrl || value?.largeUrl}
+              src={imageUrl}
               alt={name}
               width={80}
               height={80}

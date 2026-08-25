@@ -51,6 +51,7 @@ export const getUpdatedObjectFields = (values, defaultValues) => {
 }
 
 export function getFileNameFromUrl(url = '') {
+  if (!url || typeof url !== 'string') return ''
   const fileWithPrefix = url.split('/').pop() || ''
   const index = fileWithPrefix.indexOf('_')
 
