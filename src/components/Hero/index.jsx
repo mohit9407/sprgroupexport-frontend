@@ -1,49 +1,102 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { FaArrowRightLong, FaArrowLeftLong } from 'react-icons/fa6'
 import SafeImage from '../SafeImage'
+import {
+  fetchHomeSliders,
+  selectHomeSliders,
+} from '@/features/home-slider/homeSliderSlice'
 
 const Hero = () => {
-  // Define media sources (2 videos and 2 images)
-  const heroImages = ['/3977.mp4', '/3971.mp4', '/3969.jpg', '/3975.jpg']
+  const dispatch = useDispatch()
+  const homeSliders = useSelector(selectHomeSliders)
 
-  // Create heroSlides array with the media and content
-  const heroSlides = heroImages.map((src, index) => ({
-    src,
-    isVideo: src.endsWith('.mp4'),
-    title: 'SPR Group Export',
-    subtitle: 'Your trusted partner in international trade',
-    highlightText: index === 0 ? 'New Arrivals' : null,
-    buttonText: 'Shop Now',
-    buttonLink: '/shop',
-  }))
+  // Create heroSlides array from home slider data or fallback to static defaults
+  const heroSlides =
+    homeSliders && homeSliders.length > 0
+      ? homeSliders.map((slider) => ({
+          src: slider.sliderVideo || slider.sliderImage,
+          isVideo: !!slider.sliderVideo,
+          title: slider.title || 'SPR Group Export',
+          subtitle:
+            slider.description || 'Your trusted partner in international trade',
+          highlightText: null,
+          buttonText: 'Shop Now',
+          buttonLink: '/shop',
+        }))
+      : [
+          {
+            src: '/3977.mp4',
+            isVideo: true,
+            title: 'SPR Group Export',
+            subtitle: 'Your trusted partner in international trade',
+            highlightText: 'New Arrivals',
+            buttonText: 'Shop Now',
+            buttonLink: '/shop',
+          },
+          {
+            src: '/3971.mp4',
+            isVideo: true,
+            title: 'SPR Group Export',
+            subtitle: 'Your trusted partner in international trade',
+            highlightText: null,
+            buttonText: 'Shop Now',
+            buttonLink: '/shop',
+          },
+          {
+            src: '/3969.jpg',
+            isVideo: false,
+            title: 'SPR Group Export',
+            subtitle: 'Your trusted partner in international trade',
+            highlightText: null,
+            buttonText: 'Shop Now',
+            buttonLink: '/shop',
+          },
+          {
+            src: '/3975.jpg',
+            isVideo: false,
+            title: 'SPR Group Export',
+            subtitle: 'Your trusted partner in international trade',
+            highlightText: null,
+            buttonText: 'Shop Now',
+            buttonLink: '/shop',
+          },
+        ]
 
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
   const [isHovered, setIsHovered] = useState(false)
 
   const nextSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev === heroImages.length - 1 ? 0 : prev + 1))
-  }, [heroImages.length])
+    setCurrentSlide((prev) => (prev === heroSlides.length - 1 ? 0 : prev + 1))
+  }, [heroSlides.length])
 
   const prevSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev === 0 ? heroImages.length - 1 : prev - 1))
-  }, [heroImages.length])
+    setCurrentSlide((prev) => (prev === 0 ? heroSlides.length - 1 : prev - 1))
+  }, [heroSlides.length])
 
   const goToSlide = (index) => {
     setCurrentSlide(index)
   }
 
+  // Fetch home sliders on component mount
+  useEffect(() => {
+    dispatch(fetchHomeSliders())
+  }, [dispatch])
+
   // Preload images on component mount
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    heroImages.forEach((src) => {
-      const img = new window.Image()
-      img.src = src
+    heroSlides.forEach((slide) => {
+      if (!slide.isVideo) {
+        const img = new window.Image()
+        img.src = slide.src
+      }
     })
-  }, [heroImages])
+  }, [heroSlides])
 
   // Auto slide functionality
   useEffect(() => {

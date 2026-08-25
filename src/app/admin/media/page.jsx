@@ -157,7 +157,6 @@ export default function MediaListPage() {
                     <>
                       <video
                         src={img.videoUrl}
-                        poster={img.thumbnailUrl}
                         className="max-h-28 object-contain"
                         style={{ maxWidth: '100%' }}
                       />

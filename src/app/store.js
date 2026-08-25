@@ -28,6 +28,7 @@ import gstReducer from '@/features/gst/gstSlice'
 import sliderImagesSlice from '@/features/slider-images/sliderImagesSlice'
 import contactReducer from '@/features/contact/contactSlice'
 import adminDashboardSlice from '@/features/admin-dashboard/adminDashboardSlice'
+import homeSliderReducer from '@/features/home-slider/homeSliderSlice'
 
 export const store = configureStore({
   reducer: {
@@ -60,5 +61,6 @@ export const store = configureStore({
     slider: sliderImagesSlice,
     contact: contactReducer,
     adminDashboard: adminDashboardSlice,
+    homeSlider: homeSliderReducer,
   },
 })

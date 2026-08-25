@@ -485,6 +485,7 @@ export const routeMeta = [
     parent: '/admin',
     icon: FaLaptopCode,
     sidebarChildrens: [
+      '/admin/settings/website/home-slider',
       // '/admin/settings/website/slider-images',
       '/admin/settings/website/parallax-banners',
       // '/admin/settings/website/banners',
@@ -501,6 +502,16 @@ export const routeMeta = [
   //   sidebar: true,
   //   icon: FaRegImages,
   // },
+
+  {
+    key: 'home-slider',
+    path: '/admin/settings/website/home-slider',
+    label: 'Home Slider',
+    description: 'Manage Home Page Slider Images...',
+    parent: '/admin/settings/website',
+    sidebar: true,
+    icon: FaRegImages,
+  },
 
   {
     key: 'parallax-banners',
