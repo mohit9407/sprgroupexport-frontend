@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { FaChevronRight } from 'react-icons/fa'
 
 export const CategoryFilter = ({
@@ -8,162 +8,108 @@ export const CategoryFilter = ({
   selectedCategories,
   toggleSubcategory,
 }) => {
-  const [expandedParent, setExpandedParent] = useState(null)
-  const [expandedChild, setExpandedChild] = useState(null)
+  const [expandedCategories, setExpandedCategories] = useState([])
 
-  const handleParentClick = (category) => {
-    if (category.children?.length > 0) {
-      setExpandedParent(expandedParent === category._id ? null : category._id)
-      setExpandedChild(null)
-    }
+  const toggleExpanded = (categoryId) => {
+    setExpandedCategories((previous) =>
+      previous.includes(categoryId)
+        ? previous.filter((id) => id !== categoryId)
+        : [...previous, categoryId],
+    )
   }
 
-  const handleChildClick = (child, e) => {
-    e.stopPropagation()
-    if (child.children?.length > 0) {
-      setExpandedChild(expandedChild === child._id ? null : child._id)
-    } else {
-      toggleSubcategory(child._id)
-    }
+  const getCategoryIds = (category) => {
+    const ids = [category._id]
+    category.children?.forEach((child) => ids.push(...getCategoryIds(child)))
+    return ids
   }
 
-  const handleGrandchildClick = (grandchildId, e) => {
-    e.stopPropagation()
-    toggleSubcategory(grandchildId)
-  }
+  const findCategoryPath = (tree, categoryId, path = []) => {
+    for (const category of tree) {
+      const nextPath = [...path, category._id]
+      if (category._id === categoryId) return nextPath
 
-  useEffect(() => {
-    categories.forEach((parent) => {
-      parent.children?.forEach((child) => {
-        child.children?.forEach((grandchild) => {
-          if (selectedCategories.includes(grandchild._id)) {
-            setExpandedParent(parent._id)
-            setExpandedChild(child._id)
-          }
-        })
-
-        if (selectedCategories.includes(child._id)) {
-          setExpandedParent(parent._id)
-        }
-      })
-
-      if (selectedCategories.includes(parent._id)) {
-        setExpandedParent(parent._id)
+      if (category.children?.length > 0) {
+        const foundPath = findCategoryPath(
+          category.children,
+          categoryId,
+          nextPath,
+        )
+        if (foundPath) return foundPath
       }
-    })
-  }, [selectedCategories, categories])
+    }
+    return null
+  }
+
+  const handleCategoryToggle = (category) => {
+    const path = findCategoryPath(categories, category._id) || [category._id]
+    const isSelected = selectedCategories.includes(category._id)
+
+    if (isSelected) {
+      toggleSubcategory(category._id)
+      return
+    }
+
+    const descendantIds = getCategoryIds(category)
+    const ancestorIds = path.slice(0, -1)
+    const conflictingIds = new Set([...descendantIds, ...ancestorIds])
+    const nextSelection = selectedCategories.filter(
+      (id) => !conflictingIds.has(id),
+    )
+
+    toggleSubcategory(category._id, nextSelection)
+  }
+
+  const renderCategory = (category, level = 0) => {
+    const hasChildren = category.children?.length > 0
+    const isExpanded = expandedCategories.includes(category._id)
+
+    return (
+      <div key={category._id} className="mb-1">
+        <div
+          className="w-full flex justify-between items-center py-1.5 px-1 text-left text-sm hover:bg-gray-50 rounded"
+          style={{ paddingLeft: `${level * 16 + 4}px` }}
+        >
+          <div className="flex items-center min-w-0">
+            <input
+              type="checkbox"
+              id={category._id}
+              className="h-4 w-4 shrink-0 text-[#BA8B4E] rounded border-gray-300 focus:ring-[#BA8B4E]"
+              checked={selectedCategories.includes(category._id)}
+              onChange={() => handleCategoryToggle(category)}
+            />
+            <label
+              htmlFor={category._id}
+              className={`ml-2 text-sm capitalize cursor-pointer ${level === 0 ? 'font-semibold' : 'text-gray-700'}`}
+            >
+              {category.name}
+            </label>
+          </div>
+          {hasChildren && (
+            <button
+              type="button"
+              aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${category.name}`}
+              className="p-1"
+              onClick={() => toggleExpanded(category._id)}
+            >
+              <FaChevronRight
+                className={`text-xs text-gray-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+              />
+            </button>
+          )}
+        </div>
+        {hasChildren && isExpanded && (
+          <div>
+            {category.children.map((child) => renderCategory(child, level + 1))}
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className="mb-6">
-      {categories.map((category) => (
-        <div key={category._id} className="mb-1">
-          {/* Parent Level - Gold, Silver, Others */}
-          <button
-            className="w-full flex justify-between items-center py-2 px-1 text-left text-sm font-medium hover:bg-gray-50 rounded"
-            onClick={() => handleParentClick(category)}
-          >
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id={category._id}
-                className="h-4 w-4 text-[#BA8B4E] rounded border-gray-300 focus:ring-[#BA8B4E]"
-                checked={selectedCategories.includes(category._id)}
-                onChange={() => {}}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  toggleSubcategory(category._id)
-                }}
-              />
-              <label
-                htmlFor={category._id}
-                className="ml-2 text-sm font-semibold capitalize cursor-pointer"
-              >
-                {category.name}
-              </label>
-            </div>
-            {category.children?.length > 0 && (
-              <FaChevronRight
-                className={`text-xs text-gray-400 transition-transform ${
-                  expandedParent === category._id ? 'rotate-90' : ''
-                }`}
-              />
-            )}
-          </button>
-
-          {/* Children Level - Women, Man */}
-          {expandedParent === category._id && category.children?.length > 0 && (
-            <div className="pl-4 mt-1">
-              {category.children.map((child) => (
-                <div key={child._id}>
-                  <button
-                    className="w-full flex justify-between items-center py-1.5 px-1 text-left text-sm hover:bg-gray-50 rounded"
-                    onClick={(e) => handleChildClick(child, e)}
-                  >
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id={child._id}
-                        className="h-4 w-4 text-[#BA8B4E] rounded border-gray-300 focus:ring-[#BA8B4E]"
-                        checked={selectedCategories.includes(child._id)}
-                        onChange={() => {}}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          toggleSubcategory(child._id)
-                        }}
-                      />
-                      <label
-                        htmlFor={child._id}
-                        className="ml-2 text-sm text-gray-700 capitalize cursor-pointer"
-                      >
-                        {child.name}
-                      </label>
-                    </div>
-                    {child.children?.length > 0 && (
-                      <FaChevronRight
-                        className={`text-xs text-gray-400 transition-transform ${
-                          expandedChild === child._id ? 'rotate-90' : ''
-                        }`}
-                      />
-                    )}
-                  </button>
-
-                  {/* Grandchildren Level - ring, earring */}
-                  {expandedChild === child._id &&
-                    child.children?.length > 0 && (
-                      <div className="pl-8 py-1">
-                        {child.children.map((grandchild) => (
-                          <div
-                            key={grandchild._id}
-                            className="flex items-center py-1"
-                          >
-                            <input
-                              type="checkbox"
-                              id={grandchild._id}
-                              className="h-4 w-4 text-[#BA8B4E] rounded border-gray-300 focus:ring-[#BA8B4E]"
-                              checked={selectedCategories.includes(
-                                grandchild._id,
-                              )}
-                              onChange={() => {}}
-                              onClick={(e) =>
-                                handleGrandchildClick(grandchild._id, e)
-                              }
-                            />
-                            <label
-                              htmlFor={grandchild._id}
-                              className="ml-2 text-sm text-gray-600 capitalize cursor-pointer hover:text-[#BA8B4E]"
-                            >
-                              {grandchild.name}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      ))}
+      {categories.map((category) => renderCategory(category))}
     </div>
   )
 }

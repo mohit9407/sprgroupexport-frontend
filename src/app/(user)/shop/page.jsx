@@ -281,8 +281,12 @@ function ShopPageContent() {
     }))
   }
 
-  const toggleSubcategory = (subcategoryId) => {
+  const toggleSubcategory = (subcategoryId, replacementSelection) => {
     setSelectedCategories((prev) => {
+      if (replacementSelection) {
+        return [...replacementSelection, subcategoryId]
+      }
+
       const newCategories = prev.includes(subcategoryId)
         ? prev.filter((id) => id !== subcategoryId)
         : [...prev, subcategoryId]

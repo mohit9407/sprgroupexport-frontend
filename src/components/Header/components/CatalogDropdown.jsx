@@ -52,10 +52,8 @@ const CatalogDropdown = ({
           const categoryNode = categoryMap[category._id]
 
           if (category.parent && categoryMap[category.parent]) {
-            // This category has a valid parent, add it to parent's children
             categoryMap[category.parent].children.push(categoryNode)
-          } else {
-            // This is a root category (no parent or parent doesn't exist)
+          } else if (!category.parent) {
             rootCategories.push(categoryNode)
           }
         })
@@ -102,14 +100,13 @@ const CatalogDropdown = ({
       clearTimeout(timeoutId)
       setTimeoutId(null)
     }
-    console.log(`Setting activeSubmenus to include: ${categoryId}`)
-
     if (categoryId === null) {
       setActiveSubmenus([])
     } else {
-      // Add this category to active submenus if not already present
       setActiveSubmenus((prev) =>
-        prev.includes(categoryId) ? prev : [...prev, categoryId],
+        prev.includes(categoryId)
+          ? prev.filter((id) => id !== categoryId)
+          : [...prev, categoryId],
       )
     }
   }
@@ -131,158 +128,42 @@ const CatalogDropdown = ({
     if (!category?._id) return null
 
     const hasChildren = category.children && category.children.length > 0
-    const categoryId = `category-${category._id}`
-
-    // Get parent name for better distinction
-    const getParentName = (cat, allCats) => {
-      if (!cat?.parent) return ''
-      const parent = allCats?.find((c) => c._id === cat.parent)
-      return parent ? parent.name : ''
-    }
-
-    const parentName = getParentName(category, allCategories?.data || [])
-    const displayName =
-      level > 0 && parentName ? `${category.name}` : category.name
-
-    if (hasChildren) {
-      console.log(
-        `  Children: ${category.children.map((c) => c.name).join(', ')}`,
-      )
-    }
+    const isExpanded = activeSubmenus.includes(category._id)
 
     return (
-      <div
-        key={category._id}
-        className="relative group"
-        onMouseEnter={() => {
-          // Clear any existing timeout
-          if (timeoutId) {
-            clearTimeout(timeoutId)
-            setTimeoutId(null)
-          }
-
-          // Set this category as active if it has children
-          if (hasChildren) {
-            // Build the complete path from root to this category
-            const pathToCategory = []
-            let currentCategory = category
-
-            // Find all parents up to root
-            while (
-              currentCategory?.parent &&
-              allCategories?.data?.find((c) => c._id === currentCategory.parent)
-            ) {
-              const parent = allCategories.data.find(
-                (c) => c._id === currentCategory.parent,
-              )
-              if (parent) {
-                pathToCategory.unshift(parent._id)
-                currentCategory = parent
-              } else {
-                break
-              }
-            }
-
-            // Add this category to the path
-            pathToCategory.push(category._id)
-
-            // Set all categories in the path as active
-            setActiveSubmenus(pathToCategory)
-          } else if (level > 0) {
-            // For leaf categories, keep the parent hierarchy active
-            let rootParent = category
-            const pathToParent = []
-
-            while (
-              rootParent?.parent &&
-              allCategories?.data?.find((c) => c._id === rootParent.parent)
-            ) {
-              const foundParent = allCategories.data.find(
-                (c) => c._id === rootParent.parent,
-              )
-              if (foundParent) {
-                pathToParent.unshift(foundParent._id)
-                rootParent = foundParent
-              } else {
-                break
-              }
-            }
-
-            // Add the immediate parent
-            if (category.parent) {
-              pathToParent.push(category.parent)
-            }
-
-            setActiveSubmenus(pathToParent)
-          } else if (level === 0 && !hasChildren) {
-            // For root categories without children, clear any active submenu
-            setActiveSubmenus([])
-          }
-        }}
-        onMouseLeave={() => {
-          console.log(
-            `Mouse leave: ${category.name} (ID: ${category._id}, level: ${level})`,
-          )
-          // Don't immediately clear, let the main handler manage timing with delay
-        }}
-      >
-        <Link
-          href={`/catalog/${category.name.toLowerCase()}`}
-          className="flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-          onClick={(e) => handleCategoryClick(category, e)}
+      <div key={category._id}>
+        <div
+          className="flex items-center justify-between py-2 pr-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+          style={{ paddingLeft: `${level * 16 + 12}px` }}
         >
-          <span className="capitalize">{displayName}</span>
-          {hasChildren && <FaChevronDown className="text-xs text-gray-400" />}
-        </Link>
-
-        {hasChildren && activeSubmenus.includes(category._id) && (
-          <div
-            className="absolute top-0 bg-white border border-gray-200 shadow-lg z-50"
-            style={{
-              left: level === 0 ? '100%' : '100%',
-              top: level === 0 ? '0' : '-8px',
-              minWidth: '200px',
-              padding: '8px 0',
-              marginLeft: '0px',
-              marginTop: '0px',
-              zIndex: 50 + level, // Ensure deeper levels appear on top
-            }}
-            onMouseEnter={() => {
-              // Build the complete path for this submenu
-              const pathToCategory = []
-              let currentCategory = category
-
-              // Find all parents up to root
-              while (
-                currentCategory?.parent &&
-                allCategories?.data?.find(
-                  (c) => c._id === currentCategory.parent,
-                )
-              ) {
-                const parent = allCategories.data.find(
-                  (c) => c._id === currentCategory.parent,
-                )
-                if (parent) {
-                  pathToCategory.unshift(parent._id)
-                  currentCategory = parent
-                } else {
-                  break
-                }
-              }
-
-              // Add this category to the path
-              pathToCategory.push(category._id)
-
-              setActiveSubmenus(pathToCategory)
-            }}
-            onMouseLeave={() => {
-              console.log(`Submenu mouse leave: ${category.name}`)
-              // Don't immediately clear, let the main handler manage timing
-            }}
+          <Link
+            href={`/catalog/${category.name.toLowerCase()}`}
+            className={`flex-1 ${level === 0 ? 'font-medium capitalize' : 'capitalize'}`}
+            onClick={(e) => handleCategoryClick(category, e)}
           >
-            {category.children.map((child) => renderCategory(child, level + 1))}
-          </div>
-        )}
+            {category.name}
+          </Link>
+          {hasChildren && (
+            <button
+              type="button"
+              aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${category.name}`}
+              className="p-1"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                handleSubmenuMouseEnter(category._id)
+              }}
+            >
+              <FaChevronDown
+                className={`text-xs text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+              />
+            </button>
+          )}
+        </div>
+
+        {hasChildren &&
+          isExpanded &&
+          category.children.map((child) => renderCategory(child, level + 1))}
       </div>
     )
   }
@@ -292,12 +173,11 @@ const CatalogDropdown = ({
   return (
     <div
       className="absolute left-0 mt-0"
-      style={{ minWidth: '1400px' }} // Even larger for more levels
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
       <div
-        className={`w-48 bg-white shadow-lg z-50 border border-gray-200 ${className}`}
+        className={`w-64 max-h-[70vh] overflow-y-auto bg-white shadow-lg z-50 border border-gray-200 ${className}`}
       >
         {hierarchicalCategories.length > 0 ? (
           hierarchicalCategories.map((category) => renderCategory(category))
