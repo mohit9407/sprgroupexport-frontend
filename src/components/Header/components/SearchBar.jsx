@@ -1,160 +1,62 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
-import { FaChevronDown, FaChevronRight } from 'react-icons/fa'
-import { useSelector } from 'react-redux'
-import { selectAllCategories } from '@/features/categories/categoriesSlice'
+import { useEffect, useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
+import { FiSearch } from 'react-icons/fi'
 
 const SearchBar = () => {
-  const [showCategories, setShowCategories] = useState(false)
-  const [expandedParent, setExpandedParent] = useState(null)
-  const [expandedChild, setExpandedChild] = useState(null)
   const router = useRouter()
-  const allCategories = useSelector(selectAllCategories)
+  const pathname = usePathname()
+  const [query, setQuery] = useState('')
 
-  // Build full category hierarchy with parent -> children -> grandchildren
-  const categoryTree = useMemo(() => {
-    const categories = allCategories?.data || []
+  useEffect(() => {
+    if (typeof window === 'undefined') return
 
-    // Create a map of all categories by ID
-    const categoryMap = {}
-    categories.forEach((cat) => {
-      categoryMap[cat._id] = { ...cat, children: [] }
-    })
+    const params = new URLSearchParams(window.location.search)
+    setQuery(params.get('search') || '')
+  }, [pathname])
 
-    // Build tree structure
-    const tree = []
-    categories.forEach((cat) => {
-      if (cat.parent && categoryMap[cat.parent]) {
-        categoryMap[cat.parent].children.push(categoryMap[cat._id])
-      } else if (!cat.parent) {
-        tree.push(categoryMap[cat._id])
-      }
-    })
+  const handleSubmit = (event) => {
+    event.preventDefault()
 
-    return tree
-  }, [allCategories])
+    if (typeof window === 'undefined') return
 
-  const handleCategoryClick = (category, level, parentId = null) => {
-    // Navigate to shop page with category
-    router.push(`/shop?category=${category._id}`)
-    setShowCategories(false)
-  }
+    const trimmedQuery = query.trim()
+    const params = new URLSearchParams(window.location.search)
 
-  const handleExpandParent = (parent, e) => {
-    e.stopPropagation()
-    setExpandedParent(expandedParent === parent._id ? null : parent._id)
-    setExpandedChild(null)
-  }
+    if (trimmedQuery) {
+      params.set('search', trimmedQuery)
+    } else {
+      params.delete('search')
+    }
 
-  const handleExpandChild = (child, e) => {
-    e.stopPropagation()
-    setExpandedChild(expandedChild === child._id ? null : child._id)
+    const queryString = params.toString()
+    router.push(queryString ? `/shop?${queryString}` : '/shop')
   }
 
   return (
-    <div className="w-full md:max-w-2xl">
-      <div className="relative flex items-center h-12 bg-white rounded-md shadow-sm">
-        {/* Categories Dropdown */}
-        <div className="relative flex-shrink-0 h-full w-full">
-          <button
-            onClick={() => setShowCategories(!showCategories)}
-            className="h-full w-full bg-[#BA8B4E] text-white text-[14px] font-semibold px-4 flex items-center justify-between hover:bg-[#A87D45] transition-colors rounded-md"
-          >
-            <span>ALL CATEGORIES</span>
-            <FaChevronDown
-              className={`ml-2 text-[10px] transition-transform ${
-                showCategories ? 'rotate-180' : ''
-              }`}
-            />
-          </button>
-
-          {showCategories && (
-            <div className="absolute left-0 top-full mt-1 w-full bg-white rounded-md shadow-xl z-[9999] border max-h-96 overflow-y-auto">
-              <div className="py-2">
-                {categoryTree.map((parent) => (
-                  <div key={parent._id} className="mb-1">
-                    {/* Parent Header - Click text to navigate, arrow to expand */}
-                    <div className="px-4 py-2 bg-gradient-to-r from-[#4dbbd4] to-[#BA8B4E] text-white font-bold text-sm uppercase tracking-wider flex items-center justify-between rounded-lg">
-                      <span
-                        className="cursor-pointer hover:opacity-80 flex-1"
-                        onClick={() => handleCategoryClick(parent, 'parent')}
-                      >
-                        {parent.name}
-                      </span>
-                      {parent.children.length > 0 && (
-                        <FaChevronRight
-                          className={`text-xs w-6 h-6 cursor-pointer hover:opacity-80 p-1 transition-transform ${
-                            expandedParent === parent._id ? 'rotate-90' : ''
-                          }`}
-                          onClick={(e) => handleExpandParent(parent, e)}
-                        />
-                      )}
-                    </div>
-
-                    {/* Children - Shown when parent expanded */}
-                    {expandedParent === parent._id &&
-                      parent.children.length > 0 && (
-                        <div className="bg-gray-50">
-                          {parent.children.map((child) => (
-                            <div key={child._id}>
-                              {/* Child Item - Click text to navigate, arrow to expand */}
-                              <div className="px-6 py-2 text-sm text-gray-700 flex items-center justify-between hover:bg-gray-200 border-b border-gray-100">
-                                <span
-                                  className="font-medium cursor-pointer flex-1"
-                                  onClick={() =>
-                                    handleCategoryClick(child, 'child')
-                                  }
-                                >
-                                  {child.name}
-                                </span>
-                                {child.children.length > 0 && (
-                                  <FaChevronRight
-                                    className={`text-xs w-6 h-6 text-gray-400 cursor-pointer p-1 transition-transform ${
-                                      expandedChild === child._id
-                                        ? 'rotate-90'
-                                        : ''
-                                    }`}
-                                    onClick={(e) => handleExpandChild(child, e)}
-                                  />
-                                )}
-                              </div>
-
-                              {/* Grandchildren - Shown when child expanded */}
-                              {expandedChild === child._id &&
-                                child.children.length > 0 && (
-                                  <div className="bg-white pl-8 pr-4 py-1">
-                                    {child.children.map((grandchild) => (
-                                      <a
-                                        key={grandchild._id}
-                                        href={`/shop?category=${grandchild._id}`}
-                                        onClick={(e) => {
-                                          e.preventDefault()
-                                          handleCategoryClick(
-                                            grandchild,
-                                            'grandchild',
-                                          )
-                                        }}
-                                        className="block px-3 py-1.5 text-xs text-gray-600 hover:text-[#BA8B4E] transition-colors border-b border-gray-50"
-                                      >
-                                        {grandchild.name}
-                                      </a>
-                                    ))}
-                                  </div>
-                                )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+    <form onSubmit={handleSubmit} className="w-full md:max-w-2xl">
+      <div className="flex items-center rounded-md border border-[#D4B37C] bg-white shadow-sm overflow-hidden">
+        <div className="flex flex-1 items-center gap-3 px-4 py-3">
+          <FiSearch className="text-lg text-[#7a5b2d]" />
+          <input
+            type="text"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search products, metals, sizes, colors..."
+            className="w-full border-0 bg-transparent text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none"
+            aria-label="Search products"
+          />
         </div>
+
+        <button
+          type="submit"
+          className="bg-[#BA8B4E] px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white transition-colors hover:bg-[#A87D45]"
+        >
+          Search
+        </button>
       </div>
-    </div>
+    </form>
   )
 }
 

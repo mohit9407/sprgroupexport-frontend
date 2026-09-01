@@ -14,6 +14,7 @@ export const fetchAllProducts = async (filters = {}) => {
       special,
       type,
       status,
+      search,
     } = filters
 
     const params = new URLSearchParams()
@@ -26,6 +27,7 @@ export const fetchAllProducts = async (filters = {}) => {
     if (special !== undefined) params.append('special', special)
     if (type) params.append('type', type)
     if (status) params.append('status', status)
+    if (search) params.append('search', search)
     params.append('page', page)
     params.append('limit', limit)
 

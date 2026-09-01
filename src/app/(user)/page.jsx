@@ -7,6 +7,7 @@ import Hero from '@/components/Hero'
 import CategorySection from '@/components/CategorySection'
 import SectionHeader from '@/components/SectionHeader'
 import NewArrivalSection from '@/components/NewArrivalSection'
+import ManufacturingSection from '@/components/ManufacturingSection'
 import FeaturesSection from '@/components/FeaturesSection'
 import { fetchParallaxBanners } from '@/features/parallax-banner/parallaxBannerSlice'
 import { getGeneralSetting } from '@/features/general-setting/generatSettingSlice'
@@ -22,13 +23,19 @@ export default function UserDashboard() {
   )
 
   useEffect(() => {
-    if (bannerStatus === 'idle') {
+    if (bannerStatus === 'idle' || bannerStatus === 'failed') {
       dispatch(fetchParallaxBanners())
     }
-    if (generalSettingsStatus === 'idle') {
+  }, [bannerStatus])
+
+  useEffect(() => {
+    if (
+      generalSettingsStatus === 'idle' ||
+      generalSettingsStatus === 'failed'
+    ) {
       dispatch(getGeneralSetting())
     }
-  }, [bannerStatus, generalSettingsStatus, dispatch])
+  }, [generalSettingsStatus])
   const handleButtonClick = (section) => {
     console.log(`Navigating to: ${section.title}`)
   }
@@ -70,19 +77,24 @@ export default function UserDashboard() {
           overlayClass="bg-black/30"
         />
       )}
-      <div className="bg-white py-12 relative z-10">
+      {/* <div className="bg-white py-12 relative z-10">
         <div className="container mx-auto px-4">
           <SectionHeader
             title={generalSettings?.topSellingSectionText}
             subtitle="TOP SELLING PRODUCTS OF THE WEEK"
           />
         </div>
-      </div>
+      </div> */}
 
       {/* New Arrival Section */}
       <div className="bg-white relative z-10">
         <NewArrivalSection title={generalSettings?.newArrivalSectionText} />
       </div>
+
+      <div className="bg-white relative z-10">
+        <ManufacturingSection />
+      </div>
+
       <div className="bg-white h-25 relative z-10" />
       {banners?.[2] && (
         <StickyBackgroundSections

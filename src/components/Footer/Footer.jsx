@@ -30,11 +30,13 @@ const Footer = ({ settings = {} }) => {
     if (status === 'idle') {
       dispatch(getGeneralSetting())
     }
+  }, [status])
 
+  useEffect(() => {
     if (!contentPagesLoading && contentPages.length === 0) {
       dispatch(fetchContentPages({ status: 'active' }))
     }
-  }, [status, contentPagesLoading, contentPages.length, dispatch])
+  }, [contentPagesLoading])
 
   // Use settings from props if available, otherwise use empty object
   const safeSettings = settings || {}

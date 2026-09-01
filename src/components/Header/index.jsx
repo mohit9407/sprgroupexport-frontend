@@ -21,9 +21,7 @@ const Header = ({ settings = {} }) => {
   const { user } = useAuth()
   const { userOrders = [] } = useSelector((state) => state.order)
   const [showNotification, setShowNotification] = useState(false)
-  const [showCategories, setShowCategories] = useState(false)
   const [showAccountDropdown, setShowAccountDropdown] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
   const [showCatalogDropdown, setShowCatalogDropdown] = useState(false)
   const [activeSubmenu, setActiveSubmenu] = useState(null)
 
@@ -121,12 +119,7 @@ const Header = ({ settings = {} }) => {
                 </Link>
 
                 {/* Search Bar */}
-                <SearchBar
-                  showCategories={showCategories}
-                  setShowCategories={setShowCategories}
-                  searchQuery={searchQuery}
-                  setSearchQuery={setSearchQuery}
-                />
+                <SearchBar />
 
                 {/* Header Icons */}
                 <HeaderIcons />

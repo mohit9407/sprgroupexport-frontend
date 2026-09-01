@@ -105,3 +105,5 @@ const homeSliderSlice = createSlice({
 export default homeSliderSlice.reducer
 
 export const selectHomeSliders = (state) => state.homeSlider.sliders ?? []
+export const selectHomeSliderStatus = (state) =>
+  state.homeSlider.status ?? 'idle'

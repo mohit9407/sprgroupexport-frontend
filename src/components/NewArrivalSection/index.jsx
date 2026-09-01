@@ -19,7 +19,7 @@ const NewArrivalSection = ({ title }) => {
     if (status === 'idle') {
       dispatch(fetchProducts())
     }
-  }, [status, dispatch])
+  }, [status])
 
   // Get current user from auth context
   const { user } = useAuth()

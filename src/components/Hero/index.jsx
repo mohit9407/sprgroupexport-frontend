@@ -84,7 +84,7 @@ const Hero = () => {
   // Fetch home sliders on component mount
   useEffect(() => {
     dispatch(fetchHomeSliders())
-  }, [dispatch])
+  }, [])
 
   // Preload images on component mount
   useEffect(() => {
@@ -111,7 +111,7 @@ const Hero = () => {
 
   return (
     <section
-      className="relative z-10 w-full h-screen group"
+      className="relative z-10 w-full h-[68vh] min-h-[420px] max-h-[680px] group"
       onMouseEnter={() => {
         setIsAutoPlaying(false)
         setIsHovered(true)
@@ -122,7 +122,7 @@ const Hero = () => {
       }}
     >
       {/* Slides */}
-      <div className="relative w-full min-h-screen">
+      <div className="relative w-full h-full">
         {heroSlides.map((slide, index) => (
           <div
             key={index}

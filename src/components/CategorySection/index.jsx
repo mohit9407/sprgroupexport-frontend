@@ -24,10 +24,10 @@ const CategorySection = ({ title }) => {
   }
 
   useEffect(() => {
-    if (status === 'idle') {
+    if (status === 'idle' || status === 'failed') {
       dispatch(fetchAllCategories())
     }
-  }, [status, dispatch])
+  }, [status])
 
   // Map API response to match CategoryCard props
   const mappedCategories = categoriesData?.data
@@ -52,7 +52,7 @@ const CategorySection = ({ title }) => {
   // Show loading state
   if (status === 'loading') {
     return (
-      <section className="py-10 px-4 sm:px-6 lg:px-8">
+      <section className="pt-10 pb-0 px-4 sm:px-6 lg:px-8">
         <div className="text-3xl font-bold text-center mb-12 uppercase tracking-wider text-gray-800">
           {title || 'LOADING CATEGORIES...'}
         </div>
@@ -72,7 +72,7 @@ const CategorySection = ({ title }) => {
   }
 
   return (
-    <section className="py-10 px-4 sm:px-6 lg:px-8">
+    <section className="pt-10 pb-0 px-4 sm:px-6 lg:px-8">
       <div className="text-3xl font-bold text-center mb-12 uppercase tracking-wider text-gray-800">
         {title || 'PRODUCT CATEGORIES'}
       </div>

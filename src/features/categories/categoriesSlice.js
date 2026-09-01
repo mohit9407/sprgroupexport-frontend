@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import api from '@/lib/axios'
-import { sortByCreatedAtDesc } from '@/utils/sortUtils';
+import { sortByCreatedAtDesc } from '@/utils/sortUtils'
 
 const initialState = {
   allCategories: {
@@ -143,10 +143,12 @@ const categoriesSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchAllCategories.pending, (state) => {
+        state.status = 'loading'
         state.allCategories.isLoading = true
         state.allCategories.error = null
       })
       .addCase(fetchAllCategories.fulfilled, (state, action) => {
+        state.status = 'succeeded'
         state.allCategories.isLoading = false
         state.allCategories.data = action.payload.data || []
         if (action.payload.pagination) {
@@ -157,6 +159,7 @@ const categoriesSlice = createSlice({
         }
       })
       .addCase(fetchAllCategories.rejected, (state, action) => {
+        state.status = 'failed'
         state.allCategories.isLoading = false
         state.allCategories.error = action.payload
       })
