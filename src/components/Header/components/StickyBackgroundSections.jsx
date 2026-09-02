@@ -3,6 +3,22 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 
+const normalizeImageUrl = (url) => {
+  if (!url || typeof url !== 'string') return url
+
+  try {
+    const parsed = new URL(url)
+    parsed.pathname = parsed.pathname
+      .split('/')
+      .map((segment) => encodeURIComponent(decodeURIComponent(segment)))
+      .join('/')
+
+    return parsed.toString()
+  } catch {
+    return encodeURI(url)
+  }
+}
+
 /**
  * Banner section with background image scoped to the section.
  * Avoids position:fixed on the viewport (that covered Hero / whole homepage).
@@ -22,6 +38,15 @@ export default function StickyBackgroundSections({
   const [bgLoaded, setBgLoaded] = useState(false)
   const [hoveredSection, setHoveredSection] = useState(null)
 
+  const normalizedSections = useMemo(
+    () =>
+      sectionsArray.map((section) => ({
+        ...section,
+        bg: normalizeImageUrl(section?.bg),
+      })),
+    [sectionsArray],
+  )
+
   const handleButtonClick = (section) => {
     if (onButtonClick) {
       onButtonClick(section)
@@ -32,13 +57,13 @@ export default function StickyBackgroundSections({
   }
 
   useEffect(() => {
-    if (sectionsArray.length === 0) {
+    if (normalizedSections.length === 0) {
       setBgLoaded(true)
       return
     }
 
     let cancelled = false
-    const imagePromises = sectionsArray.map((section) => {
+    const imagePromises = normalizedSections.map((section) => {
       if (!section?.bg) return Promise.resolve()
       return new Promise((resolve) => {
         const img = new Image()
@@ -55,15 +80,15 @@ export default function StickyBackgroundSections({
     return () => {
       cancelled = true
     }
-  }, [sectionsArray])
+  }, [normalizedSections])
 
-  if (sectionsArray.length === 0) {
+  if (normalizedSections.length === 0) {
     return null
   }
 
   return (
     <div className="relative z-0">
-      {sectionsArray.map((section) => (
+      {normalizedSections.map((section) => (
         <section
           key={section.id}
           className={`relative w-full h-[500px] md:h-[600px] flex flex-col items-center justify-center px-4 overflow-hidden ${sectionClass} group`}

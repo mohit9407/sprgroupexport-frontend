@@ -13,7 +13,7 @@ export const fetchParallaxBanners = createAsyncThunk(
     } catch (err) {
       return rejectWithValue(err.response.data)
     }
-  }
+  },
 )
 
 export const updateParallaxBannerById = createAsyncThunk(
@@ -25,7 +25,7 @@ export const updateParallaxBannerById = createAsyncThunk(
     } catch (err) {
       return rejectWithValue(err.response.data)
     }
-  }
+  },
 )
 
 const parallaxBannerSlice = createSlice({
@@ -43,7 +43,7 @@ const parallaxBannerSlice = createSlice({
       })
       .addCase(fetchParallaxBanners.fulfilled, (state, action) => {
         state.status = 'succeeded'
-        state.banners = action.payload
+        state.banners = action.payload?.data || action.payload || []
       })
       .addCase(fetchParallaxBanners.rejected, (state, action) => {
         state.status = 'failed'
@@ -51,11 +51,14 @@ const parallaxBannerSlice = createSlice({
       })
 
       .addCase(updateParallaxBannerById.fulfilled, (state, action) => {
+        const updatedBanner = action.payload?.data || action.payload
+        if (!updatedBanner?._id) return
+
         const index = state.banners.findIndex(
-          (b) => b._id === action.payload._id
+          (b) => b._id === updatedBanner._id,
         )
         if (index !== -1) {
-          state.banners[index] = action.payload
+          state.banners[index] = updatedBanner
         }
       })
   },
