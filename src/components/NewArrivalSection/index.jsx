@@ -5,9 +5,15 @@ import { fetchProducts } from '@/features/products/productsSlice'
 import { useAuth } from '@/context/AuthContext'
 import { useWishlist } from '@/context/WishlistContext'
 
+const getResponsiveProductLimit = () => {
+  if (typeof window === 'undefined') return 12
+  return window.innerWidth >= 1280 ? 12 : 8
+}
+
 const NewArrivalSection = ({ title }) => {
   const dispatch = useDispatch()
   const [localLikes, setLocalLikes] = useState({})
+  const [visibleLimit, setVisibleLimit] = useState(getResponsiveProductLimit())
   const { isInWishlist } = useWishlist()
   const {
     items: products = [],
@@ -16,10 +22,26 @@ const NewArrivalSection = ({ title }) => {
   } = useSelector((state) => state.products || {})
 
   useEffect(() => {
-    if (status === 'idle') {
-      dispatch(fetchProducts())
+    const updateLimit = () => {
+      setVisibleLimit(getResponsiveProductLimit())
     }
-  }, [status])
+
+    updateLimit()
+    window.addEventListener('resize', updateLimit)
+
+    return () => window.removeEventListener('resize', updateLimit)
+  }, [])
+
+  useEffect(() => {
+    if (status === 'loading') return
+    if (status === 'succeeded' && products.length >= visibleLimit) return
+    if (status === 'idle' || status === 'failed') {
+      dispatch(fetchProducts({ limit: visibleLimit }))
+      return
+    }
+
+    dispatch(fetchProducts({ limit: visibleLimit }))
+  }, [dispatch, status, visibleLimit, products.length])
 
   // Get current user from auth context
   const { user } = useAuth()
@@ -49,7 +71,6 @@ const NewArrivalSection = ({ title }) => {
   const mappedProducts = useMemo(() => {
     return (products || []).map((product) => {
       const productId = product._id || product.id
-      // Use isInWishlist from context to determine if product is liked
       const isLiked = isInWishlist(productId) || localLikes[productId] || false
 
       return {
@@ -71,15 +92,16 @@ const NewArrivalSection = ({ title }) => {
             ...prev,
             [productId]: newLikeStatus,
           }))
-
-          // Update the wishlist context
-          // The wishlist context will handle the actual like/unlike action
-          // We just need to ensure the local state stays in sync
         },
         ...product,
       }
     })
   }, [products, localLikes, isInWishlist])
+
+  const visibleProducts = useMemo(
+    () => mappedProducts.slice(0, visibleLimit),
+    [mappedProducts, visibleLimit],
+  )
 
   if (status === 'loading' || status === 'idle') {
     return (
@@ -115,7 +137,7 @@ const NewArrivalSection = ({ title }) => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {mappedProducts.map((product) => (
+          {visibleProducts.map((product) => (
             <div
               key={product.id}
               className="block relative hover:shadow-lg transition-shadow duration-300 rounded-lg"
