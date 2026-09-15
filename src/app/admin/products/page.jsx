@@ -92,11 +92,15 @@ const getColumns = (router, dispatch, setDeleteModal, searchParams) => [
     size: 120,
   },
   {
-    accessorKey: 'price',
-    header: 'Price',
+    accessorKey: 'totalCost',
+    header: 'Total Cost',
     cell: (info) => {
-      const value = info.getValue()
-      return typeof value === 'object' ? JSON.stringify(value) : value || 'N/A'
+      const value = info.row.original.totalCost ?? info.row.original.price
+      return typeof value === 'object'
+        ? JSON.stringify(value)
+        : value === null || value === undefined
+          ? 'N/A'
+          : `$${Number(value).toFixed(2)}`
     },
     size: 100,
   },

@@ -46,6 +46,9 @@ const productSchema = (isGold = false, isSilver = false, isEdit = false) => {
       otherwise: (schema) =>
         schema.min(0, 'Price must be greater than or equal to 0'),
     }),
+    totalCost: yup
+      .number()
+      .min(0, 'Total cost must be greater than or equal to 0'),
     minOrderLimit: yup
       .number()
       .min(1, 'Minimum order limit must be at least 1')
@@ -237,6 +240,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
       isFeatured: false,
       status: 'active',
       price: 0,
+      totalCost: 0,
       minOrderLimit: 1,
       stock: 0,
       productModel: '',
@@ -648,7 +652,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
     setValue,
   ])
 
-  // Calculate total cost (Extra cost + Diamond price + Gold/Silver price)
+  // Calculate and submit the same total shown in the form.
   useEffect(() => {
     const extraCost = Number(userExtraValue || 0)
     const diamondCost = Number(diamondPriceValue || 0)
@@ -657,13 +661,17 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
     if (isGoldCategory && goldPrice) {
       metalCost = Number(goldPrice)
     } else if (isSilverCategory) {
-      metalCost = Number(getValues('price') || 0)
+      metalCost = Math.max(0, Number(getValues('price') || 0) - extraCost)
     }
 
     const calculatedTotal = Number(
       (extraCost + diamondCost + metalCost).toFixed(2),
     )
     setTotalCost(calculatedTotal)
+    setValue('totalCost', calculatedTotal, { shouldValidate: false })
+    if (isGoldCategory || isSilverCategory) {
+      setValue('price', calculatedTotal, { shouldValidate: true })
+    }
   }, [
     isGoldCategory,
     isSilverCategory,
@@ -671,6 +679,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
     diamondPriceValue,
     goldPrice,
     getValues,
+    setValue,
   ])
 
   useEffect(() => {
