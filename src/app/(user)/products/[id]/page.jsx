@@ -480,12 +480,19 @@ export default function ProductDetails() {
               product?.totalWeight ||
               product?.totalNoOfDiamonds ||
               product?.diamondPrice ||
-              product?.diamondCarat) && (
+              product?.diamondCarat ||
+              product?.diamondType) && (
               <div className="mb-6 bg-gray-50 p-4 rounded-lg">
                 <h3 className="text-lg font-medium text-gray-900 mb-3">
                   Diamond Details
                 </h3>
                 <dl className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="flex flex-col gap-1">
+                    <dt className="text-gray-600">Diamond Type</dt>
+                    <dd className="font-medium text-gray-900">
+                      {product?.diamondType || 'N/A'}
+                    </dd>
+                  </div>
                   {product?.diamondColor && (
                     <div className="flex flex-col gap-1">
                       <dt className="text-gray-600">Diamond Color</dt>

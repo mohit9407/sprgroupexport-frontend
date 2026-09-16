@@ -10,6 +10,10 @@ import SafeImage from '@/components/SafeImage'
 import { createProduct, updateProduct } from '@/features/products/productsSlice'
 import { fetchAllCategories } from '@/features/categories/categoriesSlice'
 import {
+  fetchAllAttributes,
+  selectAllAttributes,
+} from '@/features/attributes/attributesSlice'
+import {
   fetchCaratData,
   setSelectedCarat,
   selectCaratData,
@@ -89,6 +93,7 @@ const productSchema = (isGold = false, isSilver = false, isEdit = false) => {
     color: yup.string(),
     size: yup.string(),
     diamondCarat: yup.string(),
+    diamondType: yup.string(),
     gemstoneKt: yup.string(),
     goldColor: yup.string(),
     diamondColor: yup.string(),
@@ -131,6 +136,17 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
   // Get categories from Redux store
   const { allCategories } = useSelector((state) => state.categories)
   const { status, error } = useSelector((state) => state.products)
+  const attributes = useSelector(selectAllAttributes)
+  const diamondTypeAttribute = attributes.find(
+    (attribute) => attribute.name?.trim().toLowerCase() === 'diamond type',
+  )
+  const diamondTypeOptions = [
+    { label: 'Select Diamond Type', value: '' },
+    ...(diamondTypeAttribute?.values || []).map((value) => ({
+      label: value.value,
+      value: value.value,
+    })),
+  ]
   const [isLoadingCategories, setIsLoadingCategories] = useState(false)
   const [formattedCategories, setFormattedCategories] = useState([])
   const [hierarchicalCategories, setHierarchicalCategories] = useState([])
@@ -250,6 +266,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
       color: '',
       size: '',
       diamondCarat: '',
+      diamondType: '',
       gemstoneKt: '',
       goldColor: '',
       diamondColor: '',
@@ -719,6 +736,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
 
   useEffect(() => {
     dispatch(fetchAllCategories())
+    dispatch(fetchAllAttributes())
   }, [dispatch])
 
   useEffect(() => {
@@ -1227,6 +1245,14 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                       fullWidth
                     />
 
+                    <FormAdminSelect
+                      name="diamondType"
+                      label="Diamond Type"
+                      options={diamondTypeOptions}
+                      fullWidth
+                      disabled={!diamondTypeAttribute}
+                    />
+
                     <FormAdminInputRow
                       name="diamondColor"
                       label="Diamond Color"
@@ -1448,6 +1474,14 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
                       label="Diamond Carat"
                       placeholder="e.g., 0.5, 1.0"
                       fullWidth
+                    />
+
+                    <FormAdminSelect
+                      name="diamondType"
+                      label="Diamond Type"
+                      options={diamondTypeOptions}
+                      fullWidth
+                      disabled={!diamondTypeAttribute}
                     />
 
                     <FormAdminInputRow

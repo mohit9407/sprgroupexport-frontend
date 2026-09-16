@@ -129,6 +129,7 @@ function EditProductContent() {
     color: product.color || '',
     size: product.size || '',
     diamondCarat: product.diamondCarat || '',
+    diamondType: product.diamondType || '',
     gemstoneKt: product.gemstoneKt || '',
     goldColor: product.goldColor || '',
     diamondColor: product.diamondColor || '',
