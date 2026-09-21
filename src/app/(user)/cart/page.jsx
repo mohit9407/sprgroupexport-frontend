@@ -207,7 +207,8 @@ export default function CartPage() {
                       Price:
                     </span>
                     <span className="font-medium">
-                      ${(item.price || item.product?.price)?.toLocaleString()}
+                      ${(item.price || item.product?.price)?.toLocaleString()}{' '}
+                      USD
                     </span>
                   </div>
 
@@ -314,7 +315,8 @@ export default function CartPage() {
                         {(
                           (item.price || item.product?.price) *
                           (item.quantity || 1)
-                        ).toLocaleString()}
+                        ).toLocaleString()}{' '}
+                        USD
                       </div>
                       <button
                         onClick={() => handleRemoveItem(item.id)}
@@ -386,7 +388,7 @@ export default function CartPage() {
               <div className="flex justify-between">
                 <span className="text-gray-600">Subtotal</span>
                 <span className="font-medium">
-                  ${subtotal.toLocaleString()}
+                  ${subtotal.toLocaleString()} USD
                 </span>
               </div>
 
@@ -395,7 +397,7 @@ export default function CartPage() {
                   Discount{isFirstOrder && ' (5% First Order)'}
                 </span>
                 <span className="text-green-600 ml-2">
-                  -${discount.toLocaleString()}
+                  -${discount.toLocaleString()} USD
                 </span>
               </div>
 
@@ -403,7 +405,7 @@ export default function CartPage() {
 
               <div className="flex justify-between text-lg font-semibold">
                 <span>Total</span>
-                <span>${total.toLocaleString()}</span>
+                <span>${total.toLocaleString()} USD</span>
               </div>
 
               {/* <div className="mt-6">

@@ -327,7 +327,7 @@ export default function OrderDetailsPage() {
                               )}
                             </div>
                             <p className="text-sm font-medium text-gray-900">
-                              ${(product.price || 0).toFixed(2)}
+                              ${(product.price || 0).toFixed(2)} USD
                             </p>
                           </div>
                           <div className="mt-2 flex-1 flex items-end justify-between">
@@ -338,7 +338,8 @@ export default function OrderDetailsPage() {
                               Total: $
                               {(
                                 (item.quantity || 1) * (product.price || 0)
-                              ).toFixed(2)}
+                              ).toFixed(2)}{' '}
+                              USD
                             </p>
                           </div>
                         </div>
@@ -543,7 +544,8 @@ export default function OrderDetailsPage() {
                         order.total +
                         (order.discount || 0) -
                         (order.shippingCost || 0)
-                      ).toFixed(2)}
+                      ).toFixed(2)}{' '}
+                      USD
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -551,14 +553,14 @@ export default function OrderDetailsPage() {
                     <span className="text-sm font-medium text-gray-900">
                       {order.shippingCost === 0
                         ? 'Free'
-                        : `$${order.shippingCost?.toFixed(2) || '0.00'}`}
+                        : `$${order.shippingCost?.toFixed(2) || '0.00'} USD`}
                     </span>
                   </div>
                   {order.discount > 0 && (
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-500">Discount</span>
                       <span className="text-sm font-medium text-red-600">
-                        -${order.discount?.toFixed(2) || '0.00'}
+                        -${order.discount?.toFixed(2) || '0.00'} USD
                       </span>
                     </div>
                   )}
@@ -568,7 +570,7 @@ export default function OrderDetailsPage() {
                         Total
                       </span>
                       <span className="text-base font-bold text-gray-900">
-                        ${order.total?.toFixed(2) || '0.00'}
+                        ${order.total?.toFixed(2) || '0.00'} USD
                       </span>
                     </div>
                   </div>

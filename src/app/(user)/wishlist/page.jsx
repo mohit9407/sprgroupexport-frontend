@@ -133,7 +133,7 @@ export default function WishlistPage() {
                     {product.name}
                   </h3>
                   <p className="mt-2 text-base font-semibold text-[#BA8B4E]">
-                    ${product.price}
+                    ${product.price} USD
                   </p>
                 </div>
                 <div className="mt-4">

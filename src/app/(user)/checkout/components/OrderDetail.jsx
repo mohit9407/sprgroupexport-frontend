@@ -429,7 +429,7 @@ export default function OrderDetail({
                   )}
                   <div className="flex items-center mt-1">
                     <span className="text-sm font-medium text-gray-900">
-                      ${item.price?.toLocaleString('en-US')}
+                      ${item.price?.toLocaleString('en-US')} USD
                     </span>
                     <span className="mx-2 text-gray-300">|</span>
                     <div className="flex items-center">
@@ -441,7 +441,8 @@ export default function OrderDetail({
                         $
                         {(
                           (item.price || 0) * (item.quantity || 1)
-                        ).toLocaleString('en-US')}
+                        ).toLocaleString('en-US')}{' '}
+                        USD
                       </span>
                     </div>
                   </div>
@@ -482,7 +483,7 @@ export default function OrderDetail({
           <div className="flex justify-between items-center">
             <span className="font-bold">Order Total</span>
             <span className="text-[#c89b5a] text-xl font-bold">
-              ${orderTotal.toLocaleString('en-US')}
+              ${orderTotal.toLocaleString('en-US')} USD
             </span>
           </div>
         </div>

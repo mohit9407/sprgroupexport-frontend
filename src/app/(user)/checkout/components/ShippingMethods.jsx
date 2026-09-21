@@ -154,7 +154,7 @@ export default function ShippingMethods({
                         </span>
                       </div>
                       <span className="text-sm font-medium text-[#c89b5a] ml-4 whitespace-nowrap">
-                        ${Number(method.price).toLocaleString('en-US')}
+                        ${Number(method.price).toLocaleString('en-US')} USD
                       </span>
                     </label>
                   </div>

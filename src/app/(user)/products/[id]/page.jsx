@@ -370,7 +370,7 @@ export default function ProductDetails() {
             <div className="mb-6">
               <div className="flex items-center gap-2">
                 <span className="text-2xl font-bold text-[#b7853f]">
-                  ${product.price?.toLocaleString('en-US')}
+                  ${product.price?.toLocaleString('en-US')} USD
                 </span>
                 <span className="text-sm text-gray-500">
                   MRP (Incl. of all taxes)
@@ -545,7 +545,7 @@ export default function ProductDetails() {
                     <div className="flex flex-col gap-1">
                       <dt className="text-gray-600">Diamond Price</dt>
                       <dd className="font-medium text-gray-900">
-                        ${product.diamondPrice}
+                        ${product.diamondPrice} USD
                       </dd>
                     </div>
                   )}

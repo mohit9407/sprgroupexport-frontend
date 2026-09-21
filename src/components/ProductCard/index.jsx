@@ -35,7 +35,7 @@ const ProductInfo = ({
       className="text-[#D4AF37] font-semibold"
       style={{ fontSize: viewMode === 'grid' ? '1.6rem' : '1.2rem' }}
     >
-      ${typeof price === 'number' ? price.toLocaleString('en-US') : price}
+      ${typeof price === 'number' ? price.toLocaleString('en-US') : price} USD
     </div>
   </div>
 )
@@ -534,7 +534,8 @@ const ProductCard = ({
             className="text-[#D4AF37] font-semibold"
             style={{ fontSize: '1.6rem' }}
           >
-            ${typeof price === 'number' ? price.toLocaleString('en-US') : price}
+            ${typeof price === 'number' ? price.toLocaleString('en-US') : price}{' '}
+            USD
           </div>
         </div>
       </div>
