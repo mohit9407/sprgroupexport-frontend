@@ -31,7 +31,7 @@ export default function SettingsPage() {
     favicon: null,
     faceBookLink: '',
     googleLink: '',
-    twitterLink: '',
+    youtubeLink: '',
     linkedInLink: '',
     instagramLink: '',
     aboutStore: '',
@@ -47,6 +47,8 @@ export default function SettingsPage() {
     if (existingSetting) {
       setFormData({
         ...existingSetting,
+        youtubeLink:
+          existingSetting.youtubeLink || existingSetting.twitterLink || '',
         logo: existingSetting.logo || null,
         favicon: existingSetting.favicon || null,
       })
@@ -81,7 +83,7 @@ export default function SettingsPage() {
       fd.append('websiteName', formData.websiteName)
       fd.append('faceBookLink', formData.faceBookLink)
       fd.append('googleLink', formData.googleLink)
-      fd.append('twitterLink', formData.twitterLink)
+      fd.append('youtubeLink', formData.youtubeLink)
       fd.append('linkedInLink', formData.linkedInLink)
       fd.append('instagramLink', formData.instagramLink)
       fd.append('aboutStore', formData.aboutStore)
@@ -230,11 +232,11 @@ export default function SettingsPage() {
         />
 
         <AdminInputRow
-          label="Twitter URL"
-          placeholder="Enter Twitter URL"
-          value={formData.twitterLink}
-          onChange={handleChange('twitterLink')}
-          helpText="Please enter twitter link"
+          label="YouTube URL"
+          placeholder="Enter YouTube URL"
+          value={formData.youtubeLink}
+          onChange={handleChange('youtubeLink')}
+          helpText="Please enter YouTube link"
         />
 
         <AdminInputRow

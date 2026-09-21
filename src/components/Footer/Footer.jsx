@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect } from 'react'
-import { FaTwitterSquare, FaEnvelope } from 'react-icons/fa'
+import { FaYoutube, FaEnvelope } from 'react-icons/fa'
 import { GrInstagram } from 'react-icons/gr'
 import { BsGoogle } from 'react-icons/bs'
 import { ImFacebook2 } from 'react-icons/im'
@@ -89,16 +89,18 @@ const Footer = ({ settings = {} }) => {
               </a>
               <a
                 href={
+                  safeSettings.youtubeLink ||
                   safeSettings.twitterLink ||
+                  generalSettings?.youtube_link ||
                   generalSettings?.twitter_link ||
                   '#'
                 }
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-500 hover:text-[#1DA1F2]"
-                aria-label="Twitter"
+                className="text-gray-500 hover:text-[#FF0000]"
+                aria-label="YouTube"
               >
-                <FaTwitterSquare className="w-6 h-6" />
+                <FaYoutube className="w-6 h-6" />
               </a>
               <a
                 href={

@@ -1,12 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import {
-  FaEnvelope,
-  FaMapMarkerAlt,
-  FaPhone,
-  FaTwitterSquare,
-} from 'react-icons/fa'
+import { FaEnvelope, FaMapMarkerAlt, FaPhone, FaYoutube } from 'react-icons/fa'
 import { GrInstagram } from 'react-icons/gr'
 import { BsGoogle } from 'react-icons/bs'
 import { ImFacebook2 } from 'react-icons/im'
@@ -43,10 +38,10 @@ const ContactUs = () => {
       color: '#3b5998',
     },
     {
-      name: 'Twitter',
-      icon: FaTwitterSquare,
-      url: settings[0]?.twitterLink || '#',
-      color: '#1DA1F2',
+      name: 'YouTube',
+      icon: FaYoutube,
+      url: settings[0]?.youtubeLink || settings[0]?.twitterLink || '#',
+      color: '#FF0000',
     },
     {
       name: 'Google',
