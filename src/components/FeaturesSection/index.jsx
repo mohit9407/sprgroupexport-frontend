@@ -6,27 +6,27 @@ import {
   FaCreditCard,
 } from 'react-icons/fa'
 
-const FeaturesSection = () => {
+const FeaturesSection = ({ settings = {} }) => {
   const features = [
     {
       icon: <FaTruck className="text-[35px] text-[#b7853f]" />,
-      title: 'Free Shipping',
-      description: 'On order over $99',
+      title: settings.freeShippingTitle || 'Free Shipping',
+      description: settings.freeShippingDescription || 'On order over $999',
     },
     {
       icon: <FaMoneyBillWave className="text-[35px] text-[#b7853f]" />,
-      title: 'Money Return',
-      description: '8 Days Money Return',
+      title: settings.moneyReturnTitle || 'Money Return',
+      description: settings.moneyReturnDescription || '8 Days Money Return',
     },
     {
       icon: <FaHeadset className="text-[35px] text-[#b7853f]" />,
-      title: 'Support 24/7',
-      description: 'Hotline: (+91 98989 91005)',
+      title: settings.supportTitle || 'Support 24/7',
+      description: settings.supportDescription || 'Hotline: (+91 98989 91005)',
     },
     {
       icon: <FaCreditCard className="text-[35px] text-[#b7853f]" />,
-      title: 'Safe Payment',
-      description: 'Protect online payment',
+      title: settings.safePaymentTitle || 'Safe Payment',
+      description: settings.safePaymentDescription || 'Protect online payment',
     },
   ]
 

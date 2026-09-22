@@ -7,12 +7,11 @@ import {
   getGeneralSetting,
   updateGeneralSetting,
 } from '@/features/general-setting/generatSettingSlice'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux'
 import { toast } from '@/utils/toastConfig'
 
 function EditGeneralSetting() {
-  const params = useParams()
   const router = useRouter()
   const dispatch = useDispatch()
 

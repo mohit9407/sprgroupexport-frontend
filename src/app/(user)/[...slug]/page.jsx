@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useSelector, useDispatch } from 'react-redux'
 import { fetchContentPages } from '@/features/content-page/contentPageSlice'
+import { getGeneralSetting } from '@/features/general-setting/generatSettingSlice'
 
 export default function ContentPage() {
   const [pageData, setPageData] = useState(null)
@@ -17,6 +18,22 @@ export default function ContentPage() {
   const { data: contentPages = [] } = useSelector(
     (state) => state.contentPage?.allContentPages || { data: [] },
   )
+  const { data: generalSettings, status: generalSettingsStatus } = useSelector(
+    (state) => state.generalSetting || { data: null, status: 'idle' },
+  )
+
+  const contactEmail =
+    generalSettings?.contactUsEmail || 'sprgroup100@gmail.com'
+  const contactPhone = generalSettings?.phoneNumber || '+91 98989 91005'
+  const contactLocation =
+    [
+      generalSettings?.address,
+      generalSettings?.city,
+      generalSettings?.state,
+      generalSettings?.country,
+    ]
+      .filter(Boolean)
+      .join(', ') || 'India'
 
   useEffect(() => {
     let isMounted = true
@@ -81,6 +98,15 @@ export default function ContentPage() {
       isMounted = false
     }
   }, [slug, contentPages, dispatch])
+
+  useEffect(() => {
+    if (
+      generalSettingsStatus === 'idle' ||
+      generalSettingsStatus === 'failed'
+    ) {
+      dispatch(getGeneralSetting())
+    }
+  }, [generalSettingsStatus, dispatch])
 
   if (isLoading) {
     return (
@@ -300,26 +326,28 @@ export default function ContentPage() {
                 Get In Touch
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="bg-white rounded-lg shadow-md p-6">
+                <div className="bg-white rounded-lg shadow-md p-6 min-w-0">
                   <div className="text-4xl mb-4">📧</div>
                   <h4 className="font-semibold text-lg mb-2 text-gray-900">
                     Email
                   </h4>
-                  <p className="text-gray-700">sprgroup100@gmail.com</p>
+                  <p className="text-gray-700 wrap-break-word overflow-wrap-anywhere">
+                    {contactEmail}
+                  </p>
                 </div>
                 <div className="bg-white rounded-lg shadow-md p-6">
                   <div className="text-4xl mb-4">📞</div>
                   <h4 className="font-semibold text-lg mb-2 text-gray-900">
                     Phone
                   </h4>
-                  <p className="text-gray-700">+91 98989 91005</p>
+                  <p className="text-gray-700">{contactPhone}</p>
                 </div>
                 <div className="bg-white rounded-lg shadow-md p-6">
                   <div className="text-4xl mb-4">📍</div>
                   <h4 className="font-semibold text-lg mb-2 text-gray-900">
                     Location
                   </h4>
-                  <p className="text-gray-700">India</p>
+                  <p className="text-gray-700">{contactLocation}</p>
                 </div>
               </div>
             </div>

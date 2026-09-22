@@ -111,7 +111,7 @@ export default function UserDashboard() {
         />
       )}
       <div className="bg-white relative z-10">
-        <FeaturesSection />
+        <FeaturesSection settings={generalSettings} />
       </div>
     </div>
   )

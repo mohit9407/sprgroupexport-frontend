@@ -2,13 +2,7 @@
 
 import React, { useEffect } from 'react'
 import { FormAdminInputRow } from '../AdminInputRow'
-import { useRouter } from 'next/navigation'
-import {
-  FormProvider,
-  useForm,
-  useFormContext,
-  Controller,
-} from 'react-hook-form'
+import { FormProvider, useForm, Controller } from 'react-hook-form'
 import AdminTextAreaRow from '@/components/AdminTextAreaRow/AdminTextAreaRow'
 import { FormAdminRadioGroup } from '../AdminRadioGroup'
 
@@ -54,6 +48,17 @@ export default function GeneralSettingFormPage({
         defaultValues?.specialProductSectionText ?? undefined,
       welcomeStoreSectionText:
         defaultValues?.welcomeStoreSectionText ?? undefined,
+      freeShippingTitle: defaultValues?.freeShippingTitle ?? undefined,
+      freeShippingDescription:
+        defaultValues?.freeShippingDescription ?? undefined,
+      moneyReturnTitle: defaultValues?.moneyReturnTitle ?? undefined,
+      moneyReturnDescription:
+        defaultValues?.moneyReturnDescription ?? undefined,
+      supportTitle: defaultValues?.supportTitle ?? undefined,
+      supportDescription: defaultValues?.supportDescription ?? undefined,
+      safePaymentTitle: defaultValues?.safePaymentTitle ?? undefined,
+      safePaymentDescription:
+        defaultValues?.safePaymentDescription ?? undefined,
       twilioAccountSid: defaultValues?.twilioAccountSid ?? undefined,
       twilioAuthToken: defaultValues?.twilioAuthToken ?? undefined,
       twilioPhone: defaultValues?.twilioPhone ?? undefined,
@@ -102,6 +107,17 @@ export default function GeneralSettingFormPage({
           defaultValues?.specialProductSectionText ?? undefined,
         welcomeStoreSectionText:
           defaultValues?.welcomeStoreSectionText ?? undefined,
+        freeShippingTitle: defaultValues?.freeShippingTitle ?? undefined,
+        freeShippingDescription:
+          defaultValues?.freeShippingDescription ?? undefined,
+        moneyReturnTitle: defaultValues?.moneyReturnTitle ?? undefined,
+        moneyReturnDescription:
+          defaultValues?.moneyReturnDescription ?? undefined,
+        supportTitle: defaultValues?.supportTitle ?? undefined,
+        supportDescription: defaultValues?.supportDescription ?? undefined,
+        safePaymentTitle: defaultValues?.safePaymentTitle ?? undefined,
+        safePaymentDescription:
+          defaultValues?.safePaymentDescription ?? undefined,
         gstSecretKey: defaultValues?.gstSecretKey ?? undefined,
         twilioAccountSid: defaultValues?.twilioAccountSid ?? undefined,
         twilioAuthToken: defaultValues?.twilioAuthToken ?? undefined,
@@ -341,6 +357,49 @@ export default function GeneralSettingFormPage({
                   onChange={field.onChange}
                 />
               )}
+            />
+            <h1 className="pb-3 pt-6 font-bold">Feature Cards</h1>
+            <hr />
+            <br />
+            <FormAdminInputRow
+              name="freeShippingTitle"
+              label="Free Shipping Title"
+              type="string"
+            />
+            <FormAdminInputRow
+              name="freeShippingDescription"
+              label="Free Shipping Description"
+              type="string"
+            />
+            <FormAdminInputRow
+              name="moneyReturnTitle"
+              label="Money Return Title"
+              type="string"
+            />
+            <FormAdminInputRow
+              name="moneyReturnDescription"
+              label="Money Return Description"
+              type="string"
+            />
+            <FormAdminInputRow
+              name="supportTitle"
+              label="Support Title"
+              type="string"
+            />
+            <FormAdminInputRow
+              name="supportDescription"
+              label="Support Description"
+              type="string"
+            />
+            <FormAdminInputRow
+              name="safePaymentTitle"
+              label="Safe Payment Title"
+              type="string"
+            />
+            <FormAdminInputRow
+              name="safePaymentDescription"
+              label="Safe Payment Description"
+              type="string"
             />
           </div>
 
