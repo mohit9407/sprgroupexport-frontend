@@ -7,7 +7,7 @@ import React, { use, useEffect, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
 export default function EditCustomerPage({ params }) {
-  const { _id } = params;
+  const { _id } = params
   const dispatch = useDispatch()
   const { data, isLoading } = useSelector(
     (state) => state.customers.getCustomer,
@@ -37,7 +37,7 @@ export default function EditCustomerPage({ params }) {
   if (isLoading)
     return (
       <div className="flex justify-center items-center">
-        <ButtonLoader className="inline-flex text-sky-600" /> Loading...
+        <ButtonLoader className="inline-flex text-[#004372]" /> Loading...
       </div>
     )
 

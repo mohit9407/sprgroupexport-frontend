@@ -3,10 +3,10 @@ import ButtonLoader from './ButtonLoader'
 
 const MODAL_THEMES = {
   primary: {
-    iconBg: 'bg-sky-100',
-    iconText: 'text-sky-600',
-    button: 'bg-sky-600 hover:bg-sky-700',
-    border: 'border-sky-300',
+    iconBg: 'bg-[#E6F0F5]',
+    iconText: 'text-[#004372]',
+    button: 'bg-[#004372] hover:bg-[#003451]',
+    border: 'border-[#9CC4D9]',
   },
   warning: {
     iconBg: 'bg-yellow-100',

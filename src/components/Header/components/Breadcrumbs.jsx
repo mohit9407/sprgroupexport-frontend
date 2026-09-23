@@ -72,7 +72,7 @@ const Breadcrumbs = ({ productName }) => {
 
   return (
     <div className="bg-[#dbdbdb] py-2 px-4 border-b border-gray-200">
-      <div className="max-w-7xl mx-auto">
+      <div className="w-full">
         <div className="text-sm text-gray-600 flex items-center p-2">
           {breadcrumbs.map((breadcrumb, index) => (
             <div key={breadcrumb.href} className="flex items-center">
@@ -84,7 +84,7 @@ const Breadcrumbs = ({ productName }) => {
               ) : (
                 <Link
                   href={breadcrumb.href}
-                  className="hover:text-[#BA8B4E] transition-colors"
+                  className="hover:text-[#004372] transition-colors"
                 >
                   {breadcrumb.label}
                 </Link>

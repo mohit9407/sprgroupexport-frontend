@@ -125,11 +125,10 @@ export default function AuthModal({ isOpen, onClose, switchToEmail = false }) {
       const result = await dispatch(verifyGuestOTP({ email, otp: otpValue }))
       if (verifyGuestOTP.fulfilled.match(result)) {
         const { user, accessToken, refreshToken } = result.payload || {}
-    
+
         if (user && accessToken) {
           if (typeof login === 'function') {
             login(user, { accessToken, refreshToken })
-   
 
             onClose()
           } else {
@@ -206,13 +205,14 @@ export default function AuthModal({ isOpen, onClose, switchToEmail = false }) {
     try {
       setIsVerifying(true)
       const result = await dispatch(guestLogin(email))
-      
+
       if (guestLogin.fulfilled.match(result)) {
         toast.success('OTP sent successfully! Please check your email.')
         setShowOtpInput(true)
       } else if (guestLogin.rejected.match(result)) {
         // Handle rejected case from Redux thunk
-        const errorMessage = result.payload || 'Failed to send OTP. Please try again.'
+        const errorMessage =
+          result.payload || 'Failed to send OTP. Please try again.'
         toast.error(errorMessage)
       }
     } catch (error) {
@@ -292,7 +292,7 @@ export default function AuthModal({ isOpen, onClose, switchToEmail = false }) {
                   id="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#BA8B4E] focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#004372] focus:border-transparent"
                   placeholder="Enter your email"
                   required
                   autoComplete="email"
@@ -303,14 +303,14 @@ export default function AuthModal({ isOpen, onClose, switchToEmail = false }) {
                   By continuing, you agree to our{' '}
                   <Link
                     href="/terms"
-                    className="text-[#BA8B4E] hover:underline"
+                    className="text-[#004372] hover:underline"
                   >
                     Terms of Service
                   </Link>{' '}
                   &{' '}
                   <Link
                     href="/privacy"
-                    className="text-[#BA8B4E] hover:underline"
+                    className="text-[#004372] hover:underline"
                   >
                     Privacy Policy
                   </Link>
@@ -319,7 +319,7 @@ export default function AuthModal({ isOpen, onClose, switchToEmail = false }) {
 
               <button
                 type="submit"
-                className="w-full bg-[#BA8B4E] text-white py-3 rounded-md font-medium hover:bg-[#9a7540] transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center min-h-[42px]"
+                className="w-full bg-[#004372] text-white py-3 rounded-md font-medium hover:bg-[#003451] transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center min-h-[42px]"
                 disabled={isVerifying}
               >
                 {isVerifying ? 'SENDING OTP...' : 'CONTINUE'}
@@ -344,7 +344,7 @@ export default function AuthModal({ isOpen, onClose, switchToEmail = false }) {
                       onChange={(e) => handleOtpChange(e, index)}
                       onKeyDown={(e) => handleOtpKeyDown(e, index)}
                       onPaste={handlePaste}
-                      className="w-12 h-12 text-2xl text-center border border-gray-300 rounded-md focus:ring-2 focus:ring-[#BA8B4E] focus:border-transparent"
+                      className="w-12 h-12 text-2xl text-center border border-gray-300 rounded-md focus:ring-2 focus:ring-[#004372] focus:border-transparent"
                       data-index={index}
                       disabled={isVerifying}
                       autoFocus={index === 0}
@@ -359,7 +359,7 @@ export default function AuthModal({ isOpen, onClose, switchToEmail = false }) {
                     type="button"
                     onClick={handleResendOtp}
                     disabled={!canResend || isVerifying}
-                    className={`text-sm ${canResend && !isVerifying ? 'text-[#BA8B4E] hover:underline' : 'text-gray-400'}`}
+                    className={`text-sm ${canResend && !isVerifying ? 'text-[#004372] hover:underline' : 'text-gray-400'}`}
                   >
                     {isVerifying
                       ? 'Sending...'
@@ -372,7 +372,7 @@ export default function AuthModal({ isOpen, onClose, switchToEmail = false }) {
 
               <button
                 type="submit"
-                className="w-full bg-[#BA8B4E] text-white py-3 rounded-md font-medium hover:bg-[#9a7540] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full bg-[#004372] text-white py-3 rounded-md font-medium hover:bg-[#003451] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                 disabled={
                   isVerifying || otp.some((digit) => !digit) || otpError
                 }
@@ -388,7 +388,7 @@ export default function AuthModal({ isOpen, onClose, switchToEmail = false }) {
                 Already have an account?{' '}
                 <Link
                   href="/login"
-                  className="text-[#BA8B4E] font-medium hover:underline"
+                  className="text-[#004372] font-medium hover:underline"
                 >
                   Login
                 </Link>

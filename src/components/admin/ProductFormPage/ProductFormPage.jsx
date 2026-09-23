@@ -1730,7 +1730,7 @@ const ProductFormPage = ({ mode = 'add', productId, defaultValues, title }) => {
               <button
                 type="submit"
                 disabled={isLoading || status === 'loading'}
-                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md bg-sky-600 text-white hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md bg-[#004372] text-white hover:bg-[#003451] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading || status === 'loading' ? (
                   <>

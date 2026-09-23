@@ -393,7 +393,7 @@ export function CategoryFormPage({
           <div className="flex justify-center space-x-4">
             <button
               type="submit"
-              className="px-6 py-2 rounded bg-sky-600 text-white font-semibold hover:bg-sky-700 transition-colors"
+              className="px-6 py-2 rounded bg-[#004372] text-white font-semibold hover:bg-[#003451] transition-colors"
               disabled={formProviders.formState.isSubmitting}
             >
               {formProviders.formState.isSubmitting

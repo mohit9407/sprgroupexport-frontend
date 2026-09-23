@@ -174,7 +174,7 @@ export default function OrdersPage() {
           </div>
           <Link
             href="/products"
-            className="mt-4 md:mt-0 inline-flex items-center justify-center px-6 py-2 border border-transparent text-sm font-medium rounded-full text-white bg-[#BA8B4E] hover:bg-[#a87d45] transition-colors"
+            className="mt-4 md:mt-0 inline-flex items-center justify-center px-6 py-2 border border-transparent text-sm font-medium rounded-full text-white bg-[#004372] hover:bg-[#003451] transition-colors"
           >
             Continue Shopping
           </Link>
@@ -203,7 +203,7 @@ export default function OrdersPage() {
                         </p>
                         <Link
                           href={`/orders/${order._id}`}
-                          className="inline-flex items-center text-sm font-medium text-[#BA8B4E] hover:text-[#a87d45] ml-[750px]"
+                          className="inline-flex items-center text-sm font-medium text-[#004372] hover:text-[#003451] ml-[750px]"
                         >
                           View Order Details
                           <svg
@@ -300,7 +300,7 @@ export default function OrdersPage() {
                                 <div className="flex-1">
                                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
                                     <div>
-                                      <h4 className="text-lg font-semibold text-gray-900 group-hover:text-[#BA8B4E] transition-colors">
+                                      <h4 className="text-lg font-semibold text-gray-900 group-hover:text-[#004372] transition-colors">
                                         <Link
                                           href={`/products/${itemDetails.product?._id}`}
                                           className="hover:underline"
@@ -327,7 +327,7 @@ export default function OrdersPage() {
                                     </div>
                                     <Link
                                       href={`/products/${itemDetails.product?._id}`}
-                                      className="mt-2 sm:mt-0 inline-flex items-center px-3 py-1.5 border border-[#BA8B4E] text-[#BA8B4E] rounded-full text-xs font-medium hover:bg-[#f9f5f0] transition-colors"
+                                      className="mt-2 sm:mt-0 inline-flex items-center px-3 py-1.5 border border-[#004372] text-[#004372] rounded-full text-xs font-medium hover:bg-[#E6F0F5] transition-colors"
                                     >
                                       View Product Details
                                       <FiExternalLink
@@ -375,7 +375,7 @@ export default function OrdersPage() {
                     <div className="px-6 py-3 border-t border-gray-100 bg-gray-50">
                       <button
                         onClick={() => toggleOrderExpansion(order._id)}
-                        className="w-full py-2.5 px-4 bg-white border border-gray-200 rounded-lg shadow-sm text-sm font-medium text-[#BA8B4E] hover:bg-[#f9f5f0] hover:border-[#d4b78f] transition-all duration-200 flex items-center justify-center group"
+                        className="w-full py-2.5 px-4 bg-white border border-gray-200 rounded-lg shadow-sm text-sm font-medium text-[#004372] hover:bg-[#E6F0F5] hover:border-[#9CC4D9] transition-all duration-200 flex items-center justify-center group"
                       >
                         {expandedOrders[order._id] ? (
                           <>
@@ -431,7 +431,7 @@ export default function OrdersPage() {
             </p>
             <Link
               href="/shop"
-              className="inline-flex items-center justify-center px-6 py-2 border border-transparent text-sm font-medium rounded-full text-white bg-[#BA8B4E] hover:bg-[#a87d45] transition-colors"
+              className="inline-flex items-center justify-center px-6 py-2 border border-transparent text-sm font-medium rounded-full text-white bg-[#004372] hover:bg-[#003451] transition-colors"
             >
               {error ? 'Try Again' : 'Start Shopping'}
             </Link>

@@ -233,7 +233,7 @@ export function CustomerFormPage({
           <div className="flex gap-3 justify-center">
             <button
               type="submit"
-              className="px-5 py-2 rounded bg-sky-600 text-white font-semibold hover:bg-sky-700"
+              className="px-5 py-2 rounded bg-[#004372] text-white font-semibold hover:bg-[#003451]"
             >
               Submit
             </button>

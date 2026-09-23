@@ -9,22 +9,22 @@ import {
 const FeaturesSection = ({ settings = {} }) => {
   const features = [
     {
-      icon: <FaTruck className="text-[35px] text-[#b7853f]" />,
+      icon: <FaTruck className="text-[35px] text-[#004372]" />,
       title: settings.freeShippingTitle || 'Free Shipping',
       description: settings.freeShippingDescription || 'On order over $999',
     },
     {
-      icon: <FaMoneyBillWave className="text-[35px] text-[#b7853f]" />,
+      icon: <FaMoneyBillWave className="text-[35px] text-[#004372]" />,
       title: settings.moneyReturnTitle || 'Money Return',
       description: settings.moneyReturnDescription || '8 Days Money Return',
     },
     {
-      icon: <FaHeadset className="text-[35px] text-[#b7853f]" />,
+      icon: <FaHeadset className="text-[35px] text-[#004372]" />,
       title: settings.supportTitle || 'Support 24/7',
       description: settings.supportDescription || 'Hotline: (+91 98989 91005)',
     },
     {
-      icon: <FaCreditCard className="text-[35px] text-[#b7853f]" />,
+      icon: <FaCreditCard className="text-[35px] text-[#004372]" />,
       title: settings.safePaymentTitle || 'Safe Payment',
       description: settings.safePaymentDescription || 'Protect online payment',
     },

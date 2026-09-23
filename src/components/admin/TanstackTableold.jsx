@@ -135,7 +135,7 @@ export function TanstackTableOld({
 
             <button
               onClick={() => onSearch?.(search)}
-              className="bg-sky-600 text-white px-3 py-1.5 rounded text-sm"
+              className="bg-[#004372] text-white px-3 py-1.5 rounded text-sm"
             >
               <FaSearch />
             </button>
@@ -173,7 +173,9 @@ export function TanstackTableOld({
                           : undefined
                       }
                       className={`p-2 text-left font-semibold text-gray-700 border border-gray-200 ${
-                        canSort ? 'cursor-pointer select-none text-sky-600' : ''
+                        canSort
+                          ? 'cursor-pointer select-none text-[#004372]'
+                          : ''
                       }`}
                     >
                       <div className="flex items-center gap-1">
@@ -205,7 +207,7 @@ export function TanstackTableOld({
               <tr>
                 <td colSpan={columns.length} className="p-4 text-center">
                   <div className="flex justify-center items-center">
-                    <ButtonLoader className="inline-flex text-sky-600" />{' '}
+                    <ButtonLoader className="inline-flex text-[#004372]" />{' '}
                     Loading...
                   </div>
                 </td>

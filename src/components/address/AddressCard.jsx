@@ -15,7 +15,7 @@ export default function AddressCard({
         <div className="flex items-start">
           <div className="bg-gray-100 p-3 rounded-full mr-4">
             {address.isDefault ? (
-              <FaHome className="text-[#BA8B4E] text-xl" />
+              <FaHome className="text-[#004372] text-xl" />
             ) : (
               <FaBuilding className="text-gray-500 text-xl" />
             )}
@@ -37,7 +37,8 @@ export default function AddressCard({
               )}
             </div>
             <p className="text-sm text-gray-500">
-              {address.countryCode ? `${address.countryCode} ` : ''}{address.mobileNo || address.mobile}
+              {address.countryCode ? `${address.countryCode} ` : ''}
+              {address.mobileNo || address.mobile}
             </p>
             <p className="text-sm text-gray-700 mt-1">{address.address}</p>
             <p className="text-sm text-gray-700">
@@ -52,10 +53,11 @@ export default function AddressCard({
             <button
               onClick={() => onSetDefault(address._id)}
               disabled={address.isDefault || isDefaultLoading}
-              className={`p-2 rounded-md ${address.isDefault
+              className={`p-2 rounded-md ${
+                address.isDefault
                   ? 'text-gray-300 cursor-not-allowed'
                   : 'text-gray-500 hover:bg-gray-100'
-                }`}
+              }`}
             >
               <FaHome className="h-4 w-4" />
             </button>

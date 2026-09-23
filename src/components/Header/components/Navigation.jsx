@@ -12,7 +12,7 @@ const Navigation = () => {
 
   return (
     <nav className="hidden md:block text-white pb-[25px]">
-      <div className="max-w-7xl mx-auto h-16 justify-center items-center px-4 bg-[#BA8B4E]">
+      <div className="w-full h-16 justify-center items-center px-4 bg-[#004372]">
         <ul className="flex justify-start space-x-8 py-3">
           {navItems.map((item) => (
             <li

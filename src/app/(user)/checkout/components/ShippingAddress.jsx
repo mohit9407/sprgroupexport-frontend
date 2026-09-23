@@ -180,7 +180,7 @@ export default function ShippingAddress({ onContinue, initialData = {} }) {
                   key={address._id}
                   className={`border rounded-md p-4 cursor-pointer transition-colors ${
                     selectedAddressId === address._id && !showNewAddressForm
-                      ? 'border-[#c89b5a] bg-amber-50'
+                      ? 'border-[#004372] bg-[#E6F0F5]'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                   onClick={() => {
@@ -198,7 +198,7 @@ export default function ShippingAddress({ onContinue, initialData = {} }) {
                       type="radio"
                       id={`address-${address._id}`}
                       name="address"
-                      className="h-4 w-4 text-[#c89b5a] focus:ring-[#c89b5a] mt-1"
+                      className="h-4 w-4 text-[#004372] focus:ring-[#004372] mt-1"
                       checked={
                         selectedAddressId === address._id && !showNewAddressForm
                       }
@@ -246,7 +246,7 @@ export default function ShippingAddress({ onContinue, initialData = {} }) {
                         <button
                           type="button"
                           onClick={(e) => handleSetDefault(address._id, e)}
-                          className="mt-2 text-xs text-amber-700 hover:text-amber-800"
+                          className="mt-2 text-xs text-[#003451] hover:text-[#002A42]"
                         >
                           Set as default
                         </button>
@@ -268,7 +268,7 @@ export default function ShippingAddress({ onContinue, initialData = {} }) {
                 type="radio"
                 id="new-address"
                 name="address-type"
-                className="h-4 w-4 text-[#c89b5a] focus:ring-[#c89b5a]"
+                className="h-4 w-4 text-[#004372] focus:ring-[#004372]"
                 checked={showNewAddressForm}
                 onChange={() => setShowNewAddressForm(true)}
               />
@@ -304,10 +304,10 @@ export default function ShippingAddress({ onContinue, initialData = {} }) {
         <button
           onClick={handleSubmit}
           disabled={isLoading || !selectedAddressId || showNewAddressForm}
-          className={`bg-[#c89b5a] text-white px-8 py-3 rounded-md uppercase text-sm font-medium transition-colors ${
+          className={`bg-[#004372] text-white px-8 py-3 rounded-md uppercase text-sm font-medium transition-colors ${
             isLoading || !selectedAddressId || showNewAddressForm
               ? 'opacity-50 cursor-not-allowed'
-              : 'hover:bg-[#b38950]'
+              : 'hover:bg-[#003451]'
           }`}
         >
           {isLoading ? 'Loading...' : 'CONTINUE'}

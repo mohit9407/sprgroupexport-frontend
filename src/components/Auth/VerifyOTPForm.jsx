@@ -127,7 +127,7 @@ const VerifyOTPForm = ({
                 id={`otp-${index}`}
                 type="text"
                 maxLength={1}
-                className="w-12 h-12 text-center text-xl border border-gray-300 rounded-md focus:ring-1 focus:ring-[#a07637] focus:border-amber-600 outline-none caret-transparent"
+                className="w-12 h-12 text-center text-xl border border-gray-300 rounded-md focus:ring-1 focus:ring-[#003451] focus:border-[#004372] outline-none caret-transparent"
                 value={otp[index]}
                 onChange={(e) => handleOtpChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
@@ -140,7 +140,7 @@ const VerifyOTPForm = ({
 
           <button
             type="submit"
-            className="w-full bg-[#b7853f] text-white py-3 px-4 rounded-md font-medium hover:bg-[#a07637] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+            className="w-full bg-[#004372] text-white py-3 px-4 rounded-md font-medium hover:bg-[#003451] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#E6F0F5]0 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
             disabled={otp.join('').length !== 6 || isLoading || externalLoading}
             onClick={(e) => {
               console.log('Verify button clicked')
@@ -157,7 +157,7 @@ const VerifyOTPForm = ({
                 type="button"
                 onClick={handleResend}
                 disabled={resendDisabled}
-                className="font-medium text-[#b7853f] hover:text-[#a07637] hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                className="font-medium text-[#004372] hover:text-[#003451] hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {resendDisabled ? `Resend in ${countdown}s` : 'Resend Code'}
               </button>
@@ -165,7 +165,7 @@ const VerifyOTPForm = ({
             <button
               type="button"
               onClick={onBack}
-              className="text-sm font-medium text-[#b7853f] hover:text-[#a07637] hover:underline"
+              className="text-sm font-medium text-[#004372] hover:text-[#003451] hover:underline"
             >
               Back to Email
             </button>

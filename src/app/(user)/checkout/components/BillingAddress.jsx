@@ -46,7 +46,7 @@ export default function BillingAddress({ onContinue, initialData = {} }) {
               name="firstName"
               value={formData.firstName}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#c89b5a] focus:border-[#c89b5a] bg-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#004372] focus:border-[#004372] bg-gray-100"
               placeholder="Enter Your Name"
               required
             />
@@ -60,7 +60,7 @@ export default function BillingAddress({ onContinue, initialData = {} }) {
               name="lastName"
               value={formData.lastName}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#c89b5a] focus:border-[#c89b5a] bg-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#004372] focus:border-[#004372] bg-gray-100"
               placeholder="Last Name"
               required
             />
@@ -76,7 +76,7 @@ export default function BillingAddress({ onContinue, initialData = {} }) {
             name="address"
             value={formData.address}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#c89b5a] focus:border-[#c89b5a] bg-gray-100"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#004372] focus:border-[#004372] bg-gray-100"
             placeholder="Enter Your Address"
             required
           />
@@ -91,7 +91,7 @@ export default function BillingAddress({ onContinue, initialData = {} }) {
               name="country"
               value={formData.country}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#c89b5a] focus:border-[#c89b5a] bg-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#004372] focus:border-[#004372] bg-gray-100"
               required
             >
               <option value="">Select Country</option>
@@ -108,7 +108,7 @@ export default function BillingAddress({ onContinue, initialData = {} }) {
               name="state"
               value={formData.state}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#c89b5a] focus:border-[#c89b5a] bg-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#004372] focus:border-[#004372] bg-gray-100"
               required
             >
               <option value="">Select State</option>
@@ -126,7 +126,7 @@ export default function BillingAddress({ onContinue, initialData = {} }) {
               name="city"
               value={formData.city}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#c89b5a] focus:border-[#c89b5a] bg-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#004372] focus:border-[#004372] bg-gray-100"
               placeholder="Enter Your City"
               required
             />
@@ -143,7 +143,7 @@ export default function BillingAddress({ onContinue, initialData = {} }) {
               name="zipCode"
               value={formData.zipCode}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#c89b5a] focus:border-[#c89b5a] bg-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#004372] focus:border-[#004372] bg-gray-100"
               placeholder="Enter Your Zip / Postal Code"
               required
             />
@@ -157,7 +157,7 @@ export default function BillingAddress({ onContinue, initialData = {} }) {
               name="phone"
               value={formData.phone}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#c89b5a] focus:border-[#c89b5a] bg-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#004372] focus:border-[#004372] bg-gray-100"
               placeholder="Enter Your Phone Number"
               required
             />
@@ -171,7 +171,7 @@ export default function BillingAddress({ onContinue, initialData = {} }) {
             name="sameAsShipping"
             checked={formData.sameAsShipping}
             onChange={handleChange}
-            className="h-4 w-4 text-[#c89b5a] focus:ring-[#c89b5a] border-gray-300 rounded"
+            className="h-4 w-4 text-[#004372] focus:ring-[#004372] border-gray-300 rounded"
           />
           <label
             htmlFor="sameAsShipping"
@@ -184,7 +184,7 @@ export default function BillingAddress({ onContinue, initialData = {} }) {
         <div className="mt-8">
           <button
             type="submit"
-            className="bg-[#c89b5a] text-white px-8 py-3 rounded-md uppercase text-sm font-medium hover:bg-[#b38950] transition-colors"
+            className="bg-[#004372] text-white px-8 py-3 rounded-md uppercase text-sm font-medium hover:bg-[#003451] transition-colors"
           >
             CONTINUE
           </button>

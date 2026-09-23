@@ -27,12 +27,12 @@ const ProductInfo = ({
     </p>
     <h3
       onClick={handleNavigate}
-      className="text-base text-[#2C3E50] mb-2 font-bold hover:text-[#b7853f] transition-colors duration-300 cursor-pointer"
+      className="text-base text-[#2C3E50] mb-2 font-bold hover:text-[#004372] transition-colors duration-300 cursor-pointer"
     >
       {name}
     </h3>
     <div
-      className="text-[#D4AF37] font-semibold"
+      className="text-[#004372] font-semibold"
       style={{ fontSize: viewMode === 'grid' ? '1.6rem' : '1.2rem' }}
     >
       ${typeof price === 'number' ? price.toLocaleString('en-US') : price} USD
@@ -291,8 +291,8 @@ const ProductCard = ({
                   <button
                     className={`w-10 h-10 rounded-full flex items-center justify-center ${
                       isWishlisted
-                        ? 'text-[#BA8B4E] bg-white border-2 border-[#BA8B4E]'
-                        : 'text-white bg-[#BA8B4E] hover:bg-[#a87d45]'
+                        ? 'text-[#004372] bg-white border-2 border-[#004372]'
+                        : 'text-white bg-[#004372] hover:bg-[#003451]'
                     } transition-colors`}
                     onClick={handleWishlistClick}
                   >
@@ -303,7 +303,7 @@ const ProductCard = ({
                   <button
                     onClick={handleNavigate}
                     disabled={productDetailsStatus === 'loading'}
-                    className={`w-10 h-10 rounded-full bg-[#BA8B4E] flex items-center justify-center hover:bg-[#a87d45] transition-colors shadow-lg ${
+                    className={`w-10 h-10 rounded-full bg-[#004372] flex items-center justify-center hover:bg-[#003451] transition-colors shadow-lg ${
                       productDetailsStatus === 'loading'
                         ? 'opacity-70 cursor-not-allowed'
                         : 'cursor-pointer'
@@ -323,8 +323,8 @@ const ProductCard = ({
                     disabled={isAdding || isInCart}
                     className={`relative ${
                       isInCart
-                        ? 'bg-[#BA8B4E] hover:bg-[#a87d45]'
-                        : 'bg-[#BA8B4E] hover:bg-[#a87d45]'
+                        ? 'bg-[#004372] hover:bg-[#003451]'
+                        : 'bg-[#004372] hover:bg-[#003451]'
                     } text-white px-6 py-2 rounded-full text-sm font-medium flex items-center justify-center gap-2 transition-all shadow-lg cursor-pointer min-w-[140px]`}
                   >
                     {isAdding ? (
@@ -445,7 +445,7 @@ const ProductCard = ({
           >
             <div className="flex gap-4">
               <button
-                className={`w-10 h-10 rounded-full flex items-center justify-center ${isWishlisted ? 'text-[#BA8B4E] bg-white border-2 border-[#BA8B4E]' : 'text-white bg-[#BA8B4E] hover:bg-[#a87d45]'} transition-colors`}
+                className={`w-10 h-10 rounded-full flex items-center justify-center ${isWishlisted ? 'text-[#004372] bg-white border-2 border-[#004372]' : 'text-white bg-[#004372] hover:bg-[#003451]'} transition-colors`}
                 onClick={handleWishlistClick}
               >
                 <FiHeart
@@ -455,7 +455,7 @@ const ProductCard = ({
               <button
                 onClick={handleNavigate}
                 disabled={productDetailsStatus === 'loading'}
-                className={`w-10 h-10 rounded-full bg-[#BA8B4E] flex items-center justify-center hover:bg-[#a87d45] transition-colors shadow-lg ${
+                className={`w-10 h-10 rounded-full bg-[#004372] flex items-center justify-center hover:bg-[#003451] transition-colors shadow-lg ${
                   productDetailsStatus === 'loading'
                     ? 'opacity-70 cursor-not-allowed'
                     : 'cursor-pointer'
@@ -475,8 +475,8 @@ const ProductCard = ({
                 disabled={isAdding || isInCart}
                 className={`relative ${
                   isInCart
-                    ? 'bg-[#BA8B4E] hover:bg-[#a87d45]'
-                    : 'bg-[#BA8B4E] hover:bg-[#a87d45]'
+                    ? 'bg-[#004372] hover:bg-[#003451]'
+                    : 'bg-[#004372] hover:bg-[#003451]'
                 } text-white px-8 py-3 rounded-full text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-lg cursor-pointer min-w-[140px]`}
               >
                 {isAdding ? (
@@ -525,13 +525,13 @@ const ProductCard = ({
             {categoryName || brand}
           </p>
           <h3
-            className="text-base text-[#2C3E50] mb-2 font-bold hover:text-[#b7853f] transition-colors duration-300 cursor-pointer"
+            className="text-base text-[#2C3E50] mb-2 font-bold hover:text-[#004372] transition-colors duration-300 cursor-pointer"
             onClick={handleNavigate}
           >
             {name}
           </h3>
           <div
-            className="text-[#D4AF37] font-semibold"
+            className="text-[#004372] font-semibold"
             style={{ fontSize: '1.6rem' }}
           >
             ${typeof price === 'number' ? price.toLocaleString('en-US') : price}{' '}

@@ -86,8 +86,8 @@ const Header = ({ settings = {} }) => {
         {/* Main Header */}
         <div className="border-b border-gray-200 relative bg-white z-50">
           {/* Top Bar with Contact and Account */}
-          <div className="bg-[#BA8B4E] py-1">
-            <div className="max-w-7xl mx-auto px-4">
+          <div className="bg-[#004372] py-1">
+            <div className="w-full px-4">
               <div className="flex justify-between items-center">
                 {/* Contact Info - Empty div for alignment */}
                 <div className="flex items-center space-x-4 text-white text-sm"></div>
@@ -103,17 +103,17 @@ const Header = ({ settings = {} }) => {
           </div>
 
           {/* Main Header Section - Full Width */}
-          <div className="w-full bg-white py-6">
-            <div className="max-w-7xl mx-auto px-4">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="w-full bg-white py-8">
+            <div className="w-full px-4">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-8">
                 {/* Logo */}
                 <Link href="/" className="flex items-center">
                   <SafeImage
                     src={settings?.logo}
                     fallback="/spr_logo.png"
                     alt="SPR Group of Export"
-                    width={270}
-                    height={175}
+                    width={330}
+                    height={215}
                     priority
                   />
                 </Link>

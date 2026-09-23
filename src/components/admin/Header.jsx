@@ -14,12 +14,12 @@ export default function AdminHeader({
   const { logout } = useAuth()
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-sky-700 text-white shadow">
+    <header className="sticky top-0 z-40 w-full bg-[#003451] text-white shadow">
       <div className="flex items-center h-12 px-4 gap-3">
         <button
           aria-label="Toggle sidebar"
           onClick={onToggleSidebar}
-          className="p-2 hover:bg-sky-600 rounded"
+          className="p-2 hover:bg-[#004372] rounded"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -43,7 +43,7 @@ export default function AdminHeader({
           ))}
           <div className="relative">
             <button
-              className="flex items-center gap-2 px-2 py-1 rounded hover:bg-sky-600"
+              className="flex items-center gap-2 px-2 py-1 rounded hover:bg-[#004372]"
               onClick={() => setOpen((v) => !v)}
             >
               <div className="h-6 w-6 rounded-full bg-white/20 grid place-items-center">

@@ -137,7 +137,7 @@ export const CustomerAddressPage = ({ params }) => {
             setEditData(null)
             setShowModal(true)
           }}
-          className="bg-sky-600 text-white px-4 py-2 rounded"
+          className="bg-[#004372] text-white px-4 py-2 rounded"
         >
           Add Address
         </button>

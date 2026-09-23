@@ -341,7 +341,7 @@ export default function ProductDetails() {
 
           {/* Product Info - Scrollable */}
           <div className="lg:w-1/2 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto lg:pr-4">
-            <h1 className="text-2xl font-medium text-[#b7853f] mb-1">
+            <h1 className="text-2xl font-medium text-[#004372] mb-1">
               {product.productName}
             </h1>
             <h2 className="text-gray-600 text-sm mb-1">
@@ -369,7 +369,7 @@ export default function ProductDetails() {
 
             <div className="mb-6">
               <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-[#b7853f]">
+                <span className="text-2xl font-bold text-[#004372]">
                   ${product.price?.toLocaleString('en-US')} USD
                 </span>
                 <span className="text-sm text-gray-500">
@@ -389,7 +389,7 @@ export default function ProductDetails() {
                     {offers.length > 2 && (
                       <button
                         onClick={() => setShowOffersModal(true)}
-                        className="text-xs text-[#b7853f] hover:underline"
+                        className="text-xs text-[#004372] hover:underline"
                       >
                         VIEW ALL
                       </button>
@@ -613,14 +613,14 @@ export default function ProductDetails() {
               <button
                 onClick={handleAddToCart}
                 disabled={isAddingToCart}
-                className={`flex-1 bg-white border-2 border-[#b7853f] text-[#b7853f] px-6 py-3 rounded-md font-medium flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors`}
+                className={`flex-1 bg-white border-2 border-[#004372] text-[#004372] px-6 py-3 rounded-md font-medium flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors`}
               >
                 <FaShoppingBag />
                 {isAddingToCart ? 'Adding...' : 'ADD TO CART'}
               </button>
               <button
                 onClick={handleBuyNow}
-                className="flex-1 bg-[#b7853f] text-gray-50 px-6 py-3 rounded-md font-medium hover:bg-[#b7853f] transition-colors"
+                className="flex-1 bg-[#004372] text-gray-50 px-6 py-3 rounded-md font-medium hover:bg-[#004372] transition-colors"
               >
                 BUY NOW
               </button>
@@ -632,7 +632,7 @@ export default function ProductDetails() {
                   onClick={() => setActiveTab('details')}
                   className={`px-6 py-2 rounded-t font-medium cursor-pointer ${
                     activeTab === 'details'
-                      ? 'bg-[#b7853f] text-white'
+                      ? 'bg-[#004372] text-white'
                       : 'bg-gray-100 text-gray-600'
                   }`}
                 >
@@ -642,7 +642,7 @@ export default function ProductDetails() {
                   onClick={() => setActiveTab('reviews')}
                   className={`px-6 py-2 rounded-t font-medium cursor-pointer ${
                     activeTab === 'reviews'
-                      ? 'bg-[#b7853f] text-white'
+                      ? 'bg-[#004372] text-white'
                       : 'bg-gray-100 text-gray-600'
                   }`}
                 >
@@ -673,7 +673,7 @@ export default function ProductDetails() {
                             href={product.videoEmbedLink}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[#b7853f] hover:underline"
+                            className="text-[#004372] hover:underline"
                           >
                             Watch Video
                           </a>
@@ -744,7 +744,7 @@ export default function ProductDetails() {
                             setShowAuthModal(true)
                           }
                         }}
-                        className="px-4 py-2 bg-[#BA8B4E] text-white rounded-md hover:bg-[#8B6B3E] transition-colors"
+                        className="px-4 py-2 bg-[#004372] text-white rounded-md hover:bg-[#003451] transition-colors"
                       >
                         Write a Review
                       </button>

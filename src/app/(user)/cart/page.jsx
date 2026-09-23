@@ -92,7 +92,7 @@ export default function CartPage() {
   if (!isClient) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#BA8B4E]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#004372]"></div>
       </div>
     )
   }
@@ -118,7 +118,7 @@ export default function CartPage() {
           </p>
           <Link
             href="/"
-            className="bg-[#BA8B4E] hover:bg-[#a87d45] text-white px-8 py-3 rounded-full font-medium transition-colors inline-block"
+            className="bg-[#004372] hover:bg-[#003451] text-white px-8 py-3 rounded-full font-medium transition-colors inline-block"
           >
             Continue Shopping
           </Link>
@@ -131,7 +131,7 @@ export default function CartPage() {
     <div className="container mx-auto px-4 py-8">
       <button
         onClick={() => window.history.back()}
-        className="flex items-center text-gray-600 hover:text-[#BA8B4E] mb-6 transition-colors"
+        className="flex items-center text-gray-600 hover:text-[#004372] mb-6 transition-colors"
       >
         <svg
           className="w-5 h-5 mr-1"
@@ -191,7 +191,7 @@ export default function CartPage() {
                         />
                       </div>
                       <div className="ml-4">
-                        <h3 className="font-medium text-gray-900 hover:text-[#BA8B4E] transition-colors">
+                        <h3 className="font-medium text-gray-900 hover:text-[#004372] transition-colors">
                           {item.name || item.product?.productName}
                         </h3>
                         <p className="text-sm text-gray-500">
@@ -230,7 +230,7 @@ export default function CartPage() {
                         }`}
                       >
                         {updatingItemId === item.id ? (
-                          <div className="h-4 w-4 border-2 border-t-[#BA8B4E] border-gray-200 rounded-full animate-spin"></div>
+                          <div className="h-4 w-4 border-2 border-t-[#004372] border-gray-200 rounded-full animate-spin"></div>
                         ) : (
                           <FiMinus size={14} />
                         )}
@@ -292,7 +292,7 @@ export default function CartPage() {
                         }`}
                       >
                         {updatingItemId === item.id ? (
-                          <div className="h-4 w-4 border-2 border-t-[#BA8B4E] border-gray-200 rounded-full animate-spin"></div>
+                          <div className="h-4 w-4 border-2 border-t-[#004372] border-gray-200 rounded-full animate-spin"></div>
                         ) : (
                           <FiPlus size={14} />
                         )}
@@ -416,7 +416,7 @@ export default function CartPage() {
                     value={coupon}
                     onChange={(e) => setCoupon(e.target.value)}
                     placeholder="Enter coupon code"
-                    className="flex-1 border border-gray-300 rounded-l px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#BA8B4E] focus:border-transparent"
+                    className="flex-1 border border-gray-300 rounded-l px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#004372] focus:border-transparent"
                   />
                   <button
                     className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-r transition-colors"
@@ -429,7 +429,7 @@ export default function CartPage() {
 
               <Link
                 href="/checkout"
-                className="block w-full bg-[#BA8B4E] hover:bg-[#a87d45] text-white text-center py-3 rounded-full font-medium mt-6 transition-colors"
+                className="block w-full bg-[#004372] hover:bg-[#003451] text-white text-center py-3 rounded-full font-medium mt-6 transition-colors"
               >
                 PROCEED TO CHECKOUT
               </Link>
@@ -437,7 +437,7 @@ export default function CartPage() {
               <div className="flex justify-center mt-4">
                 <Link
                   href="/"
-                  className="text-[#BA8B4E] hover:underline text-sm"
+                  className="text-[#004372] hover:underline text-sm"
                 >
                   Continue Shopping
                 </Link>

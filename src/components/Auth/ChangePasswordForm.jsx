@@ -94,7 +94,7 @@ const ChangePasswordForm = ({
                 type={showCurrentPassword ? 'text' : 'password'}
                 id="oldPassword"
                 name="oldPassword"
-                className="w-full px-4 py-3 sm:py-2.5 text-base sm:text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-[#BA8B4E] focus:border-[#BA8B4E] outline-none pr-12 transition"
+                className="w-full px-4 py-3 sm:py-2.5 text-base sm:text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-[#004372] focus:border-[#004372] outline-none pr-12 transition"
                 placeholder="Enter current password"
                 value={formData.oldPassword}
                 onChange={handleChange}
@@ -124,7 +124,7 @@ const ChangePasswordForm = ({
                 type={showNewPassword ? 'text' : 'password'}
                 id="newPassword"
                 name="newPassword"
-                className="w-full px-4 py-3 sm:py-2.5 text-base sm:text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-[#BA8B4E] focus:border-[#BA8B4E] outline-none pr-12 transition"
+                className="w-full px-4 py-3 sm:py-2.5 text-base sm:text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-[#004372] focus:border-[#004372] outline-none pr-12 transition"
                 placeholder="Enter new password"
                 value={formData.newPassword}
                 onChange={handleChange}
@@ -158,7 +158,7 @@ const ChangePasswordForm = ({
                 type={showConfirmPassword ? 'text' : 'password'}
                 id="confirmPassword"
                 name="confirmPassword"
-                className="w-full px-4 py-3 sm:py-2.5 text-base sm:text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-[#BA8B4E] focus:border-[#BA8B4E] outline-none pr-12 transition"
+                className="w-full px-4 py-3 sm:py-2.5 text-base sm:text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-[#004372] focus:border-[#004372] outline-none pr-12 transition"
                 placeholder="Confirm new password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
@@ -179,7 +179,7 @@ const ChangePasswordForm = ({
             <button
               type="submit"
               disabled={localLoading || isLoading}
-              className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#BA8B4E] hover:bg-[#9a7542] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#BA8B4E] transition-colors ${
+              className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#004372] hover:bg-[#003451] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#004372] transition-colors ${
                 localLoading || isLoading ? 'opacity-70 cursor-not-allowed' : ''
               }`}
             >
@@ -192,7 +192,7 @@ const ChangePasswordForm = ({
           <div className="text-center text-sm mt-4">
             <Link
               href="/account"
-              className="font-medium text-[#BA8B4E] hover:text-[#9a7542] transition-colors"
+              className="font-medium text-[#004372] hover:text-[#003451] transition-colors"
             >
               Back to My Account
             </Link>

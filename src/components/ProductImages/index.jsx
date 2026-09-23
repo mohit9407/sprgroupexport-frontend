@@ -226,7 +226,7 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
                     }}
                     className={`w-16 h-16 flex-shrink-0 border-2 transition-all relative ${
                       selectedImage === index
-                        ? 'border-[#b7853f]'
+                        ? 'border-[#004372]'
                         : 'border-transparent'
                     }`}
                     aria-label={`View ${isVideo ? 'video' : 'image'} ${index + 1}`}
@@ -375,7 +375,7 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
                   }}
                   className={`w-2.5 h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
                     selectedImage === index
-                      ? 'bg-[#b7853f] w-8'
+                      ? 'bg-[#004372] w-8'
                       : 'bg-white/70 hover:bg-white'
                   }`}
                   aria-label={`Go to image ${index + 1}`}
@@ -399,7 +399,7 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
                 selectedImage === 0 ? allImages.length - 1 : selectedImage - 1
               setSelectedImage(prevIndex)
             }}
-            className={`absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-[#b7853f] text-white hover:bg-[#a07536] transition-all duration-300 z-10
+            className={`absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-[#004372] text-white hover:bg-[#003451] transition-all duration-300 z-10
 						${isHovered ? 'opacity-100 translate-x-2' : 'opacity-0 -translate-x-2'}`}
             aria-label="Previous thumbnail"
           >
@@ -428,8 +428,8 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
                   onMouseEnter={() => setSelectedImage(index)}
                   className={`flex-shrink-0 w-20 h-20 transition-all duration-300 ease-in-out transform hover:scale-105 cursor-pointer relative ${
                     selectedImage === index
-                      ? 'ring-2 ring-[#b7853f]'
-                      : 'border border-gray-200 hover:border-[#b7853f]'
+                      ? 'ring-2 ring-[#004372]'
+                      : 'border border-gray-200 hover:border-[#004372]'
                   }`}
                   aria-label={`Select ${isVideo ? 'video' : 'image'} ${index + 1}`}
                 >
@@ -465,7 +465,7 @@ const ProductImages = ({ images, productName, sideImages = [] }) => {
                 selectedImage === allImages.length - 1 ? 0 : selectedImage + 1
               setSelectedImage(nextIndex)
             }}
-            className={`absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-[#b7853f] text-white hover:bg-[#a07536] transition-all duration-300 z-10
+            className={`absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-[#004372] text-white hover:bg-[#003451] transition-all duration-300 z-10
 						${isHovered ? 'opacity-100 -translate-x-2' : 'opacity-0 translate-x-2'}`}
             aria-label="Next thumbnail"
           >

@@ -15,7 +15,7 @@ import { useWishlist } from '@/context/WishlistContext'
 const NextArrow = ({ className, style, onClick, isHovered }) => {
   return (
     <div
-      className={`absolute right-2 top-1/2 -translate-y-1/2 bg-[#b7853f] text-white p-3 hover:bg-[#a07536] transition-all transform hover:scale-105 z-10 w-10 h-10 flex items-center justify-center cursor-pointer ${
+      className={`absolute right-2 top-1/2 -translate-y-1/2 bg-[#004372] text-white p-3 hover:bg-[#003451] transition-all transform hover:scale-105 z-10 w-10 h-10 flex items-center justify-center cursor-pointer ${
         isHovered ? 'opacity-100' : 'opacity-0'
       } transition-opacity duration-300`}
       style={{ ...style, display: 'flex' }}
@@ -30,7 +30,7 @@ const NextArrow = ({ className, style, onClick, isHovered }) => {
 const PrevArrow = ({ className, style, onClick, isHovered }) => {
   return (
     <div
-      className={`absolute left-2 top-1/2 -translate-y-1/2 bg-[#b7853f] text-white p-3 hover:bg-[#a07536] transition-all transform hover:scale-105 z-10 w-10 h-10 flex items-center justify-center cursor-pointer ${
+      className={`absolute left-2 top-1/2 -translate-y-1/2 bg-[#004372] text-white p-3 hover:bg-[#003451] transition-all transform hover:scale-105 z-10 w-10 h-10 flex items-center justify-center cursor-pointer ${
         isHovered ? 'opacity-100' : 'opacity-0'
       } transition-opacity duration-300`}
       style={{ ...style, display: 'flex' }}
@@ -337,7 +337,7 @@ const RelatedProducts = ({ category, excludeProductId }) => {
                   </p>
                   <button
                     onClick={() => router.push('/shop')}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#b7853f] hover:bg-[#9a7135] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#b7853f]"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#004372] hover:bg-[#003451] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#004372]"
                   >
                     Browse All Products
                   </button>

@@ -76,9 +76,7 @@ export default function ParallaxBanners() {
     <FormProvider {...methods}>
       <div className="card">
         <div className="border-b-2 pb-3 border-cyan-400">
-          <h2 className="text-lg font-semibold text-gray-800">
-            Home Banners
-          </h2>
+          <h2 className="text-lg font-semibold text-gray-800">Home Banners</h2>
         </div>
 
         <form
@@ -87,7 +85,6 @@ export default function ParallaxBanners() {
         >
           {formData.map((item, index) => (
             <div key={item._id} className="mb-6 pb-6">
-              
               <div className="grid grid-cols-12 gap-4 items-start mb-4">
                 <label className="col-span-12 md:col-span-3 pt-2 text-sm text-right font-bold text-gray-700">
                   Banner
@@ -96,11 +93,9 @@ export default function ParallaxBanners() {
                 <div className="col-span-12 md:col-span-8 space-y-2">
                   <button
                     type="button"
-                    className="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700"
+                    className="px-4 py-2 bg-[#004372] text-white rounded hover:bg-[#003451]"
                     onClick={() =>
-                      document
-                        .getElementById(`bannerUpload-${index}`)
-                        .click()
+                      document.getElementById(`bannerUpload-${index}`).click()
                     }
                   >
                     Choose Banner
@@ -155,7 +150,7 @@ export default function ParallaxBanners() {
           <div className="text-right pt-4">
             <button
               type="submit"
-              className="px-6 py-2 rounded bg-sky-600 text-white font-semibold hover:bg-sky-700"
+              className="px-6 py-2 rounded bg-[#004372] text-white font-semibold hover:bg-[#003451]"
             >
               Submit
             </button>

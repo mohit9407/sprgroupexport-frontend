@@ -8,7 +8,7 @@ const steps = [
 
 const ArrowRight = ({ isActive }) => (
   <svg
-    className={`w-4 h-4 mx-12 ${isActive ? 'text-[#c89b5a]' : 'text-gray-300'}`}
+    className={`w-4 h-4 mx-12 ${isActive ? 'text-[#004372]' : 'text-gray-300'}`}
     fill="none"
     viewBox="0 0 24 24"
     stroke="currentColor"
@@ -44,9 +44,9 @@ export default function CheckoutSteps({ currentStep = 2, onStepClick }) {
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
                     ${
                       isActive
-                        ? 'bg-[#c89b5a] text-white border-2 border-[#c89b5a]'
+                        ? 'bg-[#004372] text-white border-2 border-[#004372]'
                         : isCompleted
-                          ? 'bg-[#c89b5a] text-white border-2 border-[#c89b5a]'
+                          ? 'bg-[#004372] text-white border-2 border-[#004372]'
                           : 'bg-white text-gray-400 border-2 border-gray-300'
                     }`}
                 >
@@ -71,7 +71,7 @@ export default function CheckoutSteps({ currentStep = 2, onStepClick }) {
                 <span
                   className={`mt-2 text-sm whitespace-nowrap ${
                     isActive || isCompleted
-                      ? 'text-[#c89b5a] font-medium'
+                      ? 'text-[#004372] font-medium'
                       : 'text-gray-400'
                   }`}
                 >

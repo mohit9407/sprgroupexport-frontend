@@ -54,7 +54,7 @@ const LoginForm = ({
         <div className="flex justify-end">
           <Link
             href="/forgot-password"
-            className="text-xs font-medium text-[#b7853f] hover:text-[#a07637] hover:underline"
+            className="text-xs font-medium text-[#004372] hover:text-[#003451] hover:underline"
           >
             Forgot your password?
           </Link>
@@ -63,7 +63,7 @@ const LoginForm = ({
         <button
           type="submit"
           disabled={loading}
-          className={`w-full bg-[#b7853f] text-white py-3 px-4 rounded-md hover:bg-[#a07637] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#a07637] transition ${
+          className={`w-full bg-[#004372] text-white py-3 px-4 rounded-md hover:bg-[#003451] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#003451] transition ${
             loading ? 'opacity-70 cursor-not-allowed' : ''
           }`}
         >

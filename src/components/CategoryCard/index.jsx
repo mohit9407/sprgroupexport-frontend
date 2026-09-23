@@ -83,7 +83,7 @@ const CategoryCard = ({
           <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-all duration-300" />
 
           {/* Bottom Title Bar */}
-          <div className="absolute bottom-0 left-0 right-0 h-[25px] bg-[#b7853f] bg-opacity-95 flex items-center justify-center transition-all duration-300 group-hover:bg-opacity-100">
+          <div className="absolute bottom-0 left-0 right-0 h-[25px] bg-[#004372] bg-opacity-95 flex items-center justify-center transition-all duration-300 group-hover:bg-opacity-100">
             <h3 className="text-white text-sm font-medium uppercase tracking-wider">
               {title}
             </h3>

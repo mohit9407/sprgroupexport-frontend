@@ -66,7 +66,7 @@ export default function WishlistPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center space-y-3">
-          <FiLoader className="h-8 w-8 animate-spin text-[#BA8B4E]" />
+          <FiLoader className="h-8 w-8 animate-spin text-[#004372]" />
           <p className="text-sm text-gray-600">Loading wishlist...</p>
         </div>
       </div>
@@ -79,7 +79,7 @@ export default function WishlistPage() {
         <div className="flex items-center mb-8">
           <button
             onClick={() => router.back()}
-            className="flex items-center text-gray-600 hover:text-[#BA8B4E] mr-4"
+            className="flex items-center text-gray-600 hover:text-[#004372] mr-4"
           >
             <FiArrowLeft className="mr-2" />
             Back
@@ -99,7 +99,7 @@ export default function WishlistPage() {
             <div className="mt-6">
               <Link
                 href="/"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#BA8B4E] hover:bg-[#9a7240] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#BA8B4E]"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#004372] hover:bg-[#003451] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#004372]"
               >
                 Continue Shopping
               </Link>
@@ -122,24 +122,24 @@ export default function WishlistPage() {
                   />
                   <button
                     onClick={() => handleRemoveFromWishlist(product.id)}
-                    className="absolute top-3 right-3 p-2 bg-white rounded-full border border-[#BA8B4E] hover:bg-gray-50 transition-colors duration-200"
+                    className="absolute top-3 right-3 p-2 bg-white rounded-full border border-[#004372] hover:bg-gray-50 transition-colors duration-200"
                     title="Remove from wishlist"
                   >
-                    <FiHeart className="h-5 w-5 text-[#BA8B4E] fill-[#BA8B4E] hover:fill-[#9a7240] transition-colors" />
+                    <FiHeart className="h-5 w-5 text-[#004372] fill-[#004372] hover:fill-[#003451] transition-colors" />
                   </button>
                 </div>
                 <div className="mt-4 px-1">
                   <h3 className="text-sm font-medium text-gray-800 line-clamp-2 h-10 flex items-center">
                     {product.name}
                   </h3>
-                  <p className="mt-2 text-base font-semibold text-[#BA8B4E]">
+                  <p className="mt-2 text-base font-semibold text-[#004372]">
                     ${product.price} USD
                   </p>
                 </div>
                 <div className="mt-4">
                   <button
                     onClick={() => handleAddToCart(product)}
-                    className="w-full flex items-center justify-center px-4 py-2.5 border border-transparent text-sm font-medium rounded-md text-white bg-[#BA8B4E] hover:bg-[#9a7240] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#BA8B4E] transition-colors duration-200"
+                    className="w-full flex items-center justify-center px-4 py-2.5 border border-transparent text-sm font-medium rounded-md text-white bg-[#004372] hover:bg-[#003451] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#004372] transition-colors duration-200"
                   >
                     <FiShoppingBag className="mr-2 h-4 w-4" />
                     Add to Cart

@@ -59,7 +59,7 @@ export default function TablePagination({
             <button
               className={`px-3 py-1.5 border rounded ${
                 page === currentPage
-                  ? 'bg-sky-600 text-white border-sky-600'
+                  ? 'bg-[#004372] text-white border-[#004372]'
                   : 'hover:bg-gray-100'
               }`}
               onClick={() => onPageChange(page - 1)}

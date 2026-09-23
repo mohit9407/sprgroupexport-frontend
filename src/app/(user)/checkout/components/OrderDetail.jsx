@@ -354,7 +354,7 @@ export default function OrderDetail({
             email: user.email || '',
             contact: '8141529030',
           },
-          theme: { color: '#c89b5a' },
+          theme: { color: '#004372' },
         }
 
         const rzp = new window.Razorpay(options)
@@ -482,7 +482,7 @@ export default function OrderDetail({
         <div className="border-t border-gray-200 pt-4 mb-6">
           <div className="flex justify-between items-center">
             <span className="font-bold">Order Total</span>
-            <span className="text-[#c89b5a] text-xl font-bold">
+            <span className="text-[#004372] text-xl font-bold">
               ${orderTotal.toLocaleString('en-US')} USD
             </span>
           </div>
@@ -497,7 +497,7 @@ export default function OrderDetail({
           </p>
           <textarea
             rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#c89b5a] focus:border-[#c89b5a] bg-gray-100 text-sm"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#004372] focus:border-[#004372] bg-gray-100 text-sm"
             placeholder="Notes about your order, e.g. special notes for delivery"
             value={orderNotes}
             onChange={(e) => setOrderNotes(e.target.value)}
@@ -533,7 +533,7 @@ export default function OrderDetail({
                       id={methodType}
                       name="payment-method"
                       type="radio"
-                      className="h-4 w-4 text-[#c89b5a] focus:ring-[#c89b5a] border-gray-300"
+                      className="h-4 w-4 text-[#004372] focus:ring-[#004372] border-gray-300"
                       checked={paymentMethod === methodType}
                       onChange={() => {
                         handlePaymentMethodChange(methodType)
@@ -563,7 +563,7 @@ export default function OrderDetail({
             type="button"
             onClick={handleSubmit}
             disabled={isLoading}
-            className={`bg-[#c89b5a] text-white px-8 py-3 rounded-md uppercase text-sm font-medium hover:bg-[#b38950] transition-colors flex items-center justify-center min-w-[180px] ${isLoading ? 'opacity-90' : ''}`}
+            className={`bg-[#004372] text-white px-8 py-3 rounded-md uppercase text-sm font-medium hover:bg-[#003451] transition-colors flex items-center justify-center min-w-[180px] ${isLoading ? 'opacity-90' : ''}`}
           >
             {isLoading ? (
               <div className="flex items-center justify-center space-x-2">

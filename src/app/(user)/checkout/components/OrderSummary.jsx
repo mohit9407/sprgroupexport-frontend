@@ -110,7 +110,7 @@ export default function OrderSummary({
 
         <div className="flex justify-between items-center">
           <span className="font-bold text-base">Total</span>
-          <span className="text-[#c89b5a] text-xl font-bold">
+          <span className="text-[#004372] text-xl font-bold">
             ${total.toLocaleString('en-US')} USD
           </span>
         </div>
@@ -143,7 +143,7 @@ export default function OrderSummary({
           <button
             type="button"
             onClick={() => onContinue({}, currentStep + 1)}
-            className="w-full bg-[#c89b5a] text-white py-3 px-4 rounded-md hover:bg-[#b38b4a] transition-colors font-medium uppercase text-sm tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-[#004372] text-white py-3 px-4 rounded-md hover:bg-[#003451] transition-colors font-medium uppercase text-sm tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={isLoading}
           >
             {currentStep === 1 ? 'Continue to Shipping' : 'Continue to Payment'}
@@ -159,7 +159,7 @@ export default function OrderSummary({
               setShowError(false)
               onContinue({}, 'placeOrder')
             }}
-            className="w-full bg-[#c89b5a] text-white py-3 px-4 rounded-md hover:bg-[#b38950]
+            className="w-full bg-[#004372] text-white py-3 px-4 rounded-md hover:bg-[#003451]
              transition-colors font-medium uppercase text-sm tracking-wider disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             disabled={isLoading}
           >
@@ -199,7 +199,7 @@ export default function OrderSummary({
         <div className="mt-4 text-center">
           <Link
             href="/cart"
-            className="text-sm text-gray-600 hover:text-[#c89b5a] transition-colors"
+            className="text-sm text-gray-600 hover:text-[#004372] transition-colors"
           >
             Back to Cart
           </Link>

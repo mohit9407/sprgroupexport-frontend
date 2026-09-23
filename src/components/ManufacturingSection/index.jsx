@@ -108,7 +108,7 @@ const ManufacturingSection = () => {
                 <span
                   className={`block w-full border-b-2 pb-4 text-center text-[15px] font-medium transition-all md:text-[17px] ${
                     isActive
-                      ? 'border-[#BA8B4E] text-[#1f2d33]'
+                      ? 'border-[#004372] text-[#1f2d33]'
                       : 'border-transparent text-[#465761]'
                   }`}
                 >
@@ -129,7 +129,7 @@ const ManufacturingSection = () => {
               {activeProcess.steps.map((step) => (
                 <div
                   key={step.title}
-                  className="border-l-2 border-[#BA8B4E] pl-4"
+                  className="border-l-2 border-[#004372] pl-4"
                 >
                   <h3 className="text-[1.05rem] font-semibold text-[#1b2f3a] md:text-[1.3rem]">
                     {step.title}
@@ -143,7 +143,7 @@ const ManufacturingSection = () => {
           </div>
 
           <div className="relative">
-            {/* <div className="absolute -right-4 top-4 z-10 flex h-12 w-12 items-center justify-center rounded-full border border-[#c9b28a] bg-[#f5efe6] shadow-sm">
+            {/* <div className="absolute -right-4 top-4 z-10 flex h-12 w-12 items-center justify-center rounded-full border border-[#9CC4D9] bg-[#f5efe6] shadow-sm">
               <span className="h-3.5 w-3.5 rounded-full border-[2px] border-[#1f2d34] bg-white" />
             </div> */}
 

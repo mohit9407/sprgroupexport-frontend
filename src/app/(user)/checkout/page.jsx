@@ -455,7 +455,7 @@ export default function CheckoutPage() {
         <div className="flex items-center gap-4 mb-8">
           <button
             onClick={() => router.back()}
-            className="flex items-center text-gray-600 hover:text-[#BA8B4E] transition-colors"
+            className="flex items-center text-gray-600 hover:text-[#004372] transition-colors"
           >
             <svg
               className="w-5 h-5 mr-1"

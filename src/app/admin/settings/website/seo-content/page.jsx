@@ -115,7 +115,7 @@ export default function SeoContentPage() {
         <div className="flex justify-center gap-4 pt-4">
           <button
             onClick={updateSeoContent}
-            className="px-6 py-2 rounded bg-sky-600 text-white font-semibold hover:bg-sky-700"
+            className="px-6 py-2 rounded bg-[#004372] text-white font-semibold hover:bg-[#003451]"
           >
             Submit
           </button>

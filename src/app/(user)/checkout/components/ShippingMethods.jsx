@@ -136,7 +136,7 @@ export default function ShippingMethods({
                       id={method._id}
                       name="shipping-method"
                       type="radio"
-                      className="h-4 w-4 text-[#c89b5a] focus:ring-[#c89b5a] border-gray-300"
+                      className="h-4 w-4 text-[#004372] focus:ring-[#004372] border-gray-300"
                       checked={selectedMethod === method._id}
                       onChange={() => setSelectedMethod(method._id)}
                       required
@@ -153,7 +153,7 @@ export default function ShippingMethods({
                           {method.description || 'Standard delivery'}
                         </span>
                       </div>
-                      <span className="text-sm font-medium text-[#c89b5a] ml-4 whitespace-nowrap">
+                      <span className="text-sm font-medium text-[#004372] ml-4 whitespace-nowrap">
                         ${Number(method.price).toLocaleString('en-US')} USD
                       </span>
                     </label>
@@ -179,7 +179,7 @@ export default function ShippingMethods({
         <div className="mt-8">
           <button
             type="submit"
-            className="bg-[#c89b5a] text-white px-8 py-3 rounded-md uppercase text-sm font-medium hover:bg-[#b38950] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-[#004372] text-white px-8 py-3 rounded-md uppercase text-sm font-medium hover:bg-[#003451] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={!selectedMethod || status === 'loading'}
           >
             {status === 'loading' ? 'LOADING...' : 'CONTINUE'}

@@ -92,7 +92,7 @@ const ResetPasswordForm = ({
                 type={showPassword ? 'text' : 'password'}
                 id="password"
                 name="password"
-                className="w-full px-4 py-3 sm:py-2.5 text-base sm:text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-amber-600 focus:border-amber-600 outline-none pr-12 transition"
+                className="w-full px-4 py-3 sm:py-2.5 text-base sm:text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-[#004372] focus:border-[#004372] outline-none pr-12 transition"
                 placeholder="Enter new password"
                 value={formData.password}
                 onChange={handleChange}
@@ -101,7 +101,7 @@ const ResetPasswordForm = ({
               />
               <button
                 type="button"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm font-medium text-amber-700 hover:text-amber-800"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm font-medium text-[#003451] hover:text-[#002A42]"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? 'HIDE' : 'SHOW'}
@@ -125,7 +125,7 @@ const ResetPasswordForm = ({
                 type={showConfirmPassword ? 'text' : 'password'}
                 id="confirmPassword"
                 name="confirmPassword"
-                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-1 focus:ring-amber-600 focus:border-amber-600 outline-none pr-12 transition"
+                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#004372] focus:border-[#004372] outline-none pr-12 transition"
                 placeholder="Confirm new password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
@@ -133,7 +133,7 @@ const ResetPasswordForm = ({
               />
               <button
                 type="button"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm font-medium text-amber-700 hover:text-amber-800"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm font-medium text-[#003451] hover:text-[#002A42]"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               >
                 {showConfirmPassword ? 'HIDE' : 'SHOW'}
@@ -143,7 +143,7 @@ const ResetPasswordForm = ({
 
           <button
             type="submit"
-            className="w-full bg-[#b7853f] text-white py-3 sm:py-2.5 px-4 rounded-md font-medium hover:bg-[#a07637] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors disabled:opacity-70 disabled:cursor-not-allowed mt-4 text-base sm:text-sm"
+            className="w-full bg-[#004372] text-white py-3 sm:py-2.5 px-4 rounded-md font-medium hover:bg-[#003451] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#E6F0F5]0 transition-colors disabled:opacity-70 disabled:cursor-not-allowed mt-4 text-base sm:text-sm"
             disabled={
               isLoading ||
               localLoading ||
@@ -158,7 +158,7 @@ const ResetPasswordForm = ({
             <button
               type="button"
               onClick={onBack}
-              className="text-sm font-medium text-[#b7853f] hover:text-[#a07637] hover:underline py-1 px-2 -mx-2 rounded-md active:bg-amber-50"
+              className="text-sm font-medium text-[#004372] hover:text-[#003451] hover:underline py-1 px-2 -mx-2 rounded-md active:bg-[#E6F0F5]"
             >
               Back to OTP Verification
             </button>
@@ -168,7 +168,7 @@ const ResetPasswordForm = ({
             Remember your password?{' '}
             <Link
               href="/login"
-              className="font-medium text-[#b7853f] hover:text-[#a07637] hover:underline py-1 px-0.5 -mx-0.5 rounded-md active:bg-amber-50"
+              className="font-medium text-[#004372] hover:text-[#003451] hover:underline py-1 px-0.5 -mx-0.5 rounded-md active:bg-[#E6F0F5]"
             >
               Back to Login
             </Link>

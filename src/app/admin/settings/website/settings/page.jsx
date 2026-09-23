@@ -147,7 +147,7 @@ export default function SettingsPage() {
           <div className="col-span-12 md:col-span-4 space-y-2">
             <button
               type="button"
-              className="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700"
+              className="px-4 py-2 bg-[#004372] text-white rounded hover:bg-[#003451]"
               onClick={() => document.getElementById('logoUpload').click()}
             >
               Add Image
@@ -185,7 +185,7 @@ export default function SettingsPage() {
           <div className="col-span-12 md:col-span-4 space-y-2">
             <button
               type="button"
-              className="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700"
+              className="px-4 py-2 bg-[#004372] text-white rounded hover:bg-[#003451]"
               onClick={() => document.getElementById('faviconUpload').click()}
             >
               Add Favicon
@@ -291,7 +291,7 @@ export default function SettingsPage() {
         <div className="flex justify-center gap-4 pt-6">
           <button
             onClick={handleSubmit}
-            className="px-6 py-2 rounded bg-sky-600 text-white font-semibold hover:bg-sky-700"
+            className="px-6 py-2 rounded bg-[#004372] text-white font-semibold hover:bg-[#003451]"
           >
             Save Settings
           </button>

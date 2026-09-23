@@ -121,7 +121,7 @@ export default function StickyBackgroundSections({
             {section.buttonText ? (
               <button
                 type="button"
-                className={`bg-[#8B5A2B] hover:bg-[#6B4423] text-white font-medium py-3 px-8 rounded-md transition-all duration-300 text-lg transform ${
+                className={`bg-[#004372] hover:bg-[#003451] text-white font-medium py-3 px-8 rounded-md transition-all duration-300 text-lg transform ${
                   hoveredSection === section.id
                     ? 'translate-y-0 opacity-100'
                     : 'translate-y-2 opacity-90 md:opacity-0 md:invisible md:group-hover:opacity-100 md:group-hover:visible md:group-hover:translate-y-0'

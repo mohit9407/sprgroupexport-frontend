@@ -104,7 +104,7 @@ const SignupForm = ({
               touched.gender && errors.gender
                 ? 'border-red-500'
                 : 'border-gray-300'
-            } rounded-md focus:outline-none focus:border-[#b7853f] text-gray-700`}
+            } rounded-md focus:outline-none focus:border-[#004372] text-gray-700`}
             value={formData.gender}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -129,14 +129,14 @@ const SignupForm = ({
               checked={formData.agreeTerms}
               onChange={handleChange}
               onBlur={handleBlur}
-              className="h-4 w-4 text-[#b7853f] focus:ring-[#b7853f] border-gray-300 rounded"
+              className="h-4 w-4 text-[#004372] focus:ring-[#004372] border-gray-300 rounded"
               disabled={loading}
             />
           </div>
           <div className="ml-3 text-sm mt-1">
             <label htmlFor="agreeTerms" className="font-medium text-gray-700">
               I agree to the{' '}
-              <a href="#" className="text-[#b7853f] hover:text-[#a07637]">
+              <a href="#" className="text-[#004372] hover:text-[#003451]">
                 Terms and Conditions
               </a>
             </label>
@@ -149,7 +149,7 @@ const SignupForm = ({
         <button
           type="submit"
           disabled={loading}
-          className={`w-full bg-[#b7853f] text-white py-3 px-4 rounded-md hover:bg-[#a07637] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#a07637] transition ${
+          className={`w-full bg-[#004372] text-white py-3 px-4 rounded-md hover:bg-[#003451] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#003451] transition ${
             loading ? 'opacity-70 cursor-not-allowed' : ''
           }`}
         >

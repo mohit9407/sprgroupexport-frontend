@@ -68,7 +68,7 @@ const Footer = ({ settings = {} }) => {
               <FaEnvelope className="w-5 h-5 mr-1 text-gray-500 flex-shrink-0" />
               <a
                 href={`mailto:${generalSettings?.contactUsEmail || 'sprgroup100@gmail.com'}`}
-                className="hover:underline hover:text-[#BA8B4E] text-[15px] text-gray-700 ml-1"
+                className="hover:underline hover:text-[#004372] text-[15px] text-gray-700 ml-1"
               >
                 {generalSettings?.contactUsEmail || 'sprgroup100@gmail.com'}
               </a>
@@ -135,7 +135,7 @@ const Footer = ({ settings = {} }) => {
               <li>
                 <Link
                   href="/"
-                  className="text-gray-600 hover:text-[#BA8B4E] text-sm transition-colors"
+                  className="text-gray-600 hover:text-[#004372] text-sm transition-colors"
                 >
                   Home
                 </Link>
@@ -143,7 +143,7 @@ const Footer = ({ settings = {} }) => {
               <li>
                 <Link
                   href="/shop"
-                  className="text-gray-600 hover:text-[#BA8B4E] text-sm transition-colors"
+                  className="text-gray-600 hover:text-[#004372] text-sm transition-colors"
                 >
                   Shop
                 </Link>
@@ -151,7 +151,7 @@ const Footer = ({ settings = {} }) => {
               <li>
                 <Link
                   href="/orders"
-                  className="text-gray-600 hover:text-[#BA8B4E] text-sm transition-colors"
+                  className="text-gray-600 hover:text-[#004372] text-sm transition-colors"
                 >
                   Orders
                 </Link>
@@ -159,7 +159,7 @@ const Footer = ({ settings = {} }) => {
               <li>
                 <Link
                   href="/cart"
-                  className="text-gray-600 hover:text-[#BA8B4E] text-sm transition-colors"
+                  className="text-gray-600 hover:text-[#004372] text-sm transition-colors"
                 >
                   Shopping Cart
                 </Link>
@@ -167,7 +167,7 @@ const Footer = ({ settings = {} }) => {
               <li>
                 <Link
                   href="/wishlist"
-                  className="text-gray-600 hover:text-[#BA8B4E] text-sm transition-colors"
+                  className="text-gray-600 hover:text-[#004372] text-sm transition-colors"
                 >
                   Wishlist
                 </Link>
@@ -185,7 +185,7 @@ const Footer = ({ settings = {} }) => {
                   <li key={page.id}>
                     <Link
                       href={`/${page.pageSlug}`}
-                      className="text-gray-600 hover:text-[#BA8B4E] text-sm transition-colors"
+                      className="text-gray-600 hover:text-[#004372] text-sm transition-colors"
                       prefetch={false}
                     >
                       {page.pageName}
@@ -203,7 +203,7 @@ const Footer = ({ settings = {} }) => {
                   <li>
                     <Link
                       href="/privacy-policy"
-                      className="text-gray-600 hover:text-[#BA8B4E] text-sm transition-colors"
+                      className="text-gray-600 hover:text-[#004372] text-sm transition-colors"
                     >
                       Privacy Policy
                     </Link>
@@ -211,7 +211,7 @@ const Footer = ({ settings = {} }) => {
                   <li>
                     <Link
                       href="/refund-policy"
-                      className="text-gray-600 hover:text-[#BA8B4E] text-sm transition-colors"
+                      className="text-gray-600 hover:text-[#004372] text-sm transition-colors"
                     >
                       Return and Refund Policy
                     </Link>
@@ -219,7 +219,7 @@ const Footer = ({ settings = {} }) => {
                   <li>
                     <Link
                       href="/shipping"
-                      className="text-gray-600 hover:text-[#BA8B4E] text-sm transition-colors"
+                      className="text-gray-600 hover:text-[#004372] text-sm transition-colors"
                     >
                       Shipping and Delivery
                     </Link>
@@ -227,7 +227,7 @@ const Footer = ({ settings = {} }) => {
                   <li>
                     <Link
                       href="/terms"
-                      className="text-gray-600 hover:text-[#BA8B4E] text-sm transition-colors"
+                      className="text-gray-600 hover:text-[#004372] text-sm transition-colors"
                     >
                       Terms & Conditions
                     </Link>
@@ -235,7 +235,7 @@ const Footer = ({ settings = {} }) => {
                   <li>
                     <Link
                       href="/contact"
-                      className="text-gray-600 hover:text-[#BA8B4E] text-sm transition-colors"
+                      className="text-gray-600 hover:text-[#004372] text-sm transition-colors"
                     >
                       Contact Us
                     </Link>
@@ -256,14 +256,14 @@ const Footer = ({ settings = {} }) => {
           <div className="flex space-x-4">
             <Link
               href="/privacy"
-              className="text-gray-500 hover:text-[#BA8B4E] text-xs transition-colors"
+              className="text-gray-500 hover:text-[#004372] text-xs transition-colors"
             >
               Privacy Policy
             </Link>
             <span className="text-gray-300">|</span>
             <Link
               href="/terms"
-              className="text-gray-500 hover:text-[#BA8B4E] text-xs transition-colors"
+              className="text-gray-500 hover:text-[#004372] text-xs transition-colors"
             >
               Terms & Conditions
             </Link>

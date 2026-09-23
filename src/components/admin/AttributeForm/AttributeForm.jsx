@@ -184,14 +184,14 @@ export default function AttributeForm({ mode = 'add', initialData = null }) {
                   <textarea
                     value={bulkValues}
                     onChange={(e) => setBulkValues(e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#E6F0F5]0 focus:border-transparent"
                     rows={3}
                     placeholder="Enter values separated by commas"
                   />
                   <button
                     type="button"
                     onClick={addBulkValues}
-                    className="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 self-start"
+                    className="px-4 py-2 bg-[#004372] text-white rounded hover:bg-[#003451] focus:outline-none focus:ring-2 focus:ring-[#E6F0F5]0 focus:ring-offset-2 self-start"
                   >
                     Add All
                   </button>
@@ -205,7 +205,7 @@ export default function AttributeForm({ mode = 'add', initialData = null }) {
                 <button
                   type="button"
                   onClick={addValue}
-                  className="text-sm text-sky-600 hover:text-sky-800"
+                  className="text-sm text-[#004372] hover:text-[#002A42]"
                 >
                   + Add Single Value
                 </button>
@@ -218,7 +218,7 @@ export default function AttributeForm({ mode = 'add', initialData = null }) {
                       type="text"
                       value={item.value}
                       onChange={(e) => updateValue(index, e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#E6F0F5]0 focus:border-transparent"
                       placeholder={
                         item.isNew ? 'Enter new value' : 'Update value'
                       }
@@ -252,7 +252,7 @@ export default function AttributeForm({ mode = 'add', initialData = null }) {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 disabled:opacity-50"
+                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#004372] hover:bg-[#003451] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#E6F0F5]0 disabled:opacity-50"
               >
                 {isSubmitting
                   ? 'Saving...'

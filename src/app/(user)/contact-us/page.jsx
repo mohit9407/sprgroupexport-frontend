@@ -120,7 +120,7 @@ const ContactUs = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-12"
         >
-          <h1 className="text-3xl font-bold text-[#BA8B4E] mb-4">Contact Us</h1>
+          <h1 className="text-3xl font-bold text-[#004372] mb-4">Contact Us</h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
             Have questions or need assistance? We're here to help! Reach out to
             us and our team will get back to you as soon as possible.
@@ -167,7 +167,7 @@ const ContactUs = () => {
                   onChange={handleChange}
                   className={`w-full px-4 py-2 border ${
                     errors.name ? 'border-red-300' : 'border-gray-300'
-                  } rounded-md focus:ring-2 focus:ring-[#BA8B4E] focus:border-transparent`}
+                  } rounded-md focus:ring-2 focus:ring-[#004372] focus:border-transparent`}
                   placeholder="John Doe"
                 />
                 {errors.name && (
@@ -248,7 +248,7 @@ const ContactUs = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-[#BA8B4E] text-white py-2.5 px-6 rounded-md hover:bg-[#a87d45] focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-colors duration-200 flex items-center justify-center font-medium"
+                  className="w-full bg-[#004372] text-white py-2.5 px-6 rounded-md hover:bg-[#003451] focus:outline-none focus:ring-2 focus:ring-[#E6F0F5]0 focus:ring-offset-2 transition-colors duration-200 flex items-center justify-center font-medium"
                 >
                   {loading ? (
                     <>
@@ -298,7 +298,7 @@ const ContactUs = () => {
 
             <div className="space-y-6">
               <div className="flex items-start">
-                <div className="flex-shrink-0 bg-amber-50 p-3 rounded-full text-[#BA8B4E]">
+                <div className="flex-shrink-0 bg-[#E6F0F5] p-3 rounded-full text-[#004372]">
                   <FaMapMarkerAlt className="h-5 w-5" />
                 </div>
                 <div className="ml-4">
@@ -317,14 +317,14 @@ const ContactUs = () => {
               </div>
 
               <div className="flex items-start">
-                <div className="flex-shrink-0 bg-amber-50 p-3 rounded-full text-[#BA8B4E]">
+                <div className="flex-shrink-0 bg-[#E6F0F5] p-3 rounded-full text-[#004372]">
                   <FaEnvelope className="h-5 w-5" />
                 </div>
                 <div className="ml-4">
                   <h3 className="text-lg font-medium text-gray-900 mb-1">
                     Email Us
                   </h3>
-                  <p className="text-[#BA8B4E] hover:underline mt-1">
+                  <p className="text-[#004372] hover:underline mt-1">
                     <a
                       href={`mailto:${generalSettings?.contactUsEmail || 'sprgroup100@gmail.com'}`}
                       className="hover:underline"
@@ -337,7 +337,7 @@ const ContactUs = () => {
               </div>
 
               <div className="flex items-start">
-                <div className="flex-shrink-0 bg-amber-50 p-3 rounded-full text-[#BA8B4E]">
+                <div className="flex-shrink-0 bg-[#E6F0F5] p-3 rounded-full text-[#004372]">
                   <FaPhone className="h-5 w-5" />
                 </div>
                 <div className="ml-4">
@@ -347,7 +347,7 @@ const ContactUs = () => {
                   <p className="text-gray-600 mt-1">
                     <a
                       href={`tel:${generalSettings?.phoneNumber || '+1234567890'}`}
-                      className="text-[#BA8B4E] hover:underline transition-colors"
+                      className="text-[#004372] hover:underline transition-colors"
                     >
                       {generalSettings?.phoneNumber || '+1 (234) 567-890'}
                     </a>
@@ -370,7 +370,7 @@ const ContactUs = () => {
                     href={social.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-gray-500 hover:text-[#BA8B4E] transition-colors"
+                    className="text-gray-500 hover:text-[#004372] transition-colors"
                     aria-label={social.name}
                   >
                     <social.icon className="w-6 h-6" />

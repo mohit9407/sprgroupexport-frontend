@@ -261,7 +261,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={triggerFileInput}
-                  className="text-sm text-[#BA8B4E] font-medium hover:underline"
+                  className="text-sm text-[#004372] font-medium hover:underline"
                   disabled={updateLoading}
                 >
                   {updateLoading ? 'Updating...' : 'Change Photo'}
@@ -288,7 +288,7 @@ export default function ProfilePage() {
                       name="firstName"
                       value={formData.firstName}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#BA8B4E] focus:border-[#BA8B4E] outline-none"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#004372] focus:border-[#004372] outline-none"
                       placeholder="First Name"
                     />
                   </div>
@@ -308,7 +308,7 @@ export default function ProfilePage() {
                     name="lastName"
                     value={formData.lastName}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#BA8B4E] focus:border-[#BA8B4E] outline-none"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#004372] focus:border-[#004372] outline-none"
                     placeholder="Last Name"
                   />
                 </div>
@@ -331,7 +331,7 @@ export default function ProfilePage() {
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#BA8B4E] focus:border-[#BA8B4E] outline-none"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#004372] focus:border-[#004372] outline-none"
                       placeholder="E-mail"
                       disabled
                     />
@@ -356,7 +356,7 @@ export default function ProfilePage() {
                       name="mobileNo"
                       value={formData.mobileNo}
                       onChange={handleChange}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#BA8B4E] focus:border-[#BA8B4E] outline-none"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#004372] focus:border-[#004372] outline-none"
                       placeholder="Phone Number"
                     />
                   </div>
@@ -379,7 +379,7 @@ export default function ProfilePage() {
                       name="gender"
                       value={formData.gender}
                       onChange={handleChange}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#BA8B4E] focus:border-[#BA8B4E] outline-none appearance-none bg-white"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#004372] focus:border-[#004372] outline-none appearance-none bg-white"
                     >
                       <option value="male">Male</option>
                       <option value="female">Female</option>
@@ -422,7 +422,7 @@ export default function ProfilePage() {
                       name="dob"
                       value={formData.dob}
                       onChange={handleChange}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#BA8B4E] focus:border-[#BA8B4E] outline-none appearance-none"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#004372] focus:border-[#004372] outline-none appearance-none"
                     />
                   </div>
                 </div>
@@ -441,7 +441,7 @@ export default function ProfilePage() {
                     name="gstNumber"
                     value={formData.gstNumber}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#BA8B4E] focus:border-[#BA8B4E] outline-none"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#004372] focus:border-[#004372] outline-none"
                     placeholder="GST Number"
                     maxLength="15"
                   />
@@ -464,7 +464,7 @@ export default function ProfilePage() {
                     name="panCardNumber"
                     value={formData.panCardNumber}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#BA8B4E] focus:border-[#BA8B4E] outline-none"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#004372] focus:border-[#004372] outline-none"
                     placeholder="PAN Card Number"
                     maxLength="10"
                   />
@@ -478,7 +478,7 @@ export default function ProfilePage() {
                 <button
                   type="submit"
                   disabled={updateLoading}
-                  className={`w-full md:w-auto px-6 py-2 bg-[#BA8B4E] text-white font-medium rounded-md hover:bg-[#9a7542] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#BA8B4E] transition-colors ${updateLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  className={`w-full md:w-auto px-6 py-2 bg-[#004372] text-white font-medium rounded-md hover:bg-[#003451] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#004372] transition-colors ${updateLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
                   {updateLoading ? 'UPDATING...' : 'UPDATE'}
                 </button>

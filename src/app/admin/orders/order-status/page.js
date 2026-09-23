@@ -79,7 +79,7 @@ const OrderStatusTableContent = () => {
     columnHelper.accessor('isDefault', {
       header: 'Default',
       cell: (info) => {
-        const isDefault = info.getValue();
+        const isDefault = info.getValue()
         return isDefault ? (
           <span className="text-green-600">
             <FaCheck className="inline mr-1" /> Yes
@@ -88,16 +88,16 @@ const OrderStatusTableContent = () => {
           <button
             type="button"
             onClick={(e) => {
-              e.stopPropagation();
-              handleSetDefault(info.row.original._id);
+              e.stopPropagation()
+              handleSetDefault(info.row.original._id)
             }}
             className="text-blue-600 hover:text-blue-800 text-sm"
           >
             Set Default
           </button>
-        );
+        )
       },
-      enableSorting: false
+      enableSorting: false,
     }),
     columnHelper.display({
       id: 'actions',
@@ -139,7 +139,7 @@ const OrderStatusTableContent = () => {
         <h1 className="text-2xl font-semibold">List Of All Order Status</h1>
         <button
           onClick={() => router.push('/admin/orders/order-status/add')}
-          className="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center"
+          className="bg-[#004372] hover:bg-[#003451] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center"
         >
           <FaPlus className="mr-2" /> Add Order Status
         </button>

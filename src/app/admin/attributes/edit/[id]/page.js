@@ -29,7 +29,7 @@ export default function EditAttributePage() {
   if (isLoading || status === 'loading') {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#E6F0F5]0"></div>
       </div>
     )
   }
@@ -42,7 +42,7 @@ export default function EditAttributePage() {
         </h2>
         <button
           onClick={() => router.push('/admin/attributes')}
-          className="mt-4 px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700"
+          className="mt-4 px-4 py-2 bg-[#004372] text-white rounded hover:bg-[#003451]"
         >
           Back to Attributes
         </button>

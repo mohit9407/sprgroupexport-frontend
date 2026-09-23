@@ -162,7 +162,7 @@ const Hero = () => {
       >
         <button
           onClick={prevSlide}
-          className="group p-3 bg-[#BA8B4E] hover:bg-[#a87d45] transition-all duration-300 transform hover:scale-105 shadow-lg"
+          className="group p-3 bg-[#004372] hover:bg-[#003451] transition-all duration-300 transform hover:scale-105 shadow-lg"
           aria-label="Previous slide"
         >
           <FaArrowLeftLong className="text-white text-xl md:text-2xl transition-transform duration-300 group-hover:-translate-x-1" />
@@ -170,7 +170,7 @@ const Hero = () => {
 
         <button
           onClick={nextSlide}
-          className="group p-3 bg-[#BA8B4E] hover:bg-[#a87d45] transition-all duration-300 transform hover:scale-105 shadow-lg"
+          className="group p-3 bg-[#004372] hover:bg-[#003451] transition-all duration-300 transform hover:scale-105 shadow-lg"
           aria-label="Next slide"
         >
           <FaArrowRightLong className="text-white text-xl md:text-2xl transition-transform duration-300 group-hover:translate-x-1" />
@@ -185,7 +185,7 @@ const Hero = () => {
             onClick={() => goToSlide(index)}
             className={`h-1.5 transition-all duration-300 cursor-pointer rounded-full ${
               index === currentSlide
-                ? 'w-8 bg-[#BA8B4E]' // Active slide - golden-brown color
+                ? 'w-8 bg-[#004372]' // Active slide - deep-blue color
                 : 'w-3 bg-white/60 hover:bg-white/80' // Inactive slides - light grey with hover
             }`}
             aria-label={`Go to slide ${index + 1}`}

@@ -36,7 +36,7 @@ const ForgotPasswordForm = () => {
             <input
               type="email"
               id="email"
-              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#b7853f] focus:border-[#b7853f] outline-none transition"
+              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#004372] focus:border-[#004372] outline-none transition"
               placeholder="Enter your email"
               value={email}
               onChange={handleEmailChange}
@@ -47,7 +47,7 @@ const ForgotPasswordForm = () => {
 
           <button
             type="submit"
-            className="w-full bg-[#b7853f] text-white py-3 px-4 rounded-md font-medium hover:bg-[#a07637] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#a07637] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+            className="w-full bg-[#004372] text-white py-3 px-4 rounded-md font-medium hover:bg-[#003451] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#003451] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
             disabled={loading}
           >
             {loading ? 'Sending OTP...' : 'Send OTP'}
@@ -57,7 +57,7 @@ const ForgotPasswordForm = () => {
             Remember your password?{' '}
             <Link
               href="/login"
-              className="font-medium text-[#b7853f] hover:text-[#a07637] hover:underline"
+              className="font-medium text-[#004372] hover:text-[#003451] hover:underline"
             >
               Back to Login
             </Link>

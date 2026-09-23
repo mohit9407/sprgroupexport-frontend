@@ -126,7 +126,7 @@ export default function ContentPage() {
   if (notFound || !pageData) {
     return (
       <div className="max-w-4xl mx-auto p-6 min-h-[50vh] flex flex-col items-center justify-center text-center">
-        <h1 className="text-6xl font-bold text-[#BA8B4E] mb-4">404</h1>
+        <h1 className="text-6xl font-bold text-[#004372] mb-4">404</h1>
         <h2 className="text-2xl font-bold text-gray-900 mb-4">
           Page Not Found
         </h2>
@@ -136,7 +136,7 @@ export default function ContentPage() {
         <button
           type="button"
           onClick={() => router.push('/')}
-          className="px-6 py-3 bg-[#BA8B4E] text-white rounded-md hover:bg-[#9A7B3E] transition-colors"
+          className="px-6 py-3 bg-[#004372] text-white rounded-md hover:bg-[#003451] transition-colors"
         >
           Return to Home
         </button>
@@ -188,7 +188,7 @@ export default function ContentPage() {
                 />
                 <button
                   onClick={() => router.push('/shop')}
-                  className="bg-[#BA8B4E] hover:bg-[#9A7B3E] text-white font-semibold px-8 py-3 rounded-lg transition-colors duration-200 shadow-md"
+                  className="bg-[#004372] hover:bg-[#003451] text-white font-semibold px-8 py-3 rounded-lg transition-colors duration-200 shadow-md"
                 >
                   View Collection
                 </button>
@@ -198,7 +198,7 @@ export default function ContentPage() {
 
           {/* Three sections with light orange border */}
           <div className="max-w-7xl mx-auto px-6 py-12">
-            <div className="border-2 border-[#BA8B4E]/30 rounded-lg p-8 bg-[#BA8B4E]/5">
+            <div className="border-2 border-[#004372]/30 rounded-lg p-8 bg-[#004372]/5">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {/* Our Story and Beliefs */}
                 <div className="text-center">
@@ -250,23 +250,23 @@ export default function ContentPage() {
                 </h3>
                 <ul className="space-y-3 text-gray-700">
                   <li className="flex items-start">
-                    <span className="text-[#BA8B4E] mr-2">✓</span>
+                    <span className="text-[#004372] mr-2">✓</span>
                     Premium quality materials sourced directly
                   </li>
                   <li className="flex items-start">
-                    <span className="text-[#BA8B4E] mr-2">✓</span>
+                    <span className="text-[#004372] mr-2">✓</span>
                     Authentic traditional craftsmanship
                   </li>
                   <li className="flex items-start">
-                    <span className="text-[#BA8B4E] mr-2">✓</span>
+                    <span className="text-[#004372] mr-2">✓</span>
                     Ethical and sustainable practices
                   </li>
                   <li className="flex items-start">
-                    <span className="text-[#BA8B4E] mr-2">✓</span>
+                    <span className="text-[#004372] mr-2">✓</span>
                     Direct from artisans to you
                   </li>
                   <li className="flex items-start">
-                    <span className="text-[#BA8B4E] mr-2">✓</span>
+                    <span className="text-[#004372] mr-2">✓</span>
                     Global shipping with care
                   </li>
                 </ul>
@@ -279,7 +279,7 @@ export default function ContentPage() {
                 </h3>
                 <div className="space-y-4 text-gray-700">
                   <div>
-                    <h4 className="font-semibold text-lg mb-2 text-[#BA8B4E]">
+                    <h4 className="font-semibold text-lg mb-2 text-[#004372]">
                       Authenticity
                     </h4>
                     <p>
@@ -288,7 +288,7 @@ export default function ContentPage() {
                     </p>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-lg mb-2 text-[#BA8B4E]">
+                    <h4 className="font-semibold text-lg mb-2 text-[#004372]">
                       Quality
                     </h4>
                     <p>
@@ -297,7 +297,7 @@ export default function ContentPage() {
                     </p>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-lg mb-2 text-[#BA8B4E]">
+                    <h4 className="font-semibold text-lg mb-2 text-[#004372]">
                       Sustainability
                     </h4>
                     <p>
@@ -306,7 +306,7 @@ export default function ContentPage() {
                     </p>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-lg mb-2 text-[#BA8B4E]">
+                    <h4 className="font-semibold text-lg mb-2 text-[#004372]">
                       Heritage
                     </h4>
                     <p>

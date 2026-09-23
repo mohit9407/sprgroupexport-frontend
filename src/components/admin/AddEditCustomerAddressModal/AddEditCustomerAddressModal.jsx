@@ -128,7 +128,7 @@ export function AddEditCustomerAddressModal({
               <button
                 type="submit"
                 disabled={isLoading}
-                className="px-4 py-2 bg-sky-600 text-white rounded disabled:opacity-60 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-[#004372] text-white rounded disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isLoading && <ButtonLoader className="inline-flex" />}
                 {isEditMode ? 'Submit' : 'Add Address'}

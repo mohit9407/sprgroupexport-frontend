@@ -19,7 +19,7 @@ export default function AddressList({
   const [isDeleting, setIsDeleting] = useState(false)
 
   const handleDeleteClick = (addressId) => {
-    const address = addresses.find(addr => addr._id === addressId)
+    const address = addresses.find((addr) => addr._id === addressId)
     if (address) {
       setAddressToDelete(address)
       setIsDeleteModalOpen(true)
@@ -28,7 +28,7 @@ export default function AddressList({
 
   const handleConfirmDelete = async () => {
     if (!addressToDelete) return
-    
+
     try {
       setIsDeleting(true)
       await onDelete(addressToDelete._id)
@@ -48,7 +48,7 @@ export default function AddressList({
   if (isAddressesLoading) {
     return (
       <div className="flex justify-center items-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#BA8B4E]"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#004372]"></div>
       </div>
     )
   }
@@ -59,7 +59,7 @@ export default function AddressList({
         No shipping addresses found.
         <button
           onClick={onAddNew}
-          className="ml-2 text-[#BA8B4E] hover:underline"
+          className="ml-2 text-[#004372] hover:underline"
         >
           Add your first address.
         </button>
@@ -71,7 +71,7 @@ export default function AddressList({
     <div className="space-y-6">
       <button
         onClick={onAddNew}
-        className="flex items-center justify-center w-full md:w-auto px-4 py-2 border border-[#BA8B4E] text-[#BA8B4E] rounded-md hover:bg-[#f9f5f0] mb-6 transition-colors"
+        className="flex items-center justify-center w-full md:w-auto px-4 py-2 border border-[#004372] text-[#004372] rounded-md hover:bg-[#E6F0F5] mb-6 transition-colors"
       >
         <FaPlus className="mr-2" />
         Add New Address

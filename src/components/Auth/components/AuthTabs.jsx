@@ -8,7 +8,7 @@ const AuthTabs = ({ activeTab, onTabChange }) => {
         className={`flex-1 py-4 text-center text-sm font-medium transition-colors duration-200 cursor-pointer ${
           activeTab === 'login'
             ? 'text-gray-900 bg-white'
-            : 'text-gray-400 bg-gray-100 hover:text-[#b7853f]'
+            : 'text-gray-400 bg-gray-100 hover:text-[#004372]'
         }`}
         onClick={() => onTabChange('login')}
       >
@@ -19,7 +19,7 @@ const AuthTabs = ({ activeTab, onTabChange }) => {
         className={`flex-1 py-4 text-center text-sm font-medium transition-colors duration-200 cursor-pointer ${
           activeTab === 'signup'
             ? 'text-gray-900 bg-white'
-            : 'text-gray-400 bg-gray-100 hover:text-[#b7853f]'
+            : 'text-gray-400 bg-gray-100 hover:text-[#004372]'
         }`}
         onClick={() => onTabChange('signup')}
       >

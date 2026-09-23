@@ -366,7 +366,7 @@ export default function AddressForm({
               onChange={handleChange}
               onBlur={handleGSTBlur}
               placeholder="Enter 15-digit GST number"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#c89b5a] focus:border-[#c89b5a]"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#004372] focus:border-[#004372]"
               maxLength={15}
             />
             {gstLoading && (
@@ -392,7 +392,7 @@ export default function AddressForm({
             name="name"
             value={formData.name}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#BA8B4E] focus:border-[#BA8B4E] outline-none"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#004372] focus:border-[#004372] outline-none"
             placeholder="Full Name"
             required
           />
@@ -407,7 +407,7 @@ export default function AddressForm({
               name="countryCode"
               value={formData.countryCode || '+91'}
               onChange={handleChange}
-              className="w-1/3 px-2 py-2 border border-r-0 border-gray-300 rounded-l-md focus:ring-1 focus:ring-[#BA8B4E] focus:border-[#BA8B4E] outline-none bg-white"
+              className="w-1/3 px-2 py-2 border border-r-0 border-gray-300 rounded-l-md focus:ring-1 focus:ring-[#004372] focus:border-[#004372] outline-none bg-white"
             >
               {countries.map((country) => {
                 // Ensure phonecode has + prefix for consistent comparison
@@ -426,7 +426,7 @@ export default function AddressForm({
               name="mobile"
               value={formData.mobile}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-l-0 border-gray-300 rounded-r-md focus:ring-1 focus:ring-[#BA8B4E] focus:border-[#BA8B4E] outline-none"
+              className="w-full px-3 py-2 border border-l-0 border-gray-300 rounded-r-md focus:ring-1 focus:ring-[#004372] focus:border-[#004372] outline-none"
               placeholder="Mobile Number"
               required
               pattern="[0-9]{6,15}"
@@ -446,7 +446,7 @@ export default function AddressForm({
             name="country"
             value={formData.country}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#BA8B4E] focus:border-[#BA8B4E] outline-none"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#004372] focus:border-[#004372] outline-none"
             required
           >
             <option value="">Select Country</option>
@@ -466,7 +466,7 @@ export default function AddressForm({
             name="state"
             value={formData.state}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#BA8B4E] focus:border-[#BA8B4E] outline-none"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#004372] focus:border-[#004372] outline-none"
             required
             disabled={!formData.country}
           >
@@ -487,7 +487,7 @@ export default function AddressForm({
             name="city"
             value={formData.city || ''}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#BA8B4E] focus:border-[#BA8B4E] outline-none"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#004372] focus:border-[#004372] outline-none"
             required
             disabled={!formData.state}
           >
@@ -519,7 +519,7 @@ export default function AddressForm({
               name="address"
               value={formData.address}
               onChange={handleChange}
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#BA8B4E] focus:border-[#BA8B4E] outline-none"
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#004372] focus:border-[#004372] outline-none"
               placeholder="Street Address"
               required
             />
@@ -535,7 +535,7 @@ export default function AddressForm({
             name="zipCode"
             value={formData.zipCode}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#BA8B4E] focus:border-[#BA8B4E] outline-none"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#004372] focus:border-[#004372] outline-none"
             placeholder="Postal/ZIP Code"
             required
           />
@@ -550,7 +550,7 @@ export default function AddressForm({
             name="pancard"
             value={formData.pancard || ''}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#BA8B4E] focus:border-[#BA8B4E] outline-none"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#004372] focus:border-[#004372] outline-none"
             placeholder="PAN Card Number"
             pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
             title="Please enter a valid PAN number (e.g., ABCDE1234F)"
@@ -564,7 +564,7 @@ export default function AddressForm({
             name="isDefault"
             checked={formData.isDefault}
             onChange={handleChange}
-            className="h-4 w-4 text-[#BA8B4E] focus:ring-[#BA8B4E] border-gray-300 rounded"
+            className="h-4 w-4 text-[#004372] focus:ring-[#004372] border-gray-300 rounded"
           />
           <label
             htmlFor="isDefault"
@@ -589,7 +589,7 @@ export default function AddressForm({
           onClick={(e) => {
             handleSubmitForm(e)
           }}
-          className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#BA8B4E] hover:bg-[#9A6F3D] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#BA8B4E] disabled:opacity-50"
+          className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#004372] hover:bg-[#003451] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#004372] disabled:opacity-50"
         >
           {isLoading
             ? 'Saving...'

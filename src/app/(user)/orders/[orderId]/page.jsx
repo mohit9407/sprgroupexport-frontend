@@ -124,7 +124,7 @@ export default function OrderDetailsPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#BA8B4E]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#004372]"></div>
       </div>
     )
   }
@@ -136,7 +136,7 @@ export default function OrderDetailsPage() {
           <p>{error || 'Order not found'}</p>
           <button
             onClick={() => router.back()}
-            className="mt-4 px-4 py-2 bg-[#BA8B4E] text-white rounded-md hover:bg-[#a87d45] transition-colors"
+            className="mt-4 px-4 py-2 bg-[#004372] text-white rounded-md hover:bg-[#003451] transition-colors"
           >
             Back to Orders
           </button>
@@ -236,7 +236,7 @@ export default function OrderDetailsPage() {
         <div className="mb-8">
           <button
             onClick={() => router.back()}
-            className="flex items-center text-[#BA8B4E] hover:text-[#a87d45] mb-4"
+            className="flex items-center text-[#004372] hover:text-[#003451] mb-4"
           >
             <FiArrowLeft className="mr-2" /> Back to Orders
           </button>
@@ -272,7 +272,7 @@ export default function OrderDetailsPage() {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200">
                 <h2 className="text-lg font-medium text-gray-900 flex items-center">
-                  <FiPackage className="mr-2 text-[#BA8B4E]" />
+                  <FiPackage className="mr-2 text-[#004372]" />
                   Order
                 </h2>
               </div>
@@ -309,7 +309,7 @@ export default function OrderDetailsPage() {
                               <h3 className="text-base font-medium text-gray-900">
                                 <Link
                                   href={`/products/${product._id}`}
-                                  className="hover:text-[#BA8B4E] transition-colors"
+                                  className="hover:text-[#004372] transition-colors"
                                 >
                                   {product.name ||
                                     product.productName ||
@@ -354,7 +354,7 @@ export default function OrderDetailsPage() {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200">
                 <h2 className="text-lg font-medium text-gray-900 flex items-center">
-                  <FiTruck className="mr-2 text-[#BA8B4E]" />
+                  <FiTruck className="mr-2 text-[#004372]" />
                   Shipping Information
                 </h2>
               </div>
@@ -392,7 +392,7 @@ export default function OrderDetailsPage() {
                         <h4 className="text-sm font-medium text-gray-500">
                           Tracking Number
                         </h4>
-                        <p className="text-sm text-[#BA8B4E] font-medium">
+                        <p className="text-sm text-[#004372] font-medium">
                           {order.trackingNumber}
                         </p>
                       </div>
@@ -417,7 +417,7 @@ export default function OrderDetailsPage() {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200">
                 <h2 className="text-lg font-medium text-gray-900 flex items-center">
-                  <FiCreditCard className="mr-2 text-[#BA8B4E]" />
+                  <FiCreditCard className="mr-2 text-[#004372]" />
                   Payment Information
                 </h2>
               </div>
@@ -585,7 +585,7 @@ export default function OrderDetailsPage() {
                     <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
 
                     <div className="relative flex items-start pb-6">
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#BA8B4E] flex items-center justify-center text-white z-10">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#004372] flex items-center justify-center text-white z-10">
                         <FiCalendar className="w-4 h-4" />
                       </div>
                       <div className="ml-4">
@@ -602,7 +602,7 @@ export default function OrderDetailsPage() {
                       order.orderStatus?.toLowerCase(),
                     ) && (
                       <div className="relative flex items-start pb-6">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#BA8B4E] flex items-center justify-center text-white z-10">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#004372] flex items-center justify-center text-white z-10">
                           <FiPackage className="w-4 h-4" />
                         </div>
                         <div className="ml-4">
@@ -624,7 +624,7 @@ export default function OrderDetailsPage() {
                       order.orderStatus?.toLowerCase(),
                     ) && (
                       <div className="relative flex items-start pb-6">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#BA8B4E] flex items-center justify-center text-white z-10">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#004372] flex items-center justify-center text-white z-10">
                           <FiTruck className="w-4 h-4" />
                         </div>
                         <div className="ml-4">
@@ -644,7 +644,7 @@ export default function OrderDetailsPage() {
 
                     {order.orderStatus?.toLowerCase() === 'delivered' && (
                       <div className="relative flex items-start">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#BA8B4E] flex items-center justify-center text-white z-10">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#004372] flex items-center justify-center text-white z-10">
                           <FiMapPin className="w-4 h-4" />
                         </div>
                         <div className="ml-4">
@@ -677,7 +677,7 @@ export default function OrderDetailsPage() {
             </p>
             <a
               href="/contact-us"
-              className="inline-flex items-center text-sm font-medium text-[#BA8B4E] hover:text-[#a87d45]"
+              className="inline-flex items-center text-sm font-medium text-[#004372] hover:text-[#003451]"
             >
               Contact Us
               <svg

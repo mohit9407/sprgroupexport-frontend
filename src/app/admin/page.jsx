@@ -148,7 +148,7 @@ export default function AdminDashboard() {
     {
       title: 'Customer Registrations',
       value: adminDashboard?.customerRegistrations || 0,
-      bgColor: 'bg-orange-500',
+      bgColor: 'bg-[#E6F0F5]0',
       textColor: 'text-white',
       icon: <UserPlusIcon className="h-8 w-8" />,
       link: '/admin/customers',

@@ -505,7 +505,7 @@ export default function OrderFormPage({
                             className={`border rounded-md p-4 cursor-pointer transition-colors ${
                               selectedAddressId === address._id &&
                               !showNewAddressForm
-                                ? 'border-[#c89b5a] bg-amber-50'
+                                ? 'border-[#004372] bg-[#E6F0F5]'
                                 : 'border-gray-200 hover:border-gray-300'
                             }`}
                             onClick={() => {
@@ -522,7 +522,7 @@ export default function OrderFormPage({
                                 type="radio"
                                 id={`address-${address._id}`}
                                 name="address"
-                                className="h-4 w-4 text-[#c89b5a] focus:ring-[#c89b5a] mt-1"
+                                className="h-4 w-4 text-[#004372] focus:ring-[#004372] mt-1"
                                 checked={
                                   selectedAddressId === address._id &&
                                   !showNewAddressForm
@@ -574,7 +574,7 @@ export default function OrderFormPage({
                                     onClick={(e) =>
                                       handleSetDefault(address._id, e)
                                     }
-                                    className="mt-2 text-xs text-amber-700 hover:text-amber-800 mr-3"
+                                    className="mt-2 text-xs text-[#003451] hover:text-[#002A42] mr-3"
                                   >
                                     Set as default
                                   </button>
@@ -605,7 +605,7 @@ export default function OrderFormPage({
                           type="radio"
                           id="new-address"
                           name="address-type"
-                          className="h-4 w-4 text-[#c89b5a] focus:ring-[#c89b5a]"
+                          className="h-4 w-4 text-[#004372] focus:ring-[#004372]"
                           checked={showNewAddressForm}
                           onChange={() => setShowNewAddressForm(true)}
                         />

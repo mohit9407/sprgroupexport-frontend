@@ -124,7 +124,7 @@ export const PriceRange = ({
             onChange={handleMinChange}
             onMouseUp={handleBlur}
             onTouchEnd={handleBlur}
-            className={`absolute w-full h-1 z-10 bg-transparent pointer-events-none appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#ba8b4e] [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-20`}
+            className={`absolute w-full h-1 z-10 bg-transparent pointer-events-none appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#004372] [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-20`}
           />
           <input
             type="range"
@@ -135,12 +135,12 @@ export const PriceRange = ({
             onChange={handleMaxChange}
             onMouseUp={handleBlur}
             onTouchEnd={handleBlur}
-            className={`absolute w-full h-1 z-10 bg-transparent pointer-events-none appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#ba8b4e] [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-20`}
+            className={`absolute w-full h-1 z-10 bg-transparent pointer-events-none appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#004372] [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-20`}
           />
           <div className="relative h-1">
             <div className="absolute h-1 w-full bg-gray-200 rounded-full"></div>
             <div
-              className="absolute h-1 bg-[#ba8b4e] rounded-full"
+              className="absolute h-1 bg-[#004372] rounded-full"
               style={{
                 left: `${minPercent}%`,
                 width: `${maxPercent - minPercent}%`,
@@ -157,7 +157,7 @@ export const PriceRange = ({
             RESET
           </button>
           <button
-            className="flex-1 bg-[#ba8b4e] text-white text-sm font-medium py-2 px-4 rounded hover:bg-[#a87d45] transition-colors"
+            className="flex-1 bg-[#004372] text-white text-sm font-medium py-2 px-4 rounded hover:bg-[#003451] transition-colors"
             onClick={handleBlur}
           >
             APPLY

@@ -74,7 +74,7 @@ export const CategoryFilter = ({
             <input
               type="checkbox"
               id={category._id}
-              className="h-4 w-4 shrink-0 text-[#BA8B4E] rounded border-gray-300 focus:ring-[#BA8B4E]"
+              className="h-4 w-4 shrink-0 text-[#004372] rounded border-gray-300 focus:ring-[#004372]"
               checked={selectedCategories.includes(category._id)}
               onChange={() => handleCategoryToggle(category)}
             />

@@ -105,7 +105,7 @@ export default function MediaListPage() {
 
           <button
             onClick={unselectAll}
-            className="px-4 py-2 bg-sky-500 text-white rounded font-semibold"
+            className="px-4 py-2 bg-[#E6F0F5]0 text-white rounded font-semibold"
           >
             UnSelect All
           </button>
@@ -186,7 +186,7 @@ export default function MediaListPage() {
 
                 <a
                   href={`/admin/media/detail/${img._id}`}
-                  className="block py-2 bg-sky-600 text-white text-sm rounded"
+                  className="block py-2 bg-[#004372] text-white text-sm rounded"
                 >
                   View Detail
                 </a>

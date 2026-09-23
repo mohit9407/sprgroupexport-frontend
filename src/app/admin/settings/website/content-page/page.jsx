@@ -116,7 +116,7 @@ function ContentPageContent() {
           onClick={() =>
             router.push('/admin/settings/website/content-page/add')
           }
-          className="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center"
+          className="bg-[#004372] hover:bg-[#003451] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center"
         >
           <FaPlus className="mr-2" /> Add New Content Page
         </button>

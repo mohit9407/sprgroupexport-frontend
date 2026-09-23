@@ -86,9 +86,9 @@ export default function AdminAccountPage() {
   }
 
   const inputClass =
-    'w-full rounded border border-gray-300 px-3 py-2 text-sm outline-none transition focus:border-sky-600 focus:ring-1 focus:ring-sky-600'
+    'w-full rounded border border-gray-300 px-3 py-2 text-sm outline-none transition focus:border-[#004372] focus:ring-1 focus:ring-[#004372]'
   const buttonClass =
-    'rounded bg-sky-700 px-5 py-2 text-sm font-medium text-white transition hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-60'
+    'rounded bg-[#003451] px-5 py-2 text-sm font-medium text-white transition hover:bg-[#002A42] disabled:cursor-not-allowed disabled:opacity-60'
 
   return (
     <div className="mx-auto max-w-5xl">

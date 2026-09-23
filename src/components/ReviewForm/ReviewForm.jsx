@@ -114,7 +114,7 @@ const ReviewForm = ({ productId, onReviewAdded, onClose }) => {
             rows={4}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#BA8B4E] focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#004372] focus:border-transparent"
             placeholder="Share your experience with this product..."
             maxLength={500}
           />
@@ -128,7 +128,7 @@ const ReviewForm = ({ productId, onReviewAdded, onClose }) => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-4 py-2 bg-[#BA8B4E] text-white rounded-md hover:bg-[#8B6B3E] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-[#004372] text-white rounded-md hover:bg-[#003451] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? 'Submitting...' : 'Submit Review'}
           </button>

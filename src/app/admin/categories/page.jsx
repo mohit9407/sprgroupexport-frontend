@@ -239,7 +239,7 @@ function CategoriesDisplayContent() {
         filterByOptions={filterByOptions}
         actions={
           <button
-            className="bg-sky-600 text-white px-4 py-2 rounded text-sm hover:bg-sky-700 transition-colors"
+            className="bg-[#004372] text-white px-4 py-2 rounded text-sm hover:bg-[#003451] transition-colors"
             onClick={() => router.push('/admin/categories/add')}
           >
             Add New Category

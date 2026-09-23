@@ -132,7 +132,7 @@ function SilverTableContent() {
         <h1 className="text-2xl font-semibold">List Of All Silver Data</h1>
         <button
           onClick={() => router.push('/admin/silver/add')}
-          className="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center"
+          className="bg-[#004372] hover:bg-[#003451] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center"
         >
           <FaPlus className="mr-2" /> Add New Silver Data
         </button>

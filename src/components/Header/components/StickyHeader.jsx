@@ -64,7 +64,7 @@ const StickyHeader = () => {
           : '-translate-y-full opacity-0 pointer-events-none'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 h-full">
+      <div className="w-full px-4 h-full">
         <div className="flex items-center justify-between h-[85px]">
           {/* Logo */}
           <Link href="/" className="flex-shrink-0 h-full flex items-center">
@@ -91,14 +91,14 @@ const StickyHeader = () => {
                 }
               >
                 {item.hasDropdown ? (
-                  <span className="flex items-center text-sm font-medium hover:text-[#BA8B4E] transition-colors cursor-default select-none">
+                  <span className="flex items-center text-sm font-medium hover:text-[#004372] transition-colors cursor-default select-none">
                     {item.name}
                     <FaChevronDown className="ml-1 text-xs" />
                   </span>
                 ) : (
                   <Link
                     href={item.href}
-                    className="flex items-center text-sm font-medium hover:text-[#BA8B4E] transition-colors"
+                    className="flex items-center text-sm font-medium hover:text-[#004372] transition-colors"
                   >
                     {item.name}
                   </Link>
@@ -137,7 +137,7 @@ const StickyHeader = () => {
               className="p-2 rounded-full bg-[#ced4da] hover:bg-gray-200 transition-colors relative"
             >
               <FaRegHeart className="text-lg" />
-              <span className="absolute -top-1 -right-1 bg-[#BA8B4E] text-white text-[10px] rounded-full h-5 w-5 flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-[#004372] text-white text-[10px] rounded-full h-5 w-5 flex items-center justify-center">
                 {wishlistCount}
               </span>
             </Link>
@@ -148,7 +148,7 @@ const StickyHeader = () => {
               className="p-2 rounded-full bg-[#ced4da] hover:bg-gray-200 transition-colors relative"
             >
               <FaShoppingBag className="text-lg" />
-              <span className="absolute -top-1 -right-1 bg-[#BA8B4E] text-white text-[10px] rounded-full h-5 w-5 flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-[#004372] text-white text-[10px] rounded-full h-5 w-5 flex items-center justify-center">
                 {cartCount}
               </span>
             </Link>

@@ -35,23 +35,23 @@ const SearchBar = () => {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full md:max-w-2xl">
-      <div className="flex items-center rounded-md border border-[#D4B37C] bg-white shadow-sm overflow-hidden">
-        <div className="flex flex-1 items-center gap-3 px-4 py-3">
-          <FiSearch className="text-lg text-[#7a5b2d]" />
+    <form onSubmit={handleSubmit} className="w-full md:max-w-3xl">
+      <div className="flex items-center rounded-md border border-[#9CC4D9] bg-white shadow-sm overflow-hidden">
+        <div className="flex flex-1 items-center gap-3 px-5 py-4">
+          <FiSearch className="text-xl text-[#003451]" />
           <input
             type="text"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search products, metals, sizes, colors..."
-            className="w-full border-0 bg-transparent text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none"
+            className="w-full border-0 bg-transparent text-base text-gray-700 placeholder:text-gray-400 focus:outline-none"
             aria-label="Search products"
           />
         </div>
 
         <button
           type="submit"
-          className="bg-[#BA8B4E] px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white transition-colors hover:bg-[#A87D45]"
+          className="bg-[#004372] px-8 py-4 text-base font-semibold uppercase tracking-wide text-white transition-colors hover:bg-[#003451]"
         >
           Search
         </button>

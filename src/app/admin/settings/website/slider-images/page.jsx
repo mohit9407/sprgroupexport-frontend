@@ -181,7 +181,7 @@ function SlideImageTableContent() {
         <h2 className="text-2xl font-semibold mb-4">List of Slider Images</h2>
 
         <button
-          className="bg-sky-600 text-white px-4 py-2 rounded text-sm hover:bg-sky-700 transition-colors flex items-center gap-2"
+          className="bg-[#004372] text-white px-4 py-2 rounded text-sm hover:bg-[#003451] transition-colors flex items-center gap-2"
           onClick={() =>
             router.push('/admin/settings/website/slider-images/add')
           }

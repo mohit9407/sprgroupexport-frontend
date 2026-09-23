@@ -22,7 +22,7 @@ export function RowActionsMenu({ label = 'Action', items = [] }) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center w-24 p-2 gap-1 text-sm font-medium text-gray-700 hover:bg-gray-200 focus:bg-gray-200 hover:text-sky-600"
+        className="inline-flex items-center w-24 p-2 gap-1 text-sm font-medium text-gray-700 hover:bg-gray-200 focus:bg-gray-200 hover:text-[#004372]"
       >
         {label}
         <span className="text-xs">▼</span>

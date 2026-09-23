@@ -21,13 +21,13 @@ const AccountDropdown = ({ showIcon = true }) => {
         <div className="flex items-center space-x-3">
           <Link
             href="/login"
-            className="px-5 py-2 text-sm font-medium text-[#BA8B4E] bg-white hover:bg-gray-50 transition-colors rounded-md border border-[#BA8B4E]"
+            className="px-5 py-2 text-sm font-medium text-[#004372] bg-white hover:bg-gray-50 transition-colors rounded-md border border-[#004372]"
           >
             LOGIN
           </Link>
           <Link
             href="/signup"
-            className="px-5 py-2 text-sm font-medium text-white bg-[#BA8B4E] hover:bg-[#9a7542] transition-colors rounded-md"
+            className="px-5 py-2 text-sm font-medium text-white bg-[#004372] hover:bg-[#003451] transition-colors rounded-md"
           >
             SIGN UP
           </Link>

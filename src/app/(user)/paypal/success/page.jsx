@@ -72,7 +72,7 @@ export default function PayPalSuccess() {
         <div className="text-center">
           {status === 'processing' && (
             <>
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#c89b5a] mx-auto mb-4"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#004372] mx-auto mb-4"></div>
               <h2 className="text-xl font-semibold text-gray-900 mb-2">
                 Processing Payment
               </h2>
