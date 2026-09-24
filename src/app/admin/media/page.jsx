@@ -105,7 +105,7 @@ export default function MediaListPage() {
 
           <button
             onClick={unselectAll}
-            className="px-4 py-2 bg-[#E6F0F5]0 text-white rounded font-semibold"
+            className="px-4 py-2 bg-[#E6F0F5] text-[#003451] rounded font-semibold"
           >
             UnSelect All
           </button>
