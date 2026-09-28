@@ -25,15 +25,23 @@ export default function ContentPage() {
   const contactEmail =
     generalSettings?.contactUsEmail || 'sprgroup100@gmail.com'
   const contactPhone = generalSettings?.phoneNumber || '+91 98989 91005'
-  const contactLocation =
-    [
-      generalSettings?.address,
-      generalSettings?.city,
-      generalSettings?.state,
-      generalSettings?.country,
-    ]
-      .filter(Boolean)
-      .join(', ') || 'India'
+  const locationParts = [
+    ...(generalSettings?.address?.split(',') || []),
+    generalSettings?.city,
+    generalSettings?.state,
+    generalSettings?.zip,
+    generalSettings?.country,
+  ]
+    .map((part) => part?.trim())
+    .filter(Boolean)
+    .filter(
+      (part, index, parts) =>
+        parts.findIndex(
+          (candidate) => candidate.toLowerCase() === part.toLowerCase(),
+        ) === index,
+    )
+  const contactLocation = locationParts.join(', ') || 'India'
+  const contactMapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(contactLocation)}`
 
   useEffect(() => {
     let isMounted = true
@@ -326,7 +334,11 @@ export default function ContentPage() {
                 Get In Touch
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="bg-white rounded-lg shadow-md p-6 min-w-0">
+                <a
+                  href={`mailto:${contactEmail}`}
+                  className="block bg-white rounded-lg shadow-md p-6 min-w-0 transition hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#004372]"
+                  aria-label={`Email us at ${contactEmail}`}
+                >
                   <div className="text-4xl mb-4">📧</div>
                   <h4 className="font-semibold text-lg mb-2 text-gray-900">
                     Email
@@ -334,7 +346,7 @@ export default function ContentPage() {
                   <p className="text-gray-700 wrap-break-word overflow-wrap-anywhere">
                     {contactEmail}
                   </p>
-                </div>
+                </a>
                 <div className="bg-white rounded-lg shadow-md p-6">
                   <div className="text-4xl mb-4">📞</div>
                   <h4 className="font-semibold text-lg mb-2 text-gray-900">
@@ -342,13 +354,19 @@ export default function ContentPage() {
                   </h4>
                   <p className="text-gray-700">{contactPhone}</p>
                 </div>
-                <div className="bg-white rounded-lg shadow-md p-6">
+                <a
+                  href={contactMapUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block bg-white rounded-lg shadow-md p-6 transition hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#004372]"
+                  aria-label={`View ${contactLocation} on Google Maps`}
+                >
                   <div className="text-4xl mb-4">📍</div>
                   <h4 className="font-semibold text-lg mb-2 text-gray-900">
                     Location
                   </h4>
                   <p className="text-gray-700">{contactLocation}</p>
-                </div>
+                </a>
               </div>
             </div>
           </div>
