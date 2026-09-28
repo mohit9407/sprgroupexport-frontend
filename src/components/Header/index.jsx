@@ -103,16 +103,16 @@ const Header = ({ settings = {} }) => {
           </div>
 
           {/* Main Header Section - Full Width */}
-          <div className="w-full bg-white py-8">
+          <div className="w-full bg-white">
             <div className="w-full px-4">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                 {/* Logo */}
                 <Link href="/" className="flex items-center">
                   <SafeImage
                     src={settings?.logo}
                     fallback="/spr_logo.png"
                     alt="SPR Group of Export"
-                    width={330}
+                    width={230}
                     height={215}
                     priority
                   />
