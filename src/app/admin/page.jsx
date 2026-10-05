@@ -110,8 +110,8 @@ export default function AdminDashboard() {
 
   const stats = [
     {
-      title: 'New Orders',
-      value: adminDashboard?.newOrdersToday || 0,
+      title: 'Orders (Last 7 Days)',
+      value: adminDashboard?.newOrdersLast7Days || 0,
       bgColor: 'bg-blue-500',
       textColor: 'text-white',
       icon: <ShoppingCartIcon className="h-8 w-8" />,
