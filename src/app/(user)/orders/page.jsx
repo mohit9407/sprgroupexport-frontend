@@ -21,6 +21,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { fetchProducts } from '@/features/products/productsSlice'
 import { fetchAllCategories } from '@/features/categories/categoriesSlice'
 import { FaRupeeSign } from 'react-icons/fa'
+import { getProductCost } from '@/utils/productPricing'
 
 export default function OrdersPage() {
   const [isClient, setIsClient] = useState(false)
@@ -141,6 +142,7 @@ export default function OrdersPage() {
         : getCategoryNameById(categoryId)
     const resolvedProductName =
       product?.productName || item.productId?.productName || 'Product Not Found'
+    const itemUnitCost = getProductCost(product || item.productId)
     return {
       ...item,
       product: {
@@ -148,7 +150,8 @@ export default function OrdersPage() {
         _id: item.productId?._id,
         name: resolvedProductName,
         productName: resolvedProductName,
-        price: item.productId?.price || 0,
+        price: itemUnitCost,
+        totalCost: itemUnitCost,
         category: categoryName || 'Uncategorized',
         sku:
           product?.sku ||
@@ -159,8 +162,7 @@ export default function OrdersPage() {
         description: item.productId?.description || '',
       },
       quantity: item.quantity || 1,
-      totalPrice:
-        (item.quantity || 1) * (item.price || item.productId?.price || 0),
+      totalPrice: (item.quantity || 1) * itemUnitCost,
     }
   }
 
@@ -355,9 +357,9 @@ export default function OrdersPage() {
                                           size={14}
                                           className="mr-0.5"
                                         />
-                                        {itemDetails.product.price
-                                          ? itemDetails.product.price.toFixed(2)
-                                          : '0.00'}
+                                        {getProductCost(
+                                          itemDetails.product,
+                                        ).toFixed(2)}
                                       </div>
                                     </div>
                                   </div>

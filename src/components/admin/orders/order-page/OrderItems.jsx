@@ -38,10 +38,7 @@ const OrderItems = ({ loadingDetails, products, order }) => {
                   <div className="flex justify-between text-base font-medium text-gray-900">
                     <h3>{product.name}</h3>
                     <p className="ml-4">
-                      $
-                      {product.salePrice
-                        ? product.salePrice.toFixed(2)
-                        : '0.00'}
+                      ${Number(product.salePrice ?? 0).toFixed(2)}
                     </p>
                   </div>
                   <p className="mt-1 text-sm text-gray-500">
@@ -80,7 +77,7 @@ const OrderItems = ({ loadingDetails, products, order }) => {
             {products
               .reduce(
                 (acc, product) =>
-                  acc + (product.salePrice || product.price) * product.quantity,
+                  acc + (product.salePrice ?? 0) * product.quantity,
                 0,
               )
               .toFixed(2) || '0.00'}

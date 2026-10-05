@@ -188,8 +188,8 @@ const RelatedProducts = ({ category, excludeProductId }) => {
       return {
         id: productId,
         name: product.productName || 'Unnamed Product',
-        price: product.price || 0,
-        originalPrice: product.originalPrice || product.price || 0,
+        price: product.totalCost ?? 0,
+        originalPrice: product.originalPrice ?? product.totalCost ?? 0,
         isNew: product.isNew || false,
         brand: product.brand || 'Unknown Brand',
         image: getImageUrl(mainImage),
@@ -351,11 +351,12 @@ const RelatedProducts = ({ category, excludeProductId }) => {
                       id={product.id}
                       image={product.image}
                       name={product.name}
-                      price={product.price}
+                      totalCost={product.totalCost}
                       discount={
                         product.originalPrice
                           ? Math.round(
-                              ((product.originalPrice - product.price) /
+                              ((product.originalPrice -
+                                (product.totalCost ?? 0)) /
                                 product.originalPrice) *
                                 100,
                             )

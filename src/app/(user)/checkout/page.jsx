@@ -18,6 +18,7 @@ import ShippingAddress from './components/ShippingAddress'
 import ShippingMethods from './components/ShippingMethods'
 import OrderDetail from './components/OrderDetail'
 import { toast } from '@/utils/toastConfig'
+import { getProductCost } from '@/utils/productPricing'
 
 export default function CheckoutPage() {
   const router = useRouter()
@@ -223,7 +224,7 @@ export default function CheckoutPage() {
           ? [directCheckoutItem]
           : cart
         const subtotal = displayItemsForSubtotal.reduce(
-          (sum, item) => sum + item.price * item.quantity,
+          (sum, item) => sum + getProductCost(item) * item.quantity,
           0,
         )
 
@@ -433,7 +434,7 @@ export default function CheckoutPage() {
   // Same total as placeOrder (subtotal + shipping - first-order discount)
   const displayItems = directCheckoutItem ? [directCheckoutItem] : cart
   const subtotal = displayItems.reduce(
-    (sum, item) => sum + item.price * (item.quantity || 1),
+    (sum, item) => sum + getProductCost(item) * (item.quantity || 1),
     0,
   )
   const shippingCost = Number(formData.shippingMethod?.price || 0)

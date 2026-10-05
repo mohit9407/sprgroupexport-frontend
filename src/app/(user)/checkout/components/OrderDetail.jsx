@@ -6,6 +6,7 @@ import { paymentService } from '@/services/paymentService'
 import { skydoService } from '@/services/skydoService'
 import { api } from '@/lib/axios'
 import { toast } from '@/utils/toastConfig'
+import { getProductCost } from '@/utils/productPricing'
 
 export default function OrderDetail({
   onContinue,
@@ -34,7 +35,7 @@ export default function OrderDetail({
     typeof orderTotalProp === 'number'
       ? orderTotalProp
       : displayItems.reduce((total, item) => {
-          return total + item.price * (item.quantity || 1)
+          return total + getProductCost(item) * (item.quantity || 1)
         }, 0) + shippingCost
 
   const getMethodType = (method) => (method?.type || '').toLowerCase()
@@ -132,7 +133,7 @@ export default function OrderDetail({
 
         const totalAmount =
           displayItems.reduce((total, item) => {
-            return total + item.price * (item.quantity || 1)
+            return total + getProductCost(item) * (item.quantity || 1)
           }, 0) + shippingCost
 
         // Find PayPal payment method ID
@@ -282,7 +283,7 @@ export default function OrderDetail({
 
         const totalAmount =
           displayItems.reduce((total, item) => {
-            return total + item.price * (item.quantity || 1)
+            return total + getProductCost(item) * (item.quantity || 1)
           }, 0) + shippingCost
 
         const response = await api.post('/payments/process/RAZORPAY', {
@@ -306,7 +307,8 @@ export default function OrderDetail({
           items: displayItems.map((item) => ({
             id: item.id,
             name: item.name,
-            price: item.price,
+            price: getProductCost(item),
+            totalCost: getProductCost(item),
             quantity: item.quantity || 1,
             color: item.color,
             size: item.size,
@@ -429,7 +431,7 @@ export default function OrderDetail({
                   )}
                   <div className="flex items-center mt-1">
                     <span className="text-sm font-medium text-gray-900">
-                      ${item.price?.toLocaleString('en-US')} USD
+                      ${getProductCost(item).toLocaleString('en-US')} USD
                     </span>
                     <span className="mx-2 text-gray-300">|</span>
                     <div className="flex items-center">
@@ -440,7 +442,7 @@ export default function OrderDetail({
                       <span className="text-sm font-medium text-gray-900">
                         $
                         {(
-                          (item.price || 0) * (item.quantity || 1)
+                          getProductCost(item) * (item.quantity || 1)
                         ).toLocaleString('en-US')}{' '}
                         USD
                       </span>

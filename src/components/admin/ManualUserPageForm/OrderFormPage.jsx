@@ -157,9 +157,9 @@ export default function OrderFormPage({
 
   const productSubtotal = productValues.reduce((sum, item) => {
     const product = productOptions.find((p) => p.value === item?.id)
-    const price = product?.price || 0
+    const totalCost = product?.totalCost || 0
     const qty = Number(item?.qty) || 0
-    return sum + price * qty
+    return sum + totalCost * qty
   }, 0)
 
   const orderTotal = productSubtotal + (Number(shippingCostValue) || 0)
@@ -674,10 +674,10 @@ export default function OrderFormPage({
                     (p) =>
                       p.value === methods.watch(`products.${index}.productId`),
                   )
-                  const price = selectedProduct?.price || 0
+                  const totalCost = selectedProduct?.totalCost || 0
                   const qty =
                     Number(methods.watch(`products.${index}.quantity`)) || 0
-                  const lineTotal = price * qty
+                  const lineTotal = totalCost * qty
 
                   return (
                     <div
@@ -708,8 +708,8 @@ export default function OrderFormPage({
 
                       <div className="md:col-span-2">
                         <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded text-sm">
-                          <span className="text-gray-500">Price:</span>{' '}
-                          <span className="font-medium">${price}</span>
+                          <span className="text-gray-500">Total Cost:</span>{' '}
+                          <span className="font-medium">${totalCost}</span>
                         </div>
                       </div>
 

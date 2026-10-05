@@ -9,6 +9,7 @@ import { FiHeart, FiShoppingBag, FiArrowLeft, FiLoader } from 'react-icons/fi'
 import { toast } from '@/utils/toastConfig'
 import { useAuth } from '@/context/AuthContext'
 import { useEffect, useState } from 'react'
+import { getProductCost } from '@/utils/productPricing'
 
 export default function WishlistPage() {
   const { wishlist, removeFromWishlist, wishlistLoading, getWishlist } =
@@ -133,7 +134,7 @@ export default function WishlistPage() {
                     {product.name}
                   </h3>
                   <p className="mt-2 text-base font-semibold text-[#004372]">
-                    ${product.price} USD
+                    ${getProductCost(product).toLocaleString('en-US')} USD
                   </p>
                 </div>
                 <div className="mt-4">

@@ -19,6 +19,7 @@ import {
 import Link from 'next/link'
 import { toast } from '@/utils/toastConfig'
 import SafeImage from '@/components/SafeImage'
+import { getProductCost } from '@/utils/productPricing'
 
 export default function OrderDetailsPage() {
   const { orderId } = useParams()
@@ -66,6 +67,7 @@ export default function OrderDetailsPage() {
         : getCategoryNameById(categoryId)
     const resolvedProductName =
       product?.productName || item.productId?.productName || 'Product Not Found'
+    const itemUnitCost = getProductCost(product || item.productId)
     return {
       ...item,
       product: {
@@ -73,7 +75,8 @@ export default function OrderDetailsPage() {
         _id: item.productId?._id,
         name: resolvedProductName,
         productName: resolvedProductName,
-        price: item.productId?.price || 0,
+        price: itemUnitCost,
+        totalCost: itemUnitCost,
         sku:
           product?.sku ||
           item.productId?.sku ||
@@ -83,8 +86,7 @@ export default function OrderDetailsPage() {
         category: categoryName || 'Uncategorized',
       },
       quantity: item.quantity || 1,
-      totalPrice:
-        (item.quantity || 1) * (item.productId?.price || item.price || 0),
+      totalPrice: (item.quantity || 1) * itemUnitCost,
     }
   }
 
@@ -327,7 +329,7 @@ export default function OrderDetailsPage() {
                               )}
                             </div>
                             <p className="text-sm font-medium text-gray-900">
-                              ${(product.price || 0).toFixed(2)} USD
+                              ${getProductCost(product).toFixed(2)} USD
                             </p>
                           </div>
                           <div className="mt-2 flex-1 flex items-end justify-between">
@@ -337,7 +339,7 @@ export default function OrderDetailsPage() {
                             <p className="text-sm font-medium text-gray-900">
                               Total: $
                               {(
-                                (item.quantity || 1) * (product.price || 0)
+                                (item.quantity || 1) * getProductCost(product)
                               ).toFixed(2)}{' '}
                               USD
                             </p>

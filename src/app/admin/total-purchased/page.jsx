@@ -112,7 +112,7 @@ function TotalPurchasedContent() {
         updatedAt: order.updatedAt,
 
         productName: item.productId?.productName,
-        price: item.productId?.price,
+        totalCost: item.productId?.totalCost,
         stock: item.productId?.stock,
         image: item.productId?.image,
       })),

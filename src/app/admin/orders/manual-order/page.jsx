@@ -131,9 +131,9 @@ export default function ManualOrderPage() {
   const productSelectOptions = useMemo(
     () =>
       (productOptions || []).map((p) => ({
-        label: `${p.productName || p.name || p.title || p._id}${p.price ? ` ($${p.price})` : ''}`,
+        label: `${p.productName || p.name || p.title || p._id}${p.totalCost != null ? ` ($${p.totalCost})` : ''}`,
         value: p._id,
-        price: p.price,
+        totalCost: p.totalCost,
       })),
     [productOptions],
   )

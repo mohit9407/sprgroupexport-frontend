@@ -95,7 +95,7 @@ const getColumns = (router, dispatch, setDeleteModal, searchParams) => [
     accessorKey: 'totalCost',
     header: 'Total Cost',
     cell: (info) => {
-      const value = info.row.original.totalCost ?? info.row.original.price
+      const value = info.row.original.totalCost
       return typeof value === 'object'
         ? JSON.stringify(value)
         : value === null || value === undefined

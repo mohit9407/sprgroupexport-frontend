@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { api } from '@/lib/axios'
 import { toast } from '@/utils/toastConfig'
+import { getProductCost } from '@/utils/productPricing'
 
 export default function RazorpaySuccess() {
   const router = useRouter()
@@ -67,7 +68,7 @@ export default function RazorpaySuccess() {
         const products = storedData.items.map((item) => ({
           productId: item.id,
           quantity: item.quantity || 1,
-          price: item.price,
+          price: getProductCost(item),
           attributes: {
             color: item.color || null,
             size: item.size || null,
@@ -75,7 +76,7 @@ export default function RazorpaySuccess() {
         }))
 
         const subtotal = storedData.items.reduce(
-          (sum, item) => sum + item.price * (item.quantity || 1),
+          (sum, item) => sum + getProductCost(item) * (item.quantity || 1),
           0,
         )
         const shippingCost = Number(storedData.shippingMethod?.price || 0)

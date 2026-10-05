@@ -345,7 +345,7 @@ export default function AdminDashboard() {
                             {product.name}
                           </p>
                           <p className="text-sm font-semibold text-gray-900 mt-1">
-                            ${product.price}
+                            ${product.totalCost ?? 0}
                           </p>
                         </div>
                       </div>

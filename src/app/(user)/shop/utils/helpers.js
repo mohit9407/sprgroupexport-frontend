@@ -47,7 +47,7 @@ export const mapProducts = (products = [], allCategories = []) => {
       getCategoryNameById(product.category, allCategories) ||
       'N/A',
     name: product.productModel || product.name || 'Product Name',
-    price: product.price ? product.price.toFixed(2) : '0.00',
+    price: product.totalCost ?? 0,
     isNew: product.isNew || false,
     discount: product.discount ? `${product.discount}% OFF` : null,
     status: product.status || 'in-stock',

@@ -26,6 +26,7 @@ import { useAuth } from '@/context/AuthContext'
 import AuthModal from '@/components/Auth/AuthModal'
 import RelatedProducts from '@/components/RelatedProducts'
 import ReviewForm from '@/components/ReviewForm/ReviewForm'
+import { getProductCost } from '@/utils/productPricing'
 
 export default function ProductDetails() {
   const dispatch = useDispatch()
@@ -149,7 +150,8 @@ export default function ProductDetails() {
         {
           id: product._id,
           name: product.name,
-          price: product.price,
+          price: getProductCost(product),
+          totalCost: getProductCost(product),
           image: product.image,
           color: color?.value || '',
           colorId: selectedColor,
@@ -200,7 +202,8 @@ export default function ProductDetails() {
     const cartItem = {
       id: product._id,
       name: product.name || product.productName,
-      price: product.price,
+      price: getProductCost(product),
+      totalCost: getProductCost(product),
       image: product.image,
       color: color?.value || '',
       colorId: selectedColor,
@@ -233,7 +236,8 @@ export default function ProductDetails() {
       addToWishlist({
         id: product.id,
         name: product.name,
-        price: product.price,
+        price: getProductCost(product),
+        totalCost: getProductCost(product),
         image: product.image,
       })
       toast.success('Added to wishlist!')
@@ -370,7 +374,7 @@ export default function ProductDetails() {
             <div className="mb-6">
               <div className="flex items-center gap-2">
                 <span className="text-2xl font-bold text-[#004372]">
-                  ${product.price?.toLocaleString('en-US')} USD
+                  ${getProductCost(product).toLocaleString('en-US')} USD
                 </span>
                 <span className="text-sm text-gray-500">
                   MRP (Incl. of all taxes)

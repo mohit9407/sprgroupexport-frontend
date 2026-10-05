@@ -95,7 +95,7 @@ export default function OrderDetailPage() {
               return {
                 _id: productData._id || productId,
                 name: productData.productName || 'Product',
-                salePrice: productData.price || 0,
+                salePrice: productData.totalCost ?? 0,
                 sku: productData.sku || '',
                 images: [
                   productData.image,

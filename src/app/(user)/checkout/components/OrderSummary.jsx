@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import Link from 'next/link'
 import SafeImage from '@/components/SafeImage'
+import { getProductCost } from '@/utils/productPricing'
 
 export default function OrderSummary({
   cartItems = [],
@@ -24,7 +25,7 @@ export default function OrderSummary({
 
   // Calculate subtotal from cart items
   const subtotal = cartItems.reduce((sum, item) => {
-    return sum + item.price * item.quantity
+    return sum + getProductCost(item) * item.quantity
   }, 0)
 
   // Calculate shipping cost based on selected method
@@ -88,7 +89,8 @@ export default function OrderSummary({
               <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
             </div>
             <div className="text-sm font-medium text-gray-900">
-              ${(item.price * item.quantity).toLocaleString('en-US')} USD
+              ${(getProductCost(item) * item.quantity).toLocaleString('en-US')}{' '}
+              USD
             </div>
           </div>
         ))}

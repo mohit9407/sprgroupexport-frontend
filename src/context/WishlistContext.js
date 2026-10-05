@@ -13,6 +13,7 @@ import { api } from '@/lib/axios'
 import { useAuth } from './AuthContext'
 import { getUserById } from '@/features/user/userSlice'
 import AuthModal from '@/components/Auth/AuthModal'
+import { getProductCost } from '@/utils/productPricing'
 
 const WishlistContext = createContext()
 
@@ -58,14 +59,15 @@ export function WishlistProvider({ children }) {
           )
           return product
             ? {
+                ...product,
                 id: product._id,
                 name: product.productName || 'Product',
-                price: product.price || 0,
+                price: getProductCost(product),
+                totalCost: getProductCost(product),
                 image:
                   product.image ||
                   product.images?.[0] ||
                   '/placeholder-product.jpg',
-                ...product,
               }
             : null
         })
@@ -78,12 +80,13 @@ export function WishlistProvider({ children }) {
           product.likes && product.likes.some((like) => like.userId === userId),
       )
       .map((product) => ({
+        ...product,
         id: product._id,
         name: product.productName || 'Product',
-        price: product.price || 0,
+        price: getProductCost(product),
+        totalCost: getProductCost(product),
         image:
           product.image || product.images?.[0] || '/placeholder-product.jpg',
-        ...product,
       }))
 
     // Merge both arrays and remove duplicates
@@ -100,11 +103,12 @@ export function WishlistProvider({ children }) {
   useEffect(() => {
     if (isAuthenticated && user?.wishlist && localWishlist.length === 0) {
       const serverWishlist = user.wishlist.map((item) => ({
+        ...item,
         id: item.productId,
         name: item.productName || 'Product',
-        price: item.price || 0,
+        price: getProductCost(item),
+        totalCost: getProductCost(item),
         image: item.image || '/placeholder-product.jpg',
-        ...item,
       }))
       const id = setTimeout(() => setLocalWishlist(serverWishlist), 0)
       return () => clearTimeout(id)
@@ -173,15 +177,16 @@ export function WishlistProvider({ children }) {
 
       // Transform the response data to match the expected format
       const wishlistProducts = response.data.map((item) => ({
+        ...item.product,
         id: item.product._id,
         name: item.product.productName || 'Product',
-        price: item.product.price || 0,
+        price: getProductCost(item.product),
+        totalCost: getProductCost(item.product),
         image:
           item.product.image?.mediumUrl ||
           item.product.image ||
           '/placeholder-product.jpg',
         quantity: item.quantity,
-        ...item.product,
       }))
 
       setLocalWishlist(wishlistProducts)

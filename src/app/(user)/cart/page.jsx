@@ -8,6 +8,7 @@ import Link from 'next/link'
 import ConfirmationModal from '@/components/admin/ConfirmationModal'
 import { toast } from '@/utils/toastConfig'
 import SafeImage from '@/components/SafeImage'
+import { getProductCost } from '@/utils/productPricing'
 
 export default function CartPage() {
   const {
@@ -207,8 +208,7 @@ export default function CartPage() {
                       Price:
                     </span>
                     <span className="font-medium">
-                      ${(item.price || item.product?.price)?.toLocaleString()}{' '}
-                      USD
+                      ${getProductCost(item).toLocaleString()} USD
                     </span>
                   </div>
 
@@ -313,8 +313,7 @@ export default function CartPage() {
                       <div className="font-medium min-w-[100px] text-right">
                         $
                         {(
-                          (item.price || item.product?.price) *
-                          (item.quantity || 1)
+                          getProductCost(item) * (item.quantity || 1)
                         ).toLocaleString()}{' '}
                         USD
                       </div>

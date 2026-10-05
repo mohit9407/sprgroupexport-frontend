@@ -63,7 +63,7 @@ const ProductCard = ({
   image: imageObject,
   brand,
   name,
-  price,
+  totalCost,
   isNew = false,
   discount = null,
   id,
@@ -75,6 +75,7 @@ const ProductCard = ({
   isLiked: isLikedProp = false,
   ...props
 }) => {
+  const displayPrice = totalCost ?? 0
   // Determine if image is a video
   const isVideo =
     typeof imageObject === 'object' &&
@@ -169,7 +170,8 @@ const ProductCard = ({
         {
           id,
           name,
-          price,
+          price: displayPrice,
+          totalCost: displayPrice,
           image: imageUrl,
           brand,
         },
@@ -201,7 +203,8 @@ const ProductCard = ({
     const product = {
       id,
       name,
-      price,
+      price: displayPrice,
+      totalCost: displayPrice,
       image: imageUrl,
       brand,
     }
@@ -375,7 +378,7 @@ const ProductCard = ({
                 className="text-left"
                 brand={brand}
                 name={name}
-                price={price}
+                price={displayPrice}
                 viewMode={viewMode}
                 handleNavigate={handleNavigate}
                 categoryName={categoryName}
@@ -534,7 +537,10 @@ const ProductCard = ({
             className="text-[#004372] font-semibold"
             style={{ fontSize: '1.6rem' }}
           >
-            ${typeof price === 'number' ? price.toLocaleString('en-US') : price}{' '}
+            $
+            {typeof displayPrice === 'number'
+              ? displayPrice.toLocaleString('en-US')
+              : displayPrice}{' '}
             USD
           </div>
         </div>

@@ -71,7 +71,7 @@ const NewArrivalSection = ({ title }) => {
         image: product.image || null,
         brand: product.brand || 'Unknown Brand',
         name: product.productModel || product.productName || 'Unnamed Product',
-        price: product.price || 0,
+        price: product.totalCost ?? 0,
         isNew: product.isNew || false,
         isVideo: product.isVideo || false,
         discount: product.discount || null,
@@ -140,7 +140,7 @@ const NewArrivalSection = ({ title }) => {
                 image={product.image}
                 brand={product.brand}
                 name={product.name}
-                price={product.price}
+                totalCost={product.totalCost}
                 isNew={product.isNew}
                 isVideo={product.isVideo}
                 discount={product.discount}

@@ -1,39 +1,53 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from 'react'
 import { cartService } from '@/services/cartService'
 import { useAuth } from './AuthContext'
+import { getProductCost } from '@/utils/productPricing'
 
 const CartContext = createContext({})
 
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([])
   const [cartCount, setCartCount] = useState(0)
-    const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
   const [directCheckoutItem, setDirectCheckoutItem] = useState(null)
 
   // Transform API response to cart format
   const transformCartData = (response) => {
-    if (!Array.isArray(response)) return [];
-    
+    if (!Array.isArray(response)) return []
+
     return response
-      .filter(item => item?.product?._id) // Filter out items with missing product or product._id
-      .map(item => ({
-        id: item.product._id,
-        _id: item.product._id,
-        name: item.product.productName,
-        price: item.product.price,
-        image: item.product.image,
-        brand: item.product.brand || '',
-        quantity: item.quantity,
-        product: item.product
-      }));
+      .filter((item) => item?.product?._id) // Filter out items with missing product or product._id
+      .map((item) => {
+        const cost = getProductCost(item.product)
+        return {
+          id: item.product._id,
+          _id: item.product._id,
+          name: item.product.productName,
+          price: cost,
+          totalCost: cost,
+          image: item.product.image,
+          brand: item.product.brand || '',
+          quantity: item.quantity,
+          product: item.product,
+        }
+      })
   }
 
   // Update cart count
   const updateCartCount = (cartItems) => {
-    const count = cartItems.reduce((total, item) => total + (item.quantity || 1), 0)
+    const count = cartItems.reduce(
+      (total, item) => total + (item.quantity || 1),
+      0,
+    )
     setCartCount(count)
   }
 
@@ -62,25 +76,30 @@ export function CartProvider({ children }) {
     setError(null)
     try {
       const productId = product._id || product.id
+      const cost = getProductCost(product)
+      const pricedProduct = { ...product, price: cost, totalCost: cost }
       await cartService.addToCart(productId, quantity)
 
       // Optimistically update the cart
-      setCart(prevCart => {
-        const existingItem = prevCart.find(item => item.id === productId)
+      setCart((prevCart) => {
+        const existingItem = prevCart.find((item) => item.id === productId)
         let newCart
         if (existingItem) {
-          newCart = prevCart.map(item =>
+          newCart = prevCart.map((item) =>
             item.id === productId
               ? { ...item, quantity: (item.quantity || 1) + quantity }
-              : item
+              : item,
           )
         } else {
-          newCart = [...prevCart, {
-            ...product,
-            id: productId,
-            _id: productId,
-            quantity
-          }]
+          newCart = [
+            ...prevCart,
+            {
+              ...pricedProduct,
+              id: productId,
+              _id: productId,
+              quantity,
+            },
+          ]
         }
         updateCartCount(newCart)
         return newCart
@@ -103,8 +122,8 @@ export function CartProvider({ children }) {
     setError(null)
     try {
       // Optimistically update the cart
-      setCart(prevCart => {
-        const newCart = prevCart.filter(item => item.id !== productId)
+      setCart((prevCart) => {
+        const newCart = prevCart.filter((item) => item.id !== productId)
         updateCartCount(newCart)
         return newCart
       })
@@ -126,43 +145,43 @@ export function CartProvider({ children }) {
   const updateQuantity = async (productId, newQuantity) => {
     if (newQuantity < 1) {
       // If quantity is less than 1, remove the item
-      return await removeFromCart(productId);
+      return await removeFromCart(productId)
     }
 
     setIsLoading(true)
     setError(null)
     try {
       // First make the appropriate API call based on whether we're increasing or decreasing quantity
-      const currentItem = cart.find(item => item.id === productId);
+      const currentItem = cart.find((item) => item.id === productId)
       if (currentItem) {
         if (newQuantity > currentItem.quantity) {
           // If increasing quantity, use addToCart with the difference
-          const quantityToAdd = newQuantity - currentItem.quantity;
-          await cartService.addToCart(productId, quantityToAdd);
+          const quantityToAdd = newQuantity - currentItem.quantity
+          await cartService.addToCart(productId, quantityToAdd)
         } else if (newQuantity < currentItem.quantity) {
           // If decreasing quantity, use removeFromCart for single unit
-          await cartService.removeFromCart(productId);
+          await cartService.removeFromCart(productId)
           // If still quantity left after decreasing, add back the remaining
           if (newQuantity > 0) {
-            await cartService.addToCart(productId, newQuantity);
+            await cartService.addToCart(productId, newQuantity)
           }
         }
       }
 
       // Then update the local state
-      setCart(prevCart => {
-        const newCart = prevCart.map(item =>
-          item.id === productId
-            ? { ...item, quantity: newQuantity }
-            : item
-        ).filter(item => item.quantity > 0); // Remove items with quantity <= 0
+      setCart((prevCart) => {
+        const newCart = prevCart
+          .map((item) =>
+            item.id === productId ? { ...item, quantity: newQuantity } : item,
+          )
+          .filter((item) => item.quantity > 0) // Remove items with quantity <= 0
 
         updateCartCount(newCart)
         return newCart
       })
 
       // Return the updated cart
-      return cart;
+      return cart
     } catch (err) {
       console.error('Error updating quantity:', err)
       setError(err.message || 'Failed to update item quantity')
@@ -215,7 +234,7 @@ export function CartProvider({ children }) {
   // Calculate cart total
   const getCartTotal = useCallback(() => {
     return cart.reduce((total, item) => {
-      return total + (item.price * (item.quantity || 1))
+      return total + getProductCost(item) * (item.quantity || 1)
     }, 0)
   }, [cart])
 
@@ -232,16 +251,19 @@ export function CartProvider({ children }) {
 
   // Add direct checkout item
   const addDirectCheckoutItem = useCallback((item) => {
+    const cost = getProductCost(item)
     setDirectCheckoutItem({
       ...item,
-      isDirectCheckout: true
-    });
-  }, []);
+      price: cost,
+      totalCost: cost,
+      isDirectCheckout: true,
+    })
+  }, [])
 
   // Clear direct checkout item
   const clearDirectCheckoutItem = useCallback(() => {
-    setDirectCheckoutItem(null);
-  }, []);
+    setDirectCheckoutItem(null)
+  }, [])
 
   return (
     <CartContext.Provider
