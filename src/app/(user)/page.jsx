@@ -1,41 +1,48 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import StickyBackgroundSections from '@/components/Header/components/StickyBackgroundSections'
 import Hero from '@/components/Hero'
 import CategorySection from '@/components/CategorySection'
-import SectionHeader from '@/components/SectionHeader'
 import NewArrivalSection from '@/components/NewArrivalSection'
 import ManufacturingSection from '@/components/ManufacturingSection'
 import FeaturesSection from '@/components/FeaturesSection'
 import { fetchParallaxBanners } from '@/features/parallax-banner/parallaxBannerSlice'
 import { getGeneralSetting } from '@/features/general-setting/generatSettingSlice'
 
+const getErrorMessage = (error, fallback) =>
+  typeof error === 'string' ? error : error?.message || error?.error || fallback
+
 export default function UserDashboard() {
   const dispatch = useDispatch()
 
-  const { banners = [], status: bannerStatus } = useSelector(
-    (state) => state.parallaxBanner,
-  )
-  const { data: generalSettings, status: generalSettingsStatus } = useSelector(
-    (state) => state.generalSetting,
-  )
+  const bannerFetchStartedRef = useRef(false)
+  const settingsFetchStartedRef = useRef(false)
+  const {
+    banners = [],
+    status: bannerStatus,
+    error: bannerError,
+  } = useSelector((state) => state.parallaxBanner)
+  const {
+    data: generalSettings,
+    status: generalSettingsStatus,
+    error: generalSettingsError,
+  } = useSelector((state) => state.generalSetting)
 
   useEffect(() => {
-    if (bannerStatus === 'idle' || bannerStatus === 'failed') {
+    if (!bannerFetchStartedRef.current) {
+      bannerFetchStartedRef.current = true
       dispatch(fetchParallaxBanners())
     }
-  }, [bannerStatus])
+  }, [dispatch])
 
   useEffect(() => {
-    if (
-      generalSettingsStatus === 'idle' ||
-      generalSettingsStatus === 'failed'
-    ) {
+    if (!settingsFetchStartedRef.current) {
+      settingsFetchStartedRef.current = true
       dispatch(getGeneralSetting())
     }
-  }, [generalSettingsStatus])
+  }, [dispatch])
   const handleButtonClick = (section) => {
     console.log(`Navigating to: ${section.title}`)
   }
@@ -44,6 +51,19 @@ export default function UserDashboard() {
     <div className="min-h-screen relative">
       {/* Hero Section */}
       <Hero />
+      {bannerStatus === 'failed' && (
+        <p className="py-3 text-center text-red-600" role="alert">
+          {getErrorMessage(bannerError, 'Failed to load banners')}
+        </p>
+      )}
+      {generalSettingsStatus === 'failed' && (
+        <p className="py-3 text-center text-red-600" role="alert">
+          {getErrorMessage(
+            generalSettingsError,
+            'Failed to load general settings',
+          )}
+        </p>
+      )}
       <div className="bg-white h-25 relative z-10" />
       {banners?.[0] && (
         <StickyBackgroundSections

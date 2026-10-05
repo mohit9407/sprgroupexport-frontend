@@ -2,7 +2,6 @@ import React, { useEffect, useState, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import ProductCard from '../ProductCard'
 import { fetchProducts } from '@/features/products/productsSlice'
-import { useAuth } from '@/context/AuthContext'
 import { useWishlist } from '@/context/WishlistContext'
 
 const getResponsiveProductLimit = () => {
@@ -21,6 +20,8 @@ const NewArrivalSection = ({ title }) => {
     error,
   } = useSelector((state) => state.products || {})
 
+  const productFetchStartedRef = React.useRef(false)
+
   useEffect(() => {
     const updateLimit = () => {
       setVisibleLimit(getResponsiveProductLimit())
@@ -33,19 +34,11 @@ const NewArrivalSection = ({ title }) => {
   }, [])
 
   useEffect(() => {
-    if (status === 'loading') return
-    if (status === 'succeeded' && products.length >= visibleLimit) return
-    if (status === 'idle' || status === 'failed') {
+    if (!productFetchStartedRef.current) {
+      productFetchStartedRef.current = true
       dispatch(fetchProducts({ limit: visibleLimit }))
-      return
     }
-
-    dispatch(fetchProducts({ limit: visibleLimit }))
-  }, [dispatch, status, visibleLimit, products.length])
-
-  // Get current user from auth context
-  const { user } = useAuth()
-  const currentUserId = user?._id
+  }, [dispatch])
 
   // Update local likes when products or wishlist changes
   useEffect(() => {

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { FaYoutube, FaEnvelope } from 'react-icons/fa'
 import { GrInstagram } from 'react-icons/gr'
 import { BsGoogle } from 'react-icons/bs'
@@ -10,41 +10,124 @@ import { useDispatch, useSelector } from 'react-redux'
 import { getGeneralSetting } from '@/features/general-setting/generatSettingSlice'
 import { fetchContentPages } from '@/features/content-page/contentPageSlice'
 import SafeImage from '../SafeImage'
-import { Image } from 'lucide-react'
 
 const Footer = ({ settings = {} }) => {
   const dispatch = useDispatch()
-  const { data: generalSettings, status } = useSelector(
+  const {
+    data: generalSettings,
+    status,
+    error: generalSettingsError,
+  } = useSelector(
     (state) => state.generalSetting || { data: null, status: 'idle' },
   )
 
-  const { data: contentPages = [], isLoading: contentPagesLoading } =
-    useSelector(
-      (state) =>
-        state.contentPage?.allContentPages || { data: [], isLoading: true },
-    )
+  const {
+    data: contentPages = [],
+    isLoading: contentPagesLoading,
+    error: contentPagesError,
+  } = useSelector(
+    (state) =>
+      state.contentPage?.allContentPages || { data: [], isLoading: true },
+  )
+  const contentPagesFetchStartedRef = useRef(false)
+  const generalSettingsFetchStartedRef = useRef(false)
 
   // Filter active pages for display
   const activePages = contentPages.filter((page) => page.status === 'active')
   useEffect(() => {
-    if (status === 'idle') {
+    if (status === 'idle' && !generalSettingsFetchStartedRef.current) {
+      generalSettingsFetchStartedRef.current = true
       dispatch(getGeneralSetting())
     }
-  }, [status])
+  }, [dispatch, status])
 
   useEffect(() => {
-    if (!contentPagesLoading && contentPages.length === 0) {
+    if (
+      !contentPagesLoading &&
+      contentPages.length === 0 &&
+      !contentPagesFetchStartedRef.current
+    ) {
+      contentPagesFetchStartedRef.current = true
       dispatch(fetchContentPages({ status: 'active' }))
     }
-  }, [contentPagesLoading])
+  }, [dispatch, contentPages.length, contentPagesLoading])
 
   // Use settings from props if available, otherwise use empty object
   const safeSettings = settings || {}
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    })
+
+  let personalizationLinks
+  if (contentPagesError) {
+    personalizationLinks = (
+      <li className="text-sm text-red-600" role="alert">
+        {typeof contentPagesError === 'string'
+          ? contentPagesError
+          : contentPagesError?.message || 'Failed to load content pages'}
+      </li>
+    )
+  } else if (contentPagesLoading) {
+    personalizationLinks = [1, 2, 3].map((item) => (
+      <li
+        key={`content-page-skeleton-${item}`}
+        className="h-4 bg-gray-200 rounded w-32"
+      />
+    ))
+  } else if (activePages.length > 0) {
+    personalizationLinks = activePages.map((page) => (
+      <li key={page.id}>
+        <Link
+          href={`/${page.pageSlug}`}
+          className="text-gray-600 hover:text-[#004372] text-sm transition-colors"
+          prefetch={false}
+        >
+          {page.pageName}
+        </Link>
+      </li>
+    ))
+  } else {
+    personalizationLinks = (
+      <>
+        <li>
+          <Link
+            href="/privacy-policy"
+            className="text-gray-600 hover:text-[#004372] text-sm transition-colors"
+          >
+            Privacy Policy
+          </Link>
+        </li>
+        <li>
+          <Link
+            href="/refund-policy"
+            className="text-gray-600 hover:text-[#004372] text-sm transition-colors"
+          >
+            Return and Refund Policy
+          </Link>
+        </li>
+        <li>
+          <Link
+            href="/shipping"
+            className="text-gray-600 hover:text-[#004372] text-sm transition-colors"
+          >
+            Shipping and Delivery
+          </Link>
+        </li>
+        <li>
+          <Link
+            href="/terms"
+            className="text-gray-600 hover:text-[#004372] text-sm transition-colors"
+          >
+            Terms &amp; Conditions
+          </Link>
+        </li>
+        <li>
+          <Link
+            href="/contact"
+            className="text-gray-600 hover:text-[#004372] text-sm transition-colors"
+          >
+            Contact Us
+          </Link>
+        </li>
+      </>
+    )
   }
 
   return (
@@ -65,7 +148,7 @@ const Footer = ({ settings = {} }) => {
             </div>
 
             <div className="flex items-center text-gray-600 text-xs">
-              <FaEnvelope className="w-5 h-5 mr-1 text-gray-500 flex-shrink-0" />
+              <FaEnvelope className="w-5 h-5 mr-1 text-gray-500 shrink-0" />
               <a
                 href={`mailto:${generalSettings?.contactUsEmail || 'sprgroup100@gmail.com'}`}
                 className="hover:underline hover:text-[#004372] text-[15px] text-gray-700 ml-1"
@@ -73,6 +156,14 @@ const Footer = ({ settings = {} }) => {
                 {generalSettings?.contactUsEmail || 'sprgroup100@gmail.com'}
               </a>
             </div>
+            {status === 'failed' && (
+              <p className="text-sm text-red-600" role="alert">
+                {typeof generalSettingsError === 'string'
+                  ? generalSettingsError
+                  : generalSettingsError?.message ||
+                    'Failed to load general settings'}
+              </p>
+            )}
             <div className="flex space-x-3 pt-2">
               <a
                 href={
@@ -179,70 +270,7 @@ const Footer = ({ settings = {} }) => {
             <h3 className="text-sm font-semibold mb-4 text-gray-800 uppercase tracking-wider">
               PERSONALIZATION
             </h3>
-            <ul className="space-y-3">
-              {!contentPagesLoading && activePages.length > 0 ? (
-                activePages.map((page) => (
-                  <li key={page.id}>
-                    <Link
-                      href={`/${page.pageSlug}`}
-                      className="text-gray-600 hover:text-[#004372] text-sm transition-colors"
-                      prefetch={false}
-                    >
-                      {page.pageName}
-                    </Link>
-                  </li>
-                ))
-              ) : contentPagesLoading ? (
-                // Show loading skeleton
-                [...Array(3)].map((_, i) => (
-                  <li key={i} className="h-4 bg-gray-200 rounded w-32"></li>
-                ))
-              ) : (
-                // Fallback to default links if no content pages are loaded
-                <>
-                  <li>
-                    <Link
-                      href="/privacy-policy"
-                      className="text-gray-600 hover:text-[#004372] text-sm transition-colors"
-                    >
-                      Privacy Policy
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/refund-policy"
-                      className="text-gray-600 hover:text-[#004372] text-sm transition-colors"
-                    >
-                      Return and Refund Policy
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/shipping"
-                      className="text-gray-600 hover:text-[#004372] text-sm transition-colors"
-                    >
-                      Shipping and Delivery
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/terms"
-                      className="text-gray-600 hover:text-[#004372] text-sm transition-colors"
-                    >
-                      Terms & Conditions
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/contact"
-                      className="text-gray-600 hover:text-[#004372] text-sm transition-colors"
-                    >
-                      Contact Us
-                    </Link>
-                  </li>
-                </>
-              )}
-            </ul>
+            <ul className="space-y-3">{personalizationLinks}</ul>
           </div>
         </div>
       </div>

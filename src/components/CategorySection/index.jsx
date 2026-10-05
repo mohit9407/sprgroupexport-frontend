@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux'
 import CategoryCard from '../CategoryCard'
@@ -18,16 +18,18 @@ const CategorySection = ({ title }) => {
   const status = useSelector(selectCategoriesStatus)
   const error = useSelector(selectCategoriesError)
 
+  const categoriesFetchStartedRef = useRef(false)
+
   const handleCategoryClick = (category) => {
     // Navigate to shop with category filter
     router.push(`/shop?category=${category.slug}`)
   }
-
   useEffect(() => {
-    if (status === 'idle' || status === 'failed') {
+    if (!categoriesFetchStartedRef.current) {
+      categoriesFetchStartedRef.current = true
       dispatch(fetchAllCategories())
     }
-  }, [status])
+  }, [dispatch])
 
   // Map API response to match CategoryCard props
   const mappedCategories = categoriesData?.data
