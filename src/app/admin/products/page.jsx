@@ -19,6 +19,7 @@ import {
   selectAllCategories,
 } from '@/features/categories/categoriesSlice'
 import { buildProductEditPath } from '@/utils/adminRouteUtils'
+import { getProductCost } from '@/utils/productPricing'
 
 // Define columns with router and dispatch
 const getColumns = (router, dispatch, setDeleteModal, searchParams) => [
@@ -95,12 +96,8 @@ const getColumns = (router, dispatch, setDeleteModal, searchParams) => [
     accessorKey: 'totalCost',
     header: 'Total Cost',
     cell: (info) => {
-      const value = info.row.original.totalCost
-      return typeof value === 'object'
-        ? JSON.stringify(value)
-        : value === null || value === undefined
-          ? 'N/A'
-          : `$${Number(value).toFixed(2)}`
+      const cost = getProductCost(info.row.original)
+      return `$${cost.toFixed(2)}`
     },
     size: 100,
   },

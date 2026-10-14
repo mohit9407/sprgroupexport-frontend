@@ -10,6 +10,7 @@ import { useAuth } from '@/context/AuthContext'
 import AuthModal from '../Auth/AuthModal'
 import { toast } from '@/utils/toastConfig'
 import { fetchProductDetails } from '@/features/products/productDetailsSlice'
+import { getProductCost } from '@/utils/productPricing'
 
 // ProductInfo declared at module scope to avoid creating components during render
 const ProductInfo = ({
@@ -75,7 +76,7 @@ const ProductCard = ({
   isLiked: isLikedProp = false,
   ...props
 }) => {
-  const displayPrice = totalCost ?? 0
+  const displayPrice = getProductCost({ totalCost, ...props })
   // Determine if image is a video
   const isVideo =
     typeof imageObject === 'object' &&
