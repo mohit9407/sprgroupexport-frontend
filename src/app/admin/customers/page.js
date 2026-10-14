@@ -83,6 +83,10 @@ function CustomersPageContent() {
   const dispatch = useDispatch()
   const { params } = useTableQueryParams()
   const [deleteModal, setDeleteModal] = useState({ open: false })
+  const [customerPassword, setCustomerPassword] = useState('')
+  const [isUnlocked, setIsUnlocked] = useState(false)
+  const [isUnlocking, setIsUnlocking] = useState(false)
+  const [accessError, setAccessError] = useState('')
   const {
     data,
     pagination: apiPagination,
@@ -94,10 +98,11 @@ function CustomersPageContent() {
     [],
   )
 
-  const getCustomers = async () => {
+  const getCustomers = async (accessPassword) => {
     try {
-      dispatch(
+      await dispatch(
         getAllCustomers({
+          accessPassword,
           search: params?.search ?? undefined,
           sortBy: params?.sortBy,
           sortOrder: params?.sortBy ? params.direction : undefined,
@@ -105,10 +110,24 @@ function CustomersPageContent() {
           limit: params?.pageSize ?? 10,
           filterBy: params?.filterBy || undefined,
         }),
-      )
-    } catch (error) {
-      console.error(error)
+      ).unwrap()
+      return true
+    } catch {
+      return false
     }
+  }
+
+  const unlockCustomerTable = async (event) => {
+    event.preventDefault()
+    setIsUnlocking(true)
+    setAccessError('')
+    const isValid = await getCustomers(customerPassword)
+    if (isValid) {
+      setIsUnlocked(true)
+    } else {
+      setAccessError('Password incorrect or access unavailable. Try again.')
+    }
+    setIsUnlocking(false)
   }
 
   const customers = useMemo(() => {
@@ -144,8 +163,54 @@ function CustomersPageContent() {
   )
 
   useEffect(() => {
-    getCustomers()
-  }, [params])
+    if (isUnlocked && customerPassword) {
+      getCustomers(customerPassword)
+    }
+  }, [params, isUnlocked, customerPassword])
+
+  const lockCustomerTable = () => {
+    setCustomerPassword('')
+    setIsUnlocked(false)
+    setAccessError('')
+  }
+
+  if (!isUnlocked) {
+    return (
+      <div className="max-w-md mx-auto mt-10 rounded-lg border bg-white p-6 shadow-sm">
+        <h2 className="text-xl font-semibold text-gray-900">
+          Customer table locked
+        </h2>
+        <p className="mt-2 text-sm text-gray-600">
+          Enter the private access password to view customer information.
+        </p>
+        <form onSubmit={unlockCustomerTable} className="mt-5 space-y-3">
+          <label
+            htmlFor="customer-table-password"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Access password
+          </label>
+          <input
+            id="customer-table-password"
+            type="password"
+            autoComplete="current-password"
+            value={customerPassword}
+            onChange={(event) => setCustomerPassword(event.target.value)}
+            className="w-full rounded border border-gray-300 px-3 py-2 outline-none focus:border-[#004372] focus:ring-1 focus:ring-[#004372]"
+            required
+          />
+          {accessError && <p className="text-sm text-red-600">{accessError}</p>}
+          <button
+            type="submit"
+            disabled={isUnlocking}
+            className="rounded bg-[#004372] px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+          >
+            {isUnlocking ? 'Checking…' : 'Unlock'}
+          </button>
+        </form>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -157,12 +222,20 @@ function CustomersPageContent() {
         pageCount={apiPagination?.totalPages}
         filterByOptions={filterByOptions}
         actions={
-          <button
-            className="bg-[#004372] text-white px-3 py-1.5 rounded text-sm"
-            onClick={() => router.push('/admin/customers/add')}
-          >
-            Add New
-          </button>
+          <div className="flex gap-2">
+            <button
+              className="bg-[#004372] text-white px-3 py-1.5 rounded text-sm"
+              onClick={() => router.push('/admin/customers/add')}
+            >
+              Add New
+            </button>
+            <button
+              className="rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700"
+              onClick={lockCustomerTable}
+            >
+              Lock
+            </button>
+          </div>
         }
       />
       <ConfirmationModal

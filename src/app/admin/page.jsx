@@ -22,6 +22,7 @@ import { useMemo } from 'react'
 import { createColumnHelper } from '@tanstack/react-table'
 import { TanstackTable } from '@/components/admin/TanStackTable'
 import SafeImage from '@/components/SafeImage'
+import { getProductCost } from '@/utils/productPricing'
 
 const columnHelper = createColumnHelper()
 
@@ -231,7 +232,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
         {/* New Customers Section */}
         <div className="lg:col-span-2">
-          <div className="lg:col-span-2">
+          {/* <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">
                 New Customer(s)
@@ -255,7 +256,7 @@ export default function AdminDashboard() {
                 View All Customers
               </button>
             </div>
-          </div>
+          </div> */}
 
           {/* New Orders Table */}
           <div className="lg:col-span-2 mt-8">
@@ -345,7 +346,7 @@ export default function AdminDashboard() {
                             {product.name}
                           </p>
                           <p className="text-sm font-semibold text-gray-900 mt-1">
-                            ${product.totalCost ?? 0}
+                            ${getProductCost(product)}
                           </p>
                         </div>
                       </div>

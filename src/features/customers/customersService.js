@@ -1,8 +1,11 @@
 import api from '@/lib/axios'
 
-async function getAllUsers(params) {
+async function getAllUsers({ accessPassword, ...params } = {}) {
   return await api.get('/auth/get-all-users', {
     params,
+    headers: {
+      'x-customer-table-password': accessPassword,
+    },
   })
 }
 

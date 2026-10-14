@@ -9,7 +9,7 @@ export const getAllCustomers = createAsyncThunk(
       return response
     } catch (error) {
       return rejectWithValue(
-        error.response?.message || 'Fetch all customers failed',
+        error.response?.data?.message || 'Fetch all customers failed',
       )
     }
   },
