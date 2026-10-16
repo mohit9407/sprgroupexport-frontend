@@ -91,8 +91,9 @@ function PaymentMethodsContent() {
               const query = new URLSearchParams({
                 data: JSON.stringify(row.original),
               }).toString()
+              const paymentMethodId = row.original._id || row.original.id
               router.push(
-                `/admin/payment-methods/edit/${row.original.id}?${query}`,
+                `/admin/payment-methods/edit/${paymentMethodId}?${query}`,
               )
             }}
             className="text-blue-600 hover:text-blue-900 p-2 rounded-full hover:bg-blue-50"

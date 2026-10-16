@@ -9,6 +9,8 @@ import {
   updatePaymentMethod,
 } from '@/features/paymentMethod/paymentMethodSlice'
 import { AdminInputRow } from '../AdminInputRow/AdminInputRow'
+import FileUploadButton from '../FileUploadButton/FileUploadButton'
+import SafeImage from '@/components/SafeImage'
 
 export default function PaymentMethodForm({
   initialData = null,
@@ -21,9 +23,11 @@ export default function PaymentMethodForm({
   const [isPayPal, setIsPayPal] = useState(false)
   const [isRazorpay, setIsRazorpay] = useState(false)
   const [isSkydo, setIsSkydo] = useState(false)
+  const [isOffline, setIsOffline] = useState(false)
+  const [selectedQrImage, setSelectedQrImage] = useState(null)
   const [formData, setFormData] = useState({
     name: '',
-    environment: 'SANDBOX', // Default to SANDBOX
+    environment: 'SANDBOX',
     keyId: '',
     keySecret: '',
     clientId: '',
@@ -34,17 +38,29 @@ export default function PaymentMethodForm({
     testKeySecret: '',
     skydoToken: '',
     skydoSecretKey: '',
+    accountNumber: '',
+    accountName: '',
+    bankName: '',
+    ifscCode: '',
   })
   useEffect(() => {
     if (isEdit && initialData && !formData.name) {
-      const isPayPalMethod = initialData.name?.toLowerCase().includes('paypal')
-      const isRazorpayMethod = initialData.name
-        ?.toLowerCase()
-        .includes('razorpay')
-      const isSkydoMethod = initialData.name?.toLowerCase().includes('skydo')
+      const isPayPalMethod =
+        initialData.type?.toUpperCase() === 'PAYPAL' ||
+        initialData.name?.toLowerCase().includes('paypal')
+      const isRazorpayMethod =
+        initialData.type?.toUpperCase() === 'RAZORPAY' ||
+        initialData.name?.toLowerCase().includes('razorpay')
+      const isSkydoMethod =
+        initialData.type?.toUpperCase() === 'SKYDO' ||
+        initialData.name?.toLowerCase().includes('skydo')
+      const isOfflineMethod =
+        initialData.type?.toUpperCase() === 'OFFLINE' ||
+        initialData.name?.toLowerCase().includes('offline')
       setIsPayPal(isPayPalMethod)
       setIsRazorpay(isRazorpayMethod)
       setIsSkydo(isSkydoMethod)
+      setIsOffline(isOfflineMethod)
 
       setFormData({
         name: initialData.name || '',
@@ -59,7 +75,15 @@ export default function PaymentMethodForm({
         testClientSecret: initialData.testClientSecret || '',
         skydoToken: initialData.skydoToken || '',
         skydoSecretKey: initialData.skydoSecretKey || '',
+        accountNumber: initialData.accountNumber || '',
+        accountName: initialData.accountName || '',
+        bankName: initialData.bankName || '',
+        ifscCode: initialData.ifscCode || '',
       })
+      // Set existing qrImage if present (populated Media object)
+      if (initialData.qrImage && typeof initialData.qrImage === 'object') {
+        setSelectedQrImage(initialData.qrImage)
+      }
     }
   }, [initialData, isEdit])
 
@@ -76,9 +100,11 @@ export default function PaymentMethodForm({
         const isPayPalMethod = value.toLowerCase().includes('paypal')
         const isRazorpayMethod = value.toLowerCase().includes('razorpay')
         const isSkydoMethod = value.toLowerCase().includes('skydo')
+        const isOfflineMethod = value.toLowerCase().includes('offline')
         setIsPayPal(isPayPalMethod)
         setIsRazorpay(isRazorpayMethod)
         setIsSkydo(isSkydoMethod)
+        setIsOffline(isOfflineMethod)
       }
 
       if (name === 'environment') {
@@ -120,6 +146,7 @@ export default function PaymentMethodForm({
       const isPayPalMethod = formData.name.toLowerCase().includes('paypal')
       const isRazorpayMethod = formData.name.toLowerCase().includes('razorpay')
       const isSkydoMethod = formData.name.toLowerCase().includes('skydo')
+      const isOfflineMethod = isOffline
       const payload = { ...formData }
 
       if (isPayPalMethod) {
@@ -146,8 +173,9 @@ export default function PaymentMethodForm({
         delete payload.testClientSecret
         delete payload.testKeyId
         delete payload.testKeySecret
-      } else {
-        // For non-PayPal/non-Razorpay/non-Skydo, keep keyId/keySecret
+      } else if (isOfflineMethod) {
+        delete payload.keyId
+        delete payload.keySecret
         delete payload.clientId
         delete payload.clientSecret
         delete payload.testClientId
@@ -156,12 +184,28 @@ export default function PaymentMethodForm({
         delete payload.testKeySecret
         delete payload.skydoToken
         delete payload.skydoSecretKey
+        // Send qrImage as Media ObjectId
+        payload.qrImage = selectedQrImage?._id || null
+      } else {
+        delete payload.clientId
+        delete payload.clientSecret
+        delete payload.testClientId
+        delete payload.testClientSecret
+        delete payload.testKeyId
+        delete payload.testKeySecret
+        delete payload.skydoToken
+        delete payload.skydoSecretKey
+        delete payload.accountNumber
+        delete payload.accountName
+        delete payload.bankName
+        delete payload.ifscCode
+        delete payload.qrImage
       }
 
       if (isEdit) {
         await dispatch(
           updatePaymentMethod({
-            id: initialData._id,
+            id: initialData._id || initialData.id,
             methodData: payload,
           }),
         ).unwrap()
@@ -172,11 +216,16 @@ export default function PaymentMethodForm({
       }
       router.push('/admin/payment-methods')
     } catch (error) {
-      toast.error(error || 'Failed to save payment method')
+      const msg =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'string'
+            ? error
+            : 'Failed to save payment method'
+      toast.error(msg)
     }
   }
 
-  // Check if the payment method is Cash on Delivery
   const isCashOnDelivery = formData.name
     .toLowerCase()
     .includes('cash on delivery')
@@ -378,10 +427,7 @@ export default function PaymentMethodForm({
                     value={formData.skydoToken || ''}
                     onChange={(e) =>
                       handleChange({
-                        target: {
-                          name: 'skydoToken',
-                          value: e.target.value,
-                        },
+                        target: { name: 'skydoToken', value: e.target.value },
                       })
                     }
                     required
@@ -404,6 +450,87 @@ export default function PaymentMethodForm({
                     placeholder="Enter Skydo secret key"
                     className="w-full"
                   />
+                </div>
+              ) : isOffline ? (
+                <div className="space-y-4">
+                  <AdminInputRow
+                    label="Account Number"
+                    name="accountNumber"
+                    value={formData.accountNumber || ''}
+                    onChange={(e) =>
+                      handleChange({
+                        target: {
+                          name: 'accountNumber',
+                          value: e.target.value,
+                        },
+                      })
+                    }
+                    placeholder="Enter account number"
+                    className="w-full"
+                  />
+                  <AdminInputRow
+                    label="Account Name"
+                    name="accountName"
+                    value={formData.accountName || ''}
+                    onChange={(e) =>
+                      handleChange({
+                        target: { name: 'accountName', value: e.target.value },
+                      })
+                    }
+                    placeholder="Enter account holder name"
+                    className="w-full"
+                  />
+                  <AdminInputRow
+                    label="Bank Name"
+                    name="bankName"
+                    value={formData.bankName || ''}
+                    onChange={(e) =>
+                      handleChange({
+                        target: { name: 'bankName', value: e.target.value },
+                      })
+                    }
+                    placeholder="Enter bank name"
+                    className="w-full"
+                  />
+                  <AdminInputRow
+                    label="IFSC / Routing Code"
+                    name="ifscCode"
+                    value={formData.ifscCode || ''}
+                    onChange={(e) =>
+                      handleChange({
+                        target: { name: 'ifscCode', value: e.target.value },
+                      })
+                    }
+                    placeholder="Enter IFSC or routing code"
+                    className="w-full"
+                  />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      QR Image
+                    </label>
+                    {selectedQrImage && (
+                      <SafeImage
+                        src={
+                          selectedQrImage.thumbnailUrl ||
+                          selectedQrImage.mediumUrl
+                        }
+                        alt="QR Preview"
+                        width={128}
+                        height={128}
+                        className="mb-2 h-32 w-32 object-contain border rounded"
+                        fallback="/images/placeholder-product.png"
+                      />
+                    )}
+                    <FileUploadButton
+                      id="qr-image-upload"
+                      label={
+                        selectedQrImage ? 'Change QR Image' : 'Select QR Image'
+                      }
+                      onImageSelect={(img) => setSelectedQrImage(img)}
+                      selectedItem={selectedQrImage}
+                      accept="image/*"
+                    />
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-4">

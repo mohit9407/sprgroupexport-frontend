@@ -1,11 +1,16 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import ButtonLoader from './ButtonLoader'
 import Modal from './Modal'
 import api from '@/lib/axios'
 import SafeImage from '@/components/SafeImage'
-import dynamic from 'next/dynamic'
+
+const MediaUploadModal = dynamic(
+  () => import('@/components/AdminAddImageModal'),
+  { ssr: false },
+)
 
 export default function ImageSelectionModal({
   open,
@@ -31,7 +36,13 @@ export default function ImageSelectionModal({
     setLoading(true)
     try {
       const response = await api.get('/media/get-all')
-      setImages(response?.data || [])
+      const data = response?.data
+      const list = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.data)
+          ? data.data
+          : []
+      setImages(list)
     } catch (error) {
       console.error('Error fetching images:', error)
     } finally {
@@ -53,6 +64,7 @@ export default function ImageSelectionModal({
   const footer = (
     <div className="flex justify-between items-center">
       <button
+        type="button"
         onClick={() => setShowMediaUpload(true)}
         className="px-4 py-2 rounded border border-cyan-500 text-cyan-600 hover:bg-cyan-50"
       >
@@ -60,12 +72,14 @@ export default function ImageSelectionModal({
       </button>
       <div className="flex gap-3">
         <button
+          type="button"
           onClick={onClose}
           className="px-4 py-2 rounded border text-gray-700 hover:bg-gray-100"
         >
           Cancel
         </button>
         <button
+          type="button"
           onClick={handleSelect}
           disabled={multiSelect ? selectedImages.length === 0 : !selectedImage}
           className="px-4 py-2 rounded text-white bg-cyan-600 hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -74,12 +88,6 @@ export default function ImageSelectionModal({
         </button>
       </div>
     </div>
-  )
-
-  // Dynamically import AdminAddImageModal to avoid SSR issues
-  const MediaUploadModal = dynamic(
-    () => import('@/components/AdminAddImageModal'),
-    { ssr: false },
   )
 
   return (

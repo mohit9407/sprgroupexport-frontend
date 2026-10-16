@@ -211,10 +211,10 @@ export const { clearCategories, resetCategoryStatus } = categoriesSlice.actions
 export default categoriesSlice.reducer
 
 export const selectAllCategories = (state) => ({
-  data: sortByCreatedAtDesc(state.categories.allCategories.data),
-  pagination: state.categories.allCategories.pagination,
-  isLoading: state.categories.allCategories.isLoading,
-  error: state.categories.allCategories.error,
+  data: sortByCreatedAtDesc(state.categories?.allCategories?.data || []),
+  pagination: state.categories?.allCategories?.pagination,
+  isLoading: state.categories?.allCategories?.isLoading,
+  error: state.categories?.allCategories?.error,
 })
 
 export const selectCategoriesStatus = (state) => state.categories.status

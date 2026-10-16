@@ -176,18 +176,20 @@ export function WishlistProvider({ children }) {
       const response = await api.get('/product/getWishlist')
 
       // Transform the response data to match the expected format
-      const wishlistProducts = response.data.map((item) => ({
-        ...item.product,
-        id: item.product._id,
-        name: item.product.productName || 'Product',
-        price: getProductCost(item.product),
-        totalCost: getProductCost(item.product),
-        image:
-          item.product.image?.mediumUrl ||
-          item.product.image ||
-          '/placeholder-product.jpg',
-        quantity: item.quantity,
-      }))
+      const wishlistProducts = (response.data?.data || response.data || [])
+        .filter((item) => item?.product)
+        .map((item) => ({
+          ...item.product,
+          id: item.product._id,
+          name: item.product.productName || 'Product',
+          price: getProductCost(item.product),
+          totalCost: getProductCost(item.product),
+          image:
+            item.product.image?.mediumUrl ||
+            item.product.image ||
+            '/placeholder-product.jpg',
+          quantity: item.quantity,
+        }))
 
       setLocalWishlist(wishlistProducts)
       return wishlistProducts

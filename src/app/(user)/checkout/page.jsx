@@ -498,7 +498,9 @@ export default function CheckoutPage() {
         ) : (
           error && (
             <div className="text-red-500 text-sm text-center p-2 bg-red-50 rounded">
-              {error}
+              {typeof error === 'string'
+                ? error
+                : error?.message || 'An error occurred'}
             </div>
           )
         )}
@@ -513,7 +515,13 @@ export default function CheckoutPage() {
               currentStep={currentStep}
               onContinue={handleContinue}
               isLoading={loading}
-              error={error || paymentError}
+              error={
+                typeof error === 'string'
+                  ? error
+                  : error?.message ||
+                    (error ? 'An error occurred' : null) ||
+                    paymentError
+              }
               paymentMethod={formData.paymentMethod}
             />
           </div>

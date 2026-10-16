@@ -129,7 +129,9 @@ export default function OrderSummary({
       <div className="mt-6 space-y-3">
         {error && (
           <div className="text-red-500 text-sm text-center p-2 bg-red-50 rounded">
-            {error}
+            {typeof error === 'string'
+              ? error
+              : error?.message || 'An error occurred'}
           </div>
         )}
         {showError && (

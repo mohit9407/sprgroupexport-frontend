@@ -4,7 +4,13 @@ import hotToast, { Toaster as HotToaster } from 'react-hot-toast'
 
 export const toast = {
   success: (message, options = {}) => {
-    return hotToast.success(message, {
+    const msg =
+      message instanceof Error
+        ? message.message
+        : typeof message === 'string'
+          ? message
+          : String(message ?? '')
+    return hotToast.success(msg, {
       position: 'top-right',
       duration: 2000,
       style: {
@@ -19,7 +25,13 @@ export const toast = {
     })
   },
   error: (message, options = {}) => {
-    return hotToast.error(message, {
+    const msg =
+      message instanceof Error
+        ? message.message
+        : typeof message === 'string'
+          ? message
+          : String(message ?? 'An error occurred')
+    return hotToast.error(msg, {
       position: 'top-right',
       duration: 3000,
       style: {
@@ -34,7 +46,13 @@ export const toast = {
     })
   },
   info: (message, options = {}) => {
-    return hotToast(message, {
+    const msg =
+      message instanceof Error
+        ? message.message
+        : typeof message === 'string'
+          ? message
+          : String(message ?? '')
+    return hotToast(msg, {
       position: 'top-right',
       duration: 2000,
       style: {
@@ -49,7 +67,13 @@ export const toast = {
     })
   },
   loading: (message, options = {}) => {
-    return hotToast.loading(message, {
+    const msg =
+      message instanceof Error
+        ? message.message
+        : typeof message === 'string'
+          ? message
+          : String(message ?? '')
+    return hotToast.loading(msg, {
       position: 'top-right',
       style: {
         borderRadius: '8px',

@@ -24,6 +24,7 @@ export default function OrderDetail({
   const [itemToDelete, setItemToDelete] = useState(null)
   const [paymentMethods, setPaymentMethods] = useState([])
   const [loadingPaymentMethods, setLoadingPaymentMethods] = useState(true)
+  const [showOfflineConfirm, setShowOfflineConfirm] = useState(false)
 
   // Use directCheckoutItem if available, otherwise use cart
   const displayItems = directCheckoutItem ? [directCheckoutItem] : cart
@@ -38,18 +39,32 @@ export default function OrderDetail({
           return total + getProductCost(item) * (item.quantity || 1)
         }, 0) + shippingCost
 
-  const getMethodType = (method) => (method?.type || '').toLowerCase()
+  const getMethodType = (method) => {
+    const name = method?.name?.toLowerCase() || ''
+    if (name.includes('offline')) return 'offline'
+    if (name.includes('paypal')) return 'paypal'
+    if (name.includes('razorpay')) return 'razorpay'
+    if (name.includes('skydo')) return 'skydo'
+
+    return method?.type?.toLowerCase() || name
+  }
+
+  const offlineDetails = paymentMethods.find(
+    (method) => getMethodType(method) === 'offline',
+  )
 
   // Fetch payment methods — show only isActive: true from API
   useEffect(() => {
     const fetchPaymentMethods = async () => {
       try {
-        const response = await paymentService.getAllPaymentMethods()
+        const response = await paymentService.getActivePaymentMethods()
         const methods = Array.isArray(response)
           ? response
           : Array.isArray(response?.data)
             ? response.data
-            : []
+            : Array.isArray(response?.data?.data)
+              ? response.data.data
+              : []
 
         const activeMethods = methods.filter(
           (method) => method.isActive === true,
@@ -57,7 +72,8 @@ export default function OrderDetail({
         setPaymentMethods(activeMethods)
 
         if (activeMethods.length > 0) {
-          const selectedType = getMethodType(activeMethods[0])
+          const firstMethod = activeMethods[0]
+          const selectedType = getMethodType(firstMethod)
           setPaymentMethod(selectedType)
           onContinue({ paymentMethod: selectedType }, null, true)
         }
@@ -91,7 +107,6 @@ export default function OrderDetail({
   const handlePaymentMethodChange = (method) => {
     setPaymentMethod(method)
     if (paymentError) setPaymentError('')
-    // Notify parent component about the payment method change
     onContinue({ paymentMethod: method }, null, true)
   }
 
@@ -125,6 +140,12 @@ export default function OrderDetail({
       return
     }
     setPaymentError('')
+
+    // If Offline is selected, show confirm modal
+    if (paymentMethod?.toLowerCase() === 'offline') {
+      setShowOfflineConfirm(true)
+      return
+    }
 
     // If PayPal is selected, process payment and redirect
     if (paymentMethod?.toLowerCase() === 'paypal') {
@@ -387,6 +408,21 @@ export default function OrderDetail({
     )
   }
 
+  const handleOfflineConfirm = () => {
+    setShowOfflineConfirm(false)
+    const selectedPaymentMethodId = paymentMethods.find(
+      (method) => getMethodType(method) === 'offline',
+    )?._id
+    onContinue(
+      {
+        paymentMethod: selectedPaymentMethodId,
+        paymentStatus: '695e0471c424c92fee37713b', // Pending
+        orderNotes,
+      },
+      'placeOrder',
+    )
+  }
+
   const filteredPaymentMethods = paymentMethods
 
   return (
@@ -537,9 +573,7 @@ export default function OrderDetail({
                       type="radio"
                       className="h-4 w-4 text-[#004372] focus:ring-[#004372] border-gray-300"
                       checked={paymentMethod === methodType}
-                      onChange={() => {
-                        handlePaymentMethodChange(methodType)
-                      }}
+                      onChange={() => handlePaymentMethodChange(methodType)}
                     />
                     <label
                       htmlFor={methodType}
@@ -556,6 +590,61 @@ export default function OrderDetail({
                   No payment methods available
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Offline payment details */}
+          {paymentMethod === 'offline' && offlineDetails && (
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <h4 className="text-sm font-bold text-[#004372] mb-3">
+                Bank / Transfer Details
+              </h4>
+              <div className="space-y-1 text-sm text-gray-700">
+                {offlineDetails.accountName && (
+                  <p>
+                    <span className="font-medium">Account Name:</span>{' '}
+                    {offlineDetails.accountName}
+                  </p>
+                )}
+                {offlineDetails.accountNumber && (
+                  <p>
+                    <span className="font-medium">Account Number:</span>{' '}
+                    {offlineDetails.accountNumber}
+                  </p>
+                )}
+                {offlineDetails.bankName && (
+                  <p>
+                    <span className="font-medium">Bank:</span>{' '}
+                    {offlineDetails.bankName}
+                  </p>
+                )}
+                {offlineDetails.ifscCode && (
+                  <p>
+                    <span className="font-medium">IFSC / Routing:</span>{' '}
+                    {offlineDetails.ifscCode}
+                  </p>
+                )}
+              </div>
+              {offlineDetails.qrImage && (
+                <div className="mt-3">
+                  <p className="text-sm font-medium text-gray-700 mb-1">
+                    Scan QR to Pay:
+                  </p>
+                  <img
+                    src={
+                      offlineDetails.qrImage?.mediumUrl ||
+                      offlineDetails.qrImage?.thumbnailUrl ||
+                      offlineDetails.qrImage?.largeUrl
+                    }
+                    alt="Payment QR"
+                    className="h-36 w-36 object-contain border rounded"
+                  />
+                </div>
+              )}
+              <p className="mt-3 text-xs text-gray-500">
+                Please transfer the amount manually and place your order. Admin
+                will verify and update payment status.
+              </p>
             </div>
           )}
         </div>
@@ -607,6 +696,80 @@ export default function OrderDetail({
         confirmText="Remove Item"
         theme="error"
       />
+
+      {/* Offline payment confirm modal */}
+      {showOfflineConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">
+              Confirm Offline Payment
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Please transfer the order amount manually using the bank details
+              or QR code shown. Your order will be placed with{' '}
+              <span className="font-semibold text-yellow-600">
+                Payment Pending
+              </span>{' '}
+              status. Admin will verify and update once payment is received.
+            </p>
+            {offlineDetails && (
+              <div className="bg-blue-50 border border-blue-200 rounded p-3 mb-4 text-sm space-y-1">
+                {offlineDetails.accountName && (
+                  <p>
+                    <span className="font-medium">Account Name:</span>{' '}
+                    {offlineDetails.accountName}
+                  </p>
+                )}
+                {offlineDetails.accountNumber && (
+                  <p>
+                    <span className="font-medium">Account Number:</span>{' '}
+                    {offlineDetails.accountNumber}
+                  </p>
+                )}
+                {offlineDetails.bankName && (
+                  <p>
+                    <span className="font-medium">Bank:</span>{' '}
+                    {offlineDetails.bankName}
+                  </p>
+                )}
+                {offlineDetails.ifscCode && (
+                  <p>
+                    <span className="font-medium">IFSC / Routing:</span>{' '}
+                    {offlineDetails.ifscCode}
+                  </p>
+                )}
+                {offlineDetails.qrImage && (
+                  <div className="pt-2">
+                    <img
+                      src={
+                        offlineDetails.qrImage?.mediumUrl ||
+                        offlineDetails.qrImage?.thumbnailUrl ||
+                        offlineDetails.qrImage?.largeUrl
+                      }
+                      alt="QR"
+                      className="h-32 w-32 object-contain border rounded"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowOfflineConfirm(false)}
+                className="px-4 py-2 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleOfflineConfirm}
+                className="px-4 py-2 bg-[#004372] text-white rounded text-sm hover:bg-[#003451]"
+              >
+                Confirm & Place Order
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   )
 }

@@ -111,6 +111,7 @@ export default function MediaUploadModal({ open, onClose, onNewImagesAdd }) {
         <div className="flex justify-between items-center p-4 border-b">
           <h2 className="font-semibold text-lg">Add Files</h2>
           <button
+            type="button"
             disabled={uploading}
             onClick={handleClose}
             className={`text-xl ${uploading && 'opacity-40 cursor-not-allowed'}`}
@@ -205,6 +206,7 @@ export default function MediaUploadModal({ open, onClose, onNewImagesAdd }) {
 
         <div className="flex justify-end gap-2 p-4 border-t">
           <button
+            type="button"
             disabled={uploading}
             onClick={handleClose}
             className={`px-4 py-2 border rounded
@@ -214,6 +216,7 @@ export default function MediaUploadModal({ open, onClose, onNewImagesAdd }) {
           </button>
 
           <button
+            type="button"
             onClick={handleUpload}
             disabled={!canSubmit}
             className={`px-4 py-2 rounded text-white
