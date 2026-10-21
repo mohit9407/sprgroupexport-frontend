@@ -15,7 +15,7 @@ const goldSchema = yup.object({
   carat: yup
     .number()
     .typeError('Carat must be a number')
-    .oneOf(VALID_CARATS, 'Carat must be one of: 24, 22, 21, 20, 18, 16, 14, 10')
+    .oneOf(VALID_CARATS, 'Carat must be one of: 24, 22, 21, 20, 18, 16, 14, 9')
     .required('Carat is required'),
 
   pricePerGram: yup
