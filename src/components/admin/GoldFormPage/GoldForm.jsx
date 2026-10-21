@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation'
 import { FormAdminInputRow } from '../AdminInputRow'
 
 // Matches GoldAPI price_gram_* carats saved by backend
-const VALID_CARATS = [24, 22, 21, 20, 18, 16, 14, 10]
+const VALID_CARATS = [24, 22, 21, 20, 18, 16, 14, 9]
 
 const goldSchema = yup.object({
   carat: yup
