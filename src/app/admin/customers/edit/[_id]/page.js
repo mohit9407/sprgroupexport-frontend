@@ -17,7 +17,8 @@ export default function EditCustomerPage({ params }) {
     if (!data) {
       return null
     }
-    const { firstName, lastName, email, gender, dob, mobileNo, status } = data
+    const { firstName, lastName, email, gender, dob, mobileNo, status, roles } =
+      data
     return {
       firstName: firstName,
       lastName: lastName,
@@ -26,6 +27,7 @@ export default function EditCustomerPage({ params }) {
       dob: dob ? new Date(dob).toISOString().split('T')[0] : '',
       mobileNo: mobileNo,
       status: status,
+      roles: roles || ['user'],
     }
   }, [data])
 

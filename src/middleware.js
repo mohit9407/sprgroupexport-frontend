@@ -173,14 +173,17 @@ export async function middleware(request) {
 
   // Check admin access
   if (isAdminPath) {
-    const hasAdminRole =
+    const hasAdminOrEmployerRole =
       user &&
       (user.role === 'admin' ||
-        (Array.isArray(user.roles) && user.roles.includes('admin')) ||
-        user.isAdmin === true)
+        user.role === 'employer' ||
+        (Array.isArray(user.roles) &&
+          (user.roles.includes('admin') || user.roles.includes('employer'))) ||
+        user.isAdmin === true ||
+        user.isEmployer === true)
 
-    if (!accessToken || !user || !hasAdminRole) {
-      // If not an admin, redirect to home or unauthorized page
+    if (!accessToken || !user || !hasAdminOrEmployerRole) {
+      // If not an admin or employer, redirect to home or unauthorized page
       return NextResponse.redirect(new URL('/', request.url))
     }
   }

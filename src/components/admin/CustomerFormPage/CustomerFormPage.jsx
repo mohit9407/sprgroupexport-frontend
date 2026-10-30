@@ -16,6 +16,7 @@ import {
 } from '@/features/customers/customersSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { getUpdatedObjectFields } from '@/utils/stringUtils'
+import { useAuth } from '@/context/AuthContext'
 
 const getCustomerSchema = (isPasswordRequired = true) => {
   const passwordSchema = yup
@@ -46,6 +47,7 @@ const getCustomerSchema = (isPasswordRequired = true) => {
       ? passwordSchema.required('Password is required')
       : passwordSchema.notRequired(),
     status: yup.string().required('Status is required'),
+    roles: yup.array().of(yup.string()).required('Role is required'),
   })
 }
 
@@ -58,14 +60,30 @@ export function CustomerFormPage({
   const isEditMode = mode === 'edit'
   const dispatch = useDispatch()
   const router = useRouter()
+  const { user } = useAuth()
   const [wantPasswordChange, setWantPasswordChange] = useState(false)
   const {
     updateCustomer: updateCustomerData,
     addNewCustomer: addNewCustomerData,
   } = useSelector((state) => state.customers)
+
+  // Determine available roles based on current user
+  const roleOptions = user?.isAdmin
+    ? [
+        { label: 'User', value: 'user' },
+        { label: 'Employer', value: 'employer' },
+        { label: 'Admin', value: 'admin' },
+      ]
+    : user?.isEmployer
+      ? [{ label: 'User', value: 'user' }]
+      : []
+
   const formProviders = useForm({
     resolver: yupResolver(getCustomerSchema(!isEditMode || wantPasswordChange)),
-    defaultValues: defaultValues,
+    defaultValues: {
+      ...defaultValues,
+      roles: defaultValues?.roles || ['user'],
+    },
     mode: 'onBlur',
     reValidateMode: 'onChange',
     shouldUnregister: true,
@@ -107,6 +125,7 @@ export function CustomerFormPage({
       mobileNo,
       gender,
       status,
+      roles,
     } = values
     const dateObj = new Date(dob)
     const isoString = dateObj.toISOString()
@@ -120,6 +139,7 @@ export function CustomerFormPage({
       dob: formattedDate,
       mobileNo: mobileNo,
       status: status,
+      roles: Array.isArray(roles) ? roles : [roles],
     }
 
     try {
@@ -227,6 +247,15 @@ export function CustomerFormPage({
               { label: 'Inactive', value: 'inactive' },
             ]}
           />
+
+          {roleOptions.length > 0 && (
+            <FormAdminSelect
+              name="roles"
+              label="Role"
+              options={roleOptions}
+              isMulti={true}
+            />
+          )}
 
           <hr className="my-4 border-gray-300" />
 

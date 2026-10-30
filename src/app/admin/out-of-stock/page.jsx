@@ -104,7 +104,7 @@ function OutOfStockContent() {
 
   const handleThresholdChange = () => {
     console.log('Button clicked! Current threshold:', stockThreshold)
-    getLowStockProducts()
+    getOutOfStockProducts()
   }
 
   return (

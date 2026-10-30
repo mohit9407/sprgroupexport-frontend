@@ -11,7 +11,8 @@ import { getSidebarMenuData } from '@/utils/adminRouteUtils'
 export default function AdminLayout({ children }) {
   const [collapsed, setCollapsed] = useState(false)
   const { user } = useAuth()
-  const menu = getSidebarMenuData(routeMeta)
+  const userRole = user?.role || 'user'
+  const menu = getSidebarMenuData(routeMeta, userRole)
 
   return (
     <div className="min-h-screen">

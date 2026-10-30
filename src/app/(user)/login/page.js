@@ -12,7 +12,17 @@ export default function LoginPage() {
   useEffect(() => {
     // Redirect if already logged in
     if (user) {
-      router.push(user.role === 'admin' ? '/admin' : '/')
+      // Redirect admin and employer to admin panel
+      if (
+        user.role === 'admin' ||
+        user.role === 'employer' ||
+        user.isAdmin ||
+        user.isEmployer
+      ) {
+        router.push('/admin')
+      } else {
+        router.push('/')
+      }
     }
   }, [user, router])
 

@@ -25,7 +25,7 @@ export function AuthProvider({ children }) {
       if (e.key === 'user') {
         try {
           const newUser = e.newValue ? JSON.parse(e.newValue) : null
- 
+
           setUser(newUser)
         } catch (error) {
           console.error('Error parsing user from localStorage:', error)
@@ -56,13 +56,15 @@ export function AuthProvider({ children }) {
     // Get roles from userData or default to ['user']
     const roles = userData.roles || ['user']
     const isAdmin = roles.includes('admin')
-    const role = isAdmin ? 'admin' : 'user'
+    const isEmployer = roles.includes('employer')
+    const role = isAdmin ? 'admin' : isEmployer ? 'employer' : 'user'
 
     const userInfo = {
       ...userData,
       roles, // Keep the roles array
       role, // For backward compatibility
       isAdmin,
+      isEmployer,
       accessToken,
       refreshToken,
     }
@@ -71,7 +73,7 @@ export function AuthProvider({ children }) {
     if (typeof window !== 'undefined') {
       // Get old value before updating
       const oldValue = localStorage.getItem('user')
-      
+
       localStorage.setItem('user', JSON.stringify(userInfo))
       localStorage.setItem('accessToken', accessToken)
       if (refreshToken) {
@@ -82,13 +84,14 @@ export function AuthProvider({ children }) {
         document.cookie = `refreshToken=${refreshToken}; path=/; max-age=604800; SameSite=Lax`
       }
       // Dispatch custom event for same-tab updates
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: 'user',
-        newValue: JSON.stringify(userInfo),
-        oldValue: oldValue,
-        storageArea: localStorage
-      }))
-      
+      window.dispatchEvent(
+        new StorageEvent('storage', {
+          key: 'user',
+          newValue: JSON.stringify(userInfo),
+          oldValue: oldValue,
+          storageArea: localStorage,
+        }),
+      )
     }
     // Update React state
     setUser(userInfo)

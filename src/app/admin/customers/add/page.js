@@ -12,6 +12,7 @@ const defaultValues = {
   email: '',
   password: '',
   status: 'active',
+  roles: ['user'],
 }
 
 export const AddCustomerPage = () => {

@@ -57,6 +57,7 @@ export function FormAdminSelect({
   onChange: onParentChange,
   required,
   disabled,
+  isMulti = false,
   ...rest
 }) {
   const {
@@ -73,10 +74,11 @@ export function FormAdminSelect({
         <AdminSelect
           name={name}
           label={label}
-          value={value}
+          value={isMulti ? (Array.isArray(value) ? value[0] : value) : value}
           onChange={(val) => {
-            onChange(val)
-            onParentChange?.({ target: { value: val } })
+            const newValue = isMulti ? [val] : val
+            onChange(newValue)
+            onParentChange?.({ target: { value: newValue } })
           }}
           onBlur={(e) => {
             onFieldBlur(e)

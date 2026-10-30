@@ -22,6 +22,7 @@ import {
 import { toast } from '@/utils/toastConfig'
 import { Eye } from 'lucide-react'
 import { buildOrderDetailPath } from '@/utils/adminRouteUtils'
+import { useAuth } from '@/context/AuthContext'
 
 const columnHelper = createColumnHelper()
 
@@ -30,9 +31,18 @@ function OrdersPageContent() {
   const searchParams = useSearchParams()
   const { params } = useTableQueryParams()
   const dispatch = useDispatch()
+  const { user } = useAuth()
   const [selectedOrderId, setSelectedOrderId] = useState(null)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+
+  // Mask customer details for employer role
+  const maskCustomerName = (name) => {
+    if (user?.isEmployer && name) {
+      return 'xxxxx'
+    }
+    return name
+  }
 
   const columns = useMemo(
     () => [
@@ -279,11 +289,14 @@ function OrdersPageContent() {
         // Get the status name from the status object
         const statusName = statusObj.orderStatus || statusObj.name || 'Pending'
 
+        // Mask customer name for employer role
+        const customerName = order.user
+          ? `${order.user.firstName} ${order.user.lastName}`
+          : 'Guest'
+
         return {
           id: order.orderId || order._id,
-          customerName: order.user
-            ? `${order.user.firstName} ${order.user.lastName}`
-            : 'Guest',
+          customerName: maskCustomerName(customerName),
           orderTotal: `${order.total?.toFixed(2) || '0.00'}`,
           datePurchased: order.createdAt,
           status: statusName,
@@ -297,7 +310,7 @@ function OrdersPageContent() {
           installinkId: order.installinkId,
         }
       }),
-    [orders, orderStatuses],
+    [orders, orderStatuses, user],
   )
 
   return (
