@@ -23,12 +23,14 @@ import { createColumnHelper } from '@tanstack/react-table'
 import { TanstackTable } from '@/components/admin/TanStackTable'
 import SafeImage from '@/components/SafeImage'
 import { getProductCost } from '@/utils/productPricing'
+import { useAuth } from '@/context/AuthContext'
 
 const columnHelper = createColumnHelper()
 
 export default function AdminDashboard() {
   const dispatch = useDispatch()
   const router = useRouter()
+  const { user } = useAuth()
   const {
     adminDashboard,
     recentOrders,
@@ -41,11 +43,17 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     dispatch(fetchAdminDashboard())
-    dispatch(fetchRecentOrders())
-    dispatch(fetchRecentCustomers())
+    // Only fetch orders for admin role
+    if (user?.isAdmin) {
+      dispatch(fetchRecentOrders())
+    }
+    // Only fetch customers for admin role
+    if (user?.isAdmin) {
+      dispatch(fetchRecentCustomers())
+    }
     dispatch(fetchRecentProducts())
     dispatch(fetchGoalCompletion())
-  }, [dispatch])
+  }, [dispatch, user])
 
   const ordersColumns = useMemo(
     () => [
@@ -56,6 +64,10 @@ export default function AdminDashboard() {
       columnHelper.accessor('customer', {
         header: 'Customer Name',
         enableSorting: false,
+        cell: (info) => {
+          const customerName = info.getValue()
+          return user?.isEmployer ? 'xxxxx' : customerName
+        },
       }),
       columnHelper.accessor('total', {
         header: 'Total Price',
@@ -83,7 +95,7 @@ export default function AdminDashboard() {
         },
       }),
     ],
-    [],
+    [user],
   )
 
   const customerColumns = useMemo(
@@ -110,33 +122,45 @@ export default function AdminDashboard() {
   )
 
   const stats = [
-    {
-      title: 'Orders (Last 7 Days)',
-      value: adminDashboard?.newOrdersLast7Days || 0,
-      bgColor: 'bg-blue-500',
-      textColor: 'text-white',
-      icon: <ShoppingCartIcon className="h-8 w-8" />,
-      link: '/admin/orders',
-      extra: 'View All Orders',
-    },
-    {
-      title: 'Total Purchased Money',
-      value: `$ ${adminDashboard?.totalPurchasedMoney?.toFixed(2) || '0.00'}`,
-      bgColor: 'bg-blue-800',
-      textColor: 'text-white',
-      icon: <ChartBarIcon className="h-8 w-8" />,
-      link: '/admin/orders',
-      extra: 'View All Orders',
-    },
-    {
-      title: 'Total Sale',
-      value: adminDashboard?.totalSale || 0,
-      bgColor: 'bg-teal-500',
-      textColor: 'text-white',
-      icon: <ChartBarIcon className="h-8 w-8" />,
-      link: '/admin/orders',
-      extra: 'View All Orders',
-    },
+    ...(user?.isAdmin
+      ? [
+          {
+            title: 'Orders (Last 7 Days)',
+            value: adminDashboard?.newOrdersLast7Days || 0,
+            bgColor: 'bg-blue-500',
+            textColor: 'text-white',
+            icon: <ShoppingCartIcon className="h-8 w-8" />,
+            link: '/admin/orders',
+            extra: 'View All Orders',
+          },
+        ]
+      : []),
+    ...(user?.isAdmin
+      ? [
+          {
+            title: 'Total Purchased Money',
+            value: `$ ${adminDashboard?.totalPurchasedMoney?.toFixed(2) || '0.00'}`,
+            bgColor: 'bg-blue-800',
+            textColor: 'text-white',
+            icon: <ChartBarIcon className="h-8 w-8" />,
+            link: '/admin/orders',
+            extra: 'View All Orders',
+          },
+        ]
+      : []),
+    ...(user?.isAdmin
+      ? [
+          {
+            title: 'Total Sale',
+            value: adminDashboard?.totalSale || 0,
+            bgColor: 'bg-teal-500',
+            textColor: 'text-white',
+            icon: <ChartBarIcon className="h-8 w-8" />,
+            link: '/admin/orders',
+            extra: 'View All Orders',
+          },
+        ]
+      : []),
     {
       title: 'Out of Stock',
       value: adminDashboard?.outOfStockProducts || 0,
@@ -146,15 +170,19 @@ export default function AdminDashboard() {
       link: '/admin/out-of-stock',
       extra: 'Out of Stock',
     },
-    {
-      title: 'Customer Registrations',
-      value: adminDashboard?.customerRegistrations || 0,
-      bgColor: 'bg-[#E6F0F5]',
-      textColor: 'text-[#003451]',
-      icon: <UserPlusIcon className="h-8 w-8" />,
-      link: '/admin/customers',
-      extra: 'View All Customers',
-    },
+    ...(user?.isAdmin
+      ? [
+          {
+            title: 'Customer Registrations',
+            value: adminDashboard?.customerRegistrations || 0,
+            bgColor: 'bg-[#E6F0F5]',
+            textColor: 'text-[#003451]',
+            icon: <UserPlusIcon className="h-8 w-8" />,
+            link: '/admin/customers',
+            extra: 'View All Customers',
+          },
+        ]
+      : []),
     {
       title: 'Total Products',
       value: adminDashboard?.totalProducts || 0,
@@ -230,36 +258,9 @@ export default function AdminDashboard() {
       <AddedSaleReportChartWithRecharts />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-        {/* New Customers Section */}
-        <div className="lg:col-span-2">
-          {/* <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                New Customer(s)
-              </h2>
-
-              <Suspense
-                fallback={<div className="p-4 text-center">Loading...</div>}
-              >
-                <TanstackTable
-                  columns={customerColumns}
-                  data={customersData}
-                  isLoading={loading}
-                  mode="client"
-                />
-              </Suspense>
-
-              <button
-                onClick={() => router.push('/admin/customers')}
-                className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors mt-4"
-              >
-                View All Customers
-              </button>
-            </div>
-          </div> */}
-
-          {/* New Orders Table */}
-          <div className="lg:col-span-2 mt-8">
+        {/* New Orders Table - Admin only */}
+        {user?.isAdmin && (
+          <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">
                 New Orders
@@ -284,44 +285,98 @@ export default function AdminDashboard() {
               </button>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Goal Completion */}
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Goal Completion
-            </h2>
-            <div className="space-y-4">
-              {Object.entries(goalData).map(([key, goal]) => {
-                const percentage = (goal.current / goal.target) * 100
-                return (
-                  <div key={key}>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-600">{goal.label}</span>
-                      <span className="font-medium text-gray-900">
-                        {goal.current}/{goal.target}
-                      </span>
+        {/* Goal Completion - Admin only */}
+        {user?.isAdmin && (
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Goal Completion
+              </h2>
+              <div className="space-y-4">
+                {Object.entries(goalData).map(([key, goal]) => {
+                  const percentage = (goal.current / goal.target) * 100
+                  return (
+                    <div key={key}>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-gray-600">{goal.label}</span>
+                        <span className="font-medium text-gray-900">
+                          {goal.current}/{goal.target}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-yellow-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${Math.min(percentage, 100)}%` }}
+                        ></div>
+                      </div>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-yellow-600 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${Math.min(percentage, 100)}%` }}
-                      ></div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Recently Added Products */}
+            <div className="mt-8">
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                  Recently Added Products
+                </h2>
+                <div className="grid grid-cols-2 gap-4">
+                  {productsData.map((product, index) => (
+                    <div key={index} className="text-center">
+                      <div className="bg-gray-100 rounded-lg p-3 mb-2 items-center">
+                        <div className=" flex gapt-3">
+                          <div className="relative w-16 h-16 bg-gray-100 rounded-md overflow-hidden mr-4">
+                            <SafeImage
+                              src={
+                                product?.image?.thumbnailUrl ||
+                                product?.image ||
+                                '/placeholder-product.jpg'
+                              }
+                              alt={
+                                product?.name ||
+                                product?.productName ||
+                                'Product'
+                              }
+                              fill
+                              className="object-cover rounded hover:opacity-90 transition-opacity"
+                              unoptimized={true}
+                            />
+                          </div>
+                          <div className="flex flex-col">
+                            <p className="text-xs text-gray-600 truncate">
+                              {product.name}
+                            </p>
+                            <p className="text-sm font-semibold text-gray-900 mt-1">
+                              ${getProductCost(product)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                )
-              })}
+                  ))}
+                </div>
+                <button
+                  onClick={() => router.push('/admin/products')}
+                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors mt-4"
+                >
+                  View All Products
+                </button>
+              </div>
             </div>
           </div>
+        )}
 
-          {/* Recently Added Products */}
-          <div className="lg:col-span-1 mt-8">
+        {/* Recently Added Products - Employer only */}
+        {user?.isEmployer && (
+          <div className="lg:col-span-3">
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">
                 Recently Added Products
               </h2>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 {productsData.map((product, index) => (
                   <div key={index} className="text-center">
                     <div className="bg-gray-100 rounded-lg p-3 mb-2 items-center">
@@ -362,7 +417,7 @@ export default function AdminDashboard() {
               </button>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   )

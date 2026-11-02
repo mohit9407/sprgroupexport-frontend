@@ -129,10 +129,15 @@ export function Arrow({ open, collapsed }) {
   )
 }
 
-export const getSidebarMenuData = (routeMeta) => {
+export const getSidebarMenuData = (routeMeta, userRole = 'user') => {
   const addedPaths = []
   return routeMeta.reduce((menu, route) => {
     if (addedPaths.includes(route.path)) {
+      return menu
+    }
+
+    // Check if route has role restrictions
+    if (route.roles && !route.roles.includes(userRole)) {
       return menu
     }
 
@@ -143,13 +148,27 @@ export const getSidebarMenuData = (routeMeta) => {
     }
 
     if (route?.sidebarChildrens) {
-      menu.push({
-        ...route,
-        childrens: route.sidebarChildrens.map((path) => {
+      // Filter children based on role
+      const filteredChildren = route.sidebarChildrens
+        .map((path) => {
           addedPaths.push(path)
           return routeMeta.find((route) => route.path === path)
-        }),
-      })
+        })
+        .filter((child) => {
+          // If child has role restrictions, check if user has access
+          if (child.roles && !child.roles.includes(userRole)) {
+            return false
+          }
+          return true
+        })
+
+      // Only add parent if it has children after filtering
+      if (filteredChildren.length > 0) {
+        menu.push({
+          ...route,
+          childrens: filteredChildren,
+        })
+      }
       return menu
     }
 

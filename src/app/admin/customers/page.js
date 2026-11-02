@@ -16,6 +16,7 @@ import {
   TanstackTable,
   useTableQueryParams,
 } from '@/components/admin/TanStackTable'
+import { useAuth } from '@/context/AuthContext'
 
 const columnHelper = createColumnHelper()
 
@@ -81,10 +82,11 @@ const getColumns = (onDelete) => [
 function CustomersPageContent() {
   const router = useRouter()
   const dispatch = useDispatch()
+  const { user } = useAuth()
   const { params } = useTableQueryParams()
   const [deleteModal, setDeleteModal] = useState({ open: false })
   const [customerPassword, setCustomerPassword] = useState('')
-  const [isUnlocked, setIsUnlocked] = useState(false)
+  const [isUnlocked, setIsUnlocked] = useState(true) // Always unlocked for admin
   const [isUnlocking, setIsUnlocking] = useState(false)
   const [accessError, setAccessError] = useState('')
   const {
@@ -97,6 +99,13 @@ function CustomersPageContent() {
     () => getColumns((id) => setDeleteModal({ open: true, id })),
     [],
   )
+
+  // Auto-unlock for admin users
+  useEffect(() => {
+    if (user?.isAdmin) {
+      setIsUnlocked(true)
+    }
+  }, [user])
 
   const getCustomers = async (accessPassword) => {
     try {
@@ -163,10 +172,13 @@ function CustomersPageContent() {
   )
 
   useEffect(() => {
-    if (isUnlocked && customerPassword) {
+    // Fetch customers for admin users without password
+    if (user?.isAdmin) {
+      getCustomers('')
+    } else if (isUnlocked && customerPassword) {
       getCustomers(customerPassword)
     }
-  }, [params, isUnlocked, customerPassword])
+  }, [params, isUnlocked, customerPassword, user])
 
   const lockCustomerTable = () => {
     setCustomerPassword('')
@@ -174,44 +186,7 @@ function CustomersPageContent() {
     setAccessError('')
   }
 
-  if (!isUnlocked) {
-    return (
-      <div className="max-w-md mx-auto mt-10 rounded-lg border bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-gray-900">
-          Customer table locked
-        </h2>
-        <p className="mt-2 text-sm text-gray-600">
-          Enter the private access password to view customer information.
-        </p>
-        <form onSubmit={unlockCustomerTable} className="mt-5 space-y-3">
-          <label
-            htmlFor="customer-table-password"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Access password
-          </label>
-          <input
-            id="customer-table-password"
-            type="password"
-            autoComplete="current-password"
-            value={customerPassword}
-            onChange={(event) => setCustomerPassword(event.target.value)}
-            className="w-full rounded border border-gray-300 px-3 py-2 outline-none focus:border-[#004372] focus:ring-1 focus:ring-[#004372]"
-            required
-          />
-          {accessError && <p className="text-sm text-red-600">{accessError}</p>}
-          <button
-            type="submit"
-            disabled={isUnlocking}
-            className="rounded bg-[#004372] px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
-          >
-            {isUnlocking ? 'Checking…' : 'Unlock'}
-          </button>
-        </form>
-      </div>
-    )
-  }
-
+  // Always show customers table for admin users (no lock)
   return (
     <>
       <TanstackTable
@@ -222,20 +197,12 @@ function CustomersPageContent() {
         pageCount={apiPagination?.totalPages}
         filterByOptions={filterByOptions}
         actions={
-          <div className="flex gap-2">
-            <button
-              className="bg-[#004372] text-white px-3 py-1.5 rounded text-sm"
-              onClick={() => router.push('/admin/customers/add')}
-            >
-              Add New
-            </button>
-            <button
-              className="rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700"
-              onClick={lockCustomerTable}
-            >
-              Lock
-            </button>
-          </div>
+          <button
+            className="bg-[#004372] text-white px-3 py-1.5 rounded text-sm"
+            onClick={() => router.push('/admin/customers/add')}
+          >
+            Add New
+          </button>
         }
       />
       <ConfirmationModal

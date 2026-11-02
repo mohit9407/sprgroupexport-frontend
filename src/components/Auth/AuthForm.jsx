@@ -131,21 +131,30 @@ const AuthForm = ({ isLogin = false }) => {
       try {
         const result = await dispatch(loginUser(loginData)).unwrap()
         if (result && result.token) {
-          login(
-            {
-              email: loginData.email,
-              id: result.data._id,
-              roles: Array.isArray(result.data?.roles)
-                ? result.data.roles
-                : ['user'],
-              ...result.data,
-            },
-            {
-              accessToken: result.token.accessToken,
-              refreshToken: result.token.refreshToken,
-            },
-          )
+          const userData = {
+            email: loginData.email,
+            id: result.data._id,
+            roles: Array.isArray(result.data?.roles)
+              ? result.data.roles
+              : ['user'],
+            ...result.data,
+          }
+
+          login(userData, {
+            accessToken: result.token.accessToken,
+            refreshToken: result.token.refreshToken,
+          })
           toast.success('Login successful!')
+
+          // Redirect based on role
+          const isAdmin = userData.roles?.includes('admin')
+          const isEmployer = userData.roles?.includes('employer')
+
+          if (isAdmin || isEmployer) {
+            router.push('/admin')
+          } else {
+            router.push('/')
+          }
         }
       } catch (err) {
         const message =

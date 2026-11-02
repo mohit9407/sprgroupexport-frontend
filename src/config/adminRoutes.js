@@ -91,6 +91,7 @@ export const routeMeta = [
     parent: '/admin',
     sidebar: true,
     icon: FaUsers,
+    roles: ['admin'],
   },
   {
     key: 'add-customers',
@@ -100,6 +101,7 @@ export const routeMeta = [
     parent: '/admin/customers',
     sidebar: false,
     icon: FaUserPlus,
+    roles: ['admin'],
   },
   {
     key: 'edit-customers',
@@ -109,6 +111,7 @@ export const routeMeta = [
     parent: '/admin/customers',
     sidebar: false,
     icon: FaUserEdit,
+    roles: ['admin'],
   },
 
   // ===== Catalog =====
@@ -286,6 +289,7 @@ export const routeMeta = [
       '/admin/orders/order-status',
       '/admin/orders/manual-order',
     ],
+    roles: ['admin'],
   },
   {
     key: 'orders-list',
@@ -294,6 +298,7 @@ export const routeMeta = [
     parent: '/admin',
     sidebar: true,
     icon: FaClipboardList,
+    roles: ['admin'],
   },
   {
     key: 'order-status',
@@ -302,6 +307,7 @@ export const routeMeta = [
     parent: '/admin/orders',
     sidebar: true,
     icon: FaTasks,
+    roles: ['admin'],
   },
   {
     key: 'add-order-status',
@@ -311,6 +317,7 @@ export const routeMeta = [
     parent: '/admin/orders/order-status',
     sidebar: false,
     icon: FaPlusCircle,
+    roles: ['admin'],
   },
   {
     key: 'edit-order-status',
@@ -320,6 +327,7 @@ export const routeMeta = [
     parent: '/admin/orders/order-status',
     sidebar: false,
     icon: FaEye,
+    roles: ['admin'],
   },
   {
     key: 'manual-order',
@@ -329,6 +337,7 @@ export const routeMeta = [
     parent: '/admin',
     sidebar: true,
     icon: FaPlusCircle,
+    roles: ['admin'],
   },
   {
     key: 'edit-order',
@@ -338,6 +347,7 @@ export const routeMeta = [
     parent: '/admin/orders',
     sidebar: false,
     icon: FaEye,
+    roles: ['admin'],
   },
 
   // ===== Reports =====
@@ -352,7 +362,6 @@ export const routeMeta = [
       '/admin/out-of-stock',
       '/admin/customer-reports',
       '/admin/product-liked',
-      '/admin/total-purchased',
     ],
   },
   {
@@ -378,6 +387,7 @@ export const routeMeta = [
     parent: '/admin',
     sidebar: true,
     icon: FaChartBar,
+    roles: ['admin'],
   },
   {
     key: 'product-liked',
@@ -390,7 +400,7 @@ export const routeMeta = [
     key: 'total-purchased',
     path: '/admin/total-purchased',
     label: 'Total Purchased',
-    parent: '/admin',
+    parent: '/admin/reports',
     icon: FaShoppingCart,
   },
   {
@@ -399,6 +409,7 @@ export const routeMeta = [
     label: 'View Customer Order History',
     parent: '/admin/customer-reports',
     icon: FaSearchDollar,
+    roles: ['admin'],
   },
 
   // ===== Coupons =====
@@ -419,6 +430,7 @@ export const routeMeta = [
     parent: '/admin',
     sidebar: true,
     icon: FaTruck,
+    roles: ['admin'],
   },
   {
     key: 'edit-shipping-method',
@@ -428,6 +440,7 @@ export const routeMeta = [
     parent: '/admin/shipping-methods',
     sidebar: false,
     icon: FaEye,
+    roles: ['admin'],
   },
 
   // ===== Payment =====
@@ -438,6 +451,7 @@ export const routeMeta = [
     parent: '/admin',
     sidebar: true,
     icon: FaRegCreditCard,
+    roles: ['admin'],
   },
   {
     key: 'edit-payment-method',
@@ -447,6 +461,7 @@ export const routeMeta = [
     parent: '/admin/payment-methods',
     sidebar: false,
     icon: FaEye,
+    roles: ['admin'],
   },
 
   // ===== Admin Account =====
@@ -457,6 +472,7 @@ export const routeMeta = [
     parent: '/admin',
     sidebar: true,
     icon: FaUserShield,
+    roles: ['admin'],
   },
 
   // ===== Settings =====
